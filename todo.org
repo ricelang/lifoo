@@ -1,0 +1,17 @@
+* add lifoo-eval (expr &key env)
+** push terms & exec defs
+
+1 1 +
+- 2
+
+"hello lifoo" print ln
+
+(1 2 3) (2 *) map tail
+- (4 6)
+
+say def print ln
+
+def-adder def "~a-adder" format intern def 42 +  
+"foo" def-adder
+1 foo-adder
+- 43
