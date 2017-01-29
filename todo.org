@@ -1,6 +1,9 @@
 * add lifoo-eval (expr &key env)
 ** push terms & exec defs
 
+* add do-lifoo macro
+** send body through lifoo-eval
+
 1 1 +
 - 2
 
