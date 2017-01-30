@@ -7,11 +7,14 @@
   `(lifoo-define ,context ',name (lambda () ,@body)))
 
 (defmacro do-lifoo ((context) &body body)
-  `(funcall (lifoo-compile (or ,context (make-lifoo)) '(,@body))))
+  (with-symbols (_context)
+    `(let ((,_context (or ,context (make-lifoo))))
+       (funcall (lifoo-compile ,_context '(,@body)))
+       (lifoo-pop ,_context))))
 
 (defstruct (lifoo-context (:conc-name)
                           (:constructor make-context))
-  stack (words (make-hash-table :test 'eq)))
+  (stack (list)) (words (make-hash-table :test 'eq)))
 
 (defstruct (lifoo-word (:conc-name word-)
                        (:constructor make-word))
@@ -21,56 +24,67 @@
   (let ((cx (make-context)))
     (define-lifoo + (cx)
       (lifoo-push cx (+ (lifoo-pop cx) (lifoo-pop cx))))
+    
+    (define-lifoo * (cx)
+      (lifoo-push cx (* (lifoo-pop cx) (lifoo-pop cx))))
+
     (define-lifoo drop (cx)
       (lifoo-pop cx))
+
     (define-lifoo dup (cx)
       (lifoo-push cx (first (stack cx))))
+
     (define-lifoo head (cx)
       (lifoo-push cx (first (lifoo-pop cx))))
+
     (define-lifoo ln (cx)
       (terpri))
+
+    (define-lifoo map (cx)
+      (let ((fn (lifoo-compile cx (lifoo-pop cx)))
+            (lst (lifoo-pop cx)))
+        (lifoo-push cx (mapcar (lambda (it)
+                                 (lifoo-push cx it)
+                                 (funcall fn)
+                                 (lifoo-pop cx))
+                               lst))))
+
     (define-lifoo print (cx)
       (princ (lifoo-pop cx)))
+
     (define-lifoo swap (cx)
       (push (lifoo-pop cx) (rest (stack cx))))
+
     (define-lifoo tail (cx)
       (lifoo-push cx (rest (lifoo-pop cx))))
     cx))
 
 (defun lifoo-parse (context expr)
   (labels
-      ((rec (ex acc &key (push? t))
+      ((rec (ex acc)
          (if ex
              (let ((e (first ex)))
                (cond
                  ((consp e)
                   (rec (rest ex)
-                       (cons `(lifoo-push
-                               ,context
-                               ,(rec e (list 'list) :push? nil))
-                             acc)
-                       :push? push?))
+                       (cons `(lifoo-push ,context '(,@e))
+                             acc)))
                  ((symbolp e)
                   (rec (rest ex)
                        (cons `(funcall
                                ,(word-fn
                                  (gethash e (words context))))
-                             acc)
-                       :push? push?))
+                             acc)))
                  (t
                   (rec (rest ex)
-                       (cons (if push?
-                                 `(lifoo-push ,context ,e)
-                                 e)
-                             acc)
-                       :push? push?))))
+                       (cons `(lifoo-push ,context ,e)
+                             acc)))))
              (nreverse acc))))
     (rec expr nil)))
 
 (defun lifoo-compile (context expr)
   (eval `(lambda ()
-           ,@(lifoo-parse context expr)
-           (lifoo-pop ,context))))
+           ,@(lifoo-parse context expr))))
 
 (defun lifoo-define (context id fn)
   (setf (gethash id (words context)) (make-word :id id :fn fn)))
@@ -92,6 +106,11 @@
 (define-test (:lifoo :list)
   (assert (= 2 (do-lifoo (nil)
                  (1 2 3) tail head))))
+
+(define-test (:lifoo :list :map)
+  (assert (equal '(2 4 6)
+                 (do-lifoo (nil)
+                   (1 2 3) (2 *) map))))
 
 (define-test (:lifoo :print)
   (assert (string= (format nil "hello lifoo!~%")
