@@ -66,6 +66,9 @@
                        (cons `(funcall
                                ,(word-fn (lifoo-word exec e)))
                              acc)))
+                 ((functionp e)
+                  (rec (rest ex)
+                       (cons `(funcall ,e) acc)))
                  (t
                   (rec (rest ex) (cons `(lifoo-push ,exec ,e)
                                        acc)))))
@@ -131,6 +134,11 @@
     (lifoo-push exec
                 (lifoo-eval exec
                             (lifoo-pop exec))))
+
+  (define-lisp-word compile (exec)
+    (lifoo-push exec
+                (lifoo-compile exec
+                               (lifoo-pop exec))))
 
   (define-lisp-word first (exec)
     (lifoo-push exec (first (lifoo-pop exec))))

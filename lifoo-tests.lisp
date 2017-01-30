@@ -3,8 +3,13 @@
 
 (in-package lifoo-tests)
 
-(define-test (:lifoo :add)
-  (assert (= 3 (do-lifoo () 1 2 +))))
+(define-test (:lifoo :stack)
+  (assert (= 1 (do-lifoo () 1 dup drop)))
+  (assert (= 2 (do-lifoo () 1 2 swap drop))))
+
+(define-test (:lifoo :branch)
+  (assert (eq :ok (do-lifoo () :ok (1 2 <) when)))
+  (assert (eq :ok (do-lifoo () :ok (1 2 >) unless))))
 
 (define-test (:lifoo :cmp)
   (assert (do-lifoo () "abc" "abc" eq?))
@@ -17,10 +22,11 @@
   (assert (equal '(1 2 +) (do-lifoo () (1 2 +))))
   (assert (= 3 (do-lifoo () (1 2 +) eval))))
 
-(define-test (:lifoo :list)
-  (assert (= 2 (do-lifoo () (1 2 3) rest first))))
+(define-test (:lifoo :compile)
+  (assert (= 3 (do-lifoo () (1 2 +) compile eval))))
 
-(define-test (:lifoo :list :map)
+(define-test (:lifoo :list)
+  (assert (= 2 (do-lifoo () (1 2 3) rest first)))
   (assert (equal '(2 4 6)
                  (do-lifoo () (1 2 3) (2 *) map))))
 
@@ -30,12 +36,3 @@
                      (let ((*standard-output* out))
                        (do-lifoo ()
                          "hello lifoo!" print ln))))))
-
-(define-test (:lifoo :stack)
-  (assert (= 1 (do-lifoo () 1 dup drop)))
-  (assert (= 2 (do-lifoo () 1 2 swap drop))))
-
-(define-test (:lifoo :branch)
-  (assert (eq :ok (do-lifoo () :ok (1 2 <) when)))
-  (assert (eq :ok (do-lifoo () :ok (1 2 >) unless))))
-
