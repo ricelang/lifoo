@@ -22,9 +22,9 @@
 - 1 2 3
 
 * add intern
-** create symbol from string
+** create keyword from string
 
-"abc" intern
-- 'abc
+* add word to lookup word by arg and exec
 
-* add lifoo-tests.lisp
+"hello lifoo!" "print" word
+- hello lifoo!
