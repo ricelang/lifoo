@@ -34,7 +34,7 @@
     (define-lifoo dup (cx)
       (lifoo-push cx (first (stack cx))))
 
-    (define-lifoo head (cx)
+    (define-lifoo first (cx)
       (lifoo-push cx (first (lifoo-pop cx))))
 
     (define-lifoo ln (cx)
@@ -52,11 +52,12 @@
     (define-lifoo print (cx)
       (princ (lifoo-pop cx)))
 
+    (define-lifoo rest (cx)
+      (lifoo-push cx (rest (lifoo-pop cx))))
+
     (define-lifoo swap (cx)
       (push (lifoo-pop cx) (rest (stack cx))))
 
-    (define-lifoo tail (cx)
-      (lifoo-push cx (rest (lifoo-pop cx))))
     cx))
 
 (defun lifoo-parse (exec expr)
@@ -105,7 +106,7 @@
 
 (define-test (:lifoo :list)
   (assert (= 2 (do-lifoo ()
-                 (1 2 3) tail head))))
+                 (1 2 3) rest first))))
 
 (define-test (:lifoo :list :map)
   (assert (equal '(2 4 6)

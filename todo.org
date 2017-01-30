@@ -4,14 +4,16 @@
 (1 2 +) eval
 - 3
 
-* add pair
+* add cons
 
-1 2 pair
+1 2 cons
 - (1 . 2)
 
 * add list
-** native def
-nil pair
+** native: nil cons
+
+1 list
+- (1)
 
 * add format
 ** take list of params
@@ -24,16 +26,3 @@ nil pair
 
 "abc" intern
 - 'abc
-
-* add list
-** make list of n items
-
-42 43 44 3 list
-- (42 43 44)
-
-* add define
-** special case in compile
-def-adder : "~a-adder" swap 1 list format intern : 42 +  
-"foo" def-adder
-1 foo-adder
-- 43
