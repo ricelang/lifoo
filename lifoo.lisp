@@ -73,7 +73,6 @@
            (lifoo-pop ,context))))
 
 (defun lifoo-define (context id fn)
-  (lifoo-undefine context id)
   (setf (gethash id (words context)) (make-word :id id :fn fn)))
 
 (defun lifoo-undefine (context id)
