@@ -1,5 +1,5 @@
 (defpackage lifoo
-  (:use cl cl4l-index cl4l-test cl4l-utils))
+  (:use cl cl4l-test cl4l-utils))
 
 (in-package lifoo)
 
@@ -11,7 +11,7 @@
 
 (defstruct (lifoo-context (:conc-name)
                           (:constructor make-context))
-  stack (words (index #'word-id)))
+  stack (words (make-hash-table :test 'eq)))
 
 (defstruct (lifoo-word (:conc-name word-)
                        (:constructor make-word))
@@ -44,8 +44,7 @@
                       (rec (rest es)
                            (cons `(funcall
                                    ,(word-fn
-                                     (index-find (words context)
-                                                 e)))
+                                     (gethash e (words context))))
                                  acc)))
                      (t (rec (rest es)
                              (cons `(lifoo-push ,context ,e)
@@ -57,10 +56,10 @@
 
 (defun lifoo-define (context id fn)
   (lifoo-undefine context id)
-  (index-add (words context) (make-word :id id :fn fn)))
+  (setf (gethash id (words context)) (make-word :id id :fn fn)))
 
 (defun lifoo-undefine (context id)
-  (index-remove (words context) id))
+  (remhash id (words context)))
 
 (defun lifoo-push (context term)
   (push term (stack context))
