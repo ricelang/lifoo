@@ -14,7 +14,7 @@
 
 (defstruct (lifoo-context (:conc-name)
                           (:constructor make-context))
-  (stack (list)) (words (make-hash-table :test 'eq)))
+  stack (words (make-hash-table :test 'eq)))
 
 (defstruct (lifoo-word (:conc-name word-)
                        (:constructor make-word))
