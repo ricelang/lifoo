@@ -1,48 +1,73 @@
 (defpackage lifoo
-  (:use cl cl4l-index cl4l-utils))
+  (:use cl cl4l-index cl4l-test cl4l-utils))
 
 (in-package lifoo)
 
-(defparameter *lifoo* (make-lifoo))
+(defmacro define-lifoo (name (context) &body body)
+  `(lifoo-define ,context ',name (lambda () ,@body)))
 
-(defmacro with-lifoo ((&key (env *lifoo*)) &body body)
-  `(let ((*lifoo* ,env))
-     ,@body))
+(defmacro do-lifoo ((context) &body body)
+  `(funcall (lifoo-compile (or ,context (make-lifoo)) '(,@body))))
 
-(defstruct (env (:conc-name lifoo-))
-  stack (defs (index #'lifoo-id)))
+(defstruct (lifoo-context (:conc-name)
+                          (:constructor make-context))
+  stack (words (index #'word-id)))
 
-(defstruct (def (:conc-name lifoo-))
-  id src imp)
+(defstruct (lifoo-word (:conc-name word-)
+                       (:constructor make-word))
+  id fn)
 
 (defun make-lifoo ()
-  (let ((env (make-env)))
-    (with-lifoo (:env env)
-      (lifoo-def '+ :imp (lambda ()
-                           (lifoo-push (+ (lifoo-pop) 
-                                          (lifoo-pop))))))
-    env))
+  (let ((cx (make-context)))
+    (define-lifoo + (cx)
+      (lifoo-push cx (+ (lifoo-pop cx) (lifoo-pop cx))))
+    (define-lifoo drop (cx)
+      (lifoo-pop cx))
+    (define-lifoo dup (cx)
+      (lifoo-push cx (first (stack cx))))
+    (define-lifoo swap (cx)
+      (push (lifoo-pop cx) (rest (stack cx))))
+    cx))
 
-(defun lifoo-push (term &key (env *lifoo*))
-  (push term (lifoo-stack env))
+(defun lifoo-compile (context expr)
+  (labels ((rec (es acc)
+             (if es
+                 (let ((e (first es)))
+                   (cond
+                     ((consp e)
+                      (rec (rest es) (cons (rec e nil) acc)))
+                     ((symbolp e)
+                      (rec (rest es)
+                           (cons `(funcall
+                                   ,(word-fn
+                                     (index-find (words context)
+                                                 e)))
+                                 acc)))
+                     (t (rec (rest es)
+                             (cons `(lifoo-push ,context ,e)
+                                   acc)))))
+                 (nreverse acc))))
+    (eval `(lambda ()
+             ,@(rec expr nil)
+             (lifoo-pop ,context)))))
+
+(defun lifoo-define (context id fn)
+  (lifoo-undefine context id)
+  (index-add (words context) (make-word :id id :fn fn)))
+
+(defun lifoo-undefine (context id)
+  (index-remove (words context) id))
+
+(defun lifoo-push (context term)
+  (push term (stack context))
   term)
 
-(defun lifoo-read (in &key (env *lifoo*))
-  (when-let (term (read in nil))
-    (cons (let ((def? (when (symbolp term)
-                        (index-find (lifoo-defs env) term))))
-            (if def? (lifoo-imp def?) term))
-          (lifoo-read in))))
+(defun lifoo-pop (context)
+  (pop (stack context)))
 
-(defun lifoo-pop (&key (env *lifoo*))
-  (pop (lifoo-stack env)))
+(define-test (:lifoo :add)
+  (assert (= 3 (do-lifoo (nil) 1 2 +))))
 
-(defun lifoo-undef (id &key (env *lifoo*))
-  (index-remove (lifoo-defs env) id))
-
-(defun lifoo-def (id &key (env *lifoo*)
-                          src
-                          (imp (with-input-from-string (in src)
-                                 (lifoo-read in :env env))))
-  (lifoo-undef id :env env)
-  (index-add (lifoo-defs env) (make-def :id id :src src :imp imp)))
+(define-test (:lifoo :stack)
+  (assert (= 1 (do-lifoo (nil) 1 dup drop)))
+  (assert (= 2 (do-lifoo (nil) 1 2 swap drop))))
