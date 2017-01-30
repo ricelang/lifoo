@@ -1,7 +1,9 @@
-(1 2 3) (2 *) map tail
-- (4 6)
+* add map support
 
-say def print ln
+(1 2 3) (2 *) map
+- (2 4 6)
+
+* add define support
 
 def-adder : "~a-adder" format intern : 42 +  
 "foo" def-adder
