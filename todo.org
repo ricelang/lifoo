@@ -1,4 +1,4 @@
-"hello lifoo" print ln
+* switch index to hash table
 
 (1 2 3) (2 *) map tail
 - (4 6)
