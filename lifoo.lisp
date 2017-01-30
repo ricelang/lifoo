@@ -6,6 +6,16 @@
 (defmacro define-lisp-word (name (exec) &body body)
   `(lifoo-define ,exec ',name (lambda () ,@body)))
 
+(defmacro define-lisp-ops ((exec) &rest ops)
+  (with-symbols (_lhs _rhs)
+    `(progn
+       ,@(mapcar (lambda (op)
+                   `(define-lisp-word ,op (exec)
+                      (let ((,_rhs (lifoo-pop ,exec))
+                            (,_lhs (lifoo-pop ,exec)))
+                        (lifoo-push ,exec (,op ,_lhs ,_rhs)))))
+                 ops))))
+
 (defmacro define-word (name (exec) &body body)
   `(lifoo-define ,exec ',name (lifoo-compile ,exec '(,@body))))
 
@@ -25,17 +35,16 @@
 
 (defun make-lifoo ()
   (let ((exec (make-exec)))
-    (define-lisp-word + (exec)
-      (lifoo-push exec (+ (lifoo-pop exec) (lifoo-pop exec))))
-    
-    (define-lisp-word * (exec)
-      (lifoo-push exec (* (lifoo-pop exec) (lifoo-pop exec))))
+    (define-lisp-ops (exec) + - * / = /= < >)
 
-    (define-lisp-word < (exec)
+    (define-lisp-word cmp (exec)
       (let ((rhs (lifoo-pop exec))
             (lhs (lifoo-pop exec)))
-        (lifoo-push exec (< lhs rhs))))
+        (lifoo-push exec (compare lhs rhs))))
 
+    (define-lisp-word nil? (exec)
+      (lifoo-push exec (null (lifoo-eval exec (lifoo-pop exec)))))
+    
     (define-lisp-word drop (exec)
       (lifoo-pop exec))
 
@@ -70,7 +79,18 @@
       (let ((cnd (lifoo-pop exec))
             (res (lifoo-pop exec)))
         (lifoo-eval exec cnd)
-        (when (lifoo-pop exec) (lifoo-eval exec res))))
+        (when (lifoo-pop exec)
+          (lifoo-eval exec res))))
+
+    (define-word eq? (exec) cmp 0 =)
+    (define-word neq? (exec) cmp 0 /=)
+    (define-word lt? (exec) cmp -1 =)
+    (define-word gt? (exec) cmp 1 =)
+    (define-word lte? (exec) cmp 1 <)
+    (define-word gte? (exec) cmp -1 >)
+    
+    (define-word unless (exec) nil? when)
+
     exec))
 
 (defun lifoo-parse (exec expr)
@@ -83,6 +103,12 @@
                   (rec (rest ex)
                        (cons `(lifoo-push ,exec '(,@e))
                              acc)))
+                 ((null e)
+                  (rec (rest ex) (cons `(lifoo-push ,exec nil)
+                                       acc)))
+                 ((eq e t)
+                  (rec (rest ex) (cons `(lifoo-push ,exec t)
+                                       acc)))
                  ((keywordp e)
                   (rec (rest ex) (cons `(lifoo-push ,exec ,e)
                                        acc)))
@@ -92,9 +118,8 @@
                                ,(word-fn (gethash e (words exec))))
                              acc)))
                  (t
-                  (rec (rest ex)
-                       (cons `(lifoo-push ,exec ,e)
-                             acc)))))
+                  (rec (rest ex) (cons `(lifoo-push ,exec ,e)
+                                       acc)))))
              (nreverse acc))))
     (rec (list! expr) nil)))
 
@@ -120,17 +145,21 @@
   (pop (stack exec)))
 
 (define-test (:lifoo :add)
-  (assert (= 3 (do-lifoo ()
-                 1 2 +))))
+  (assert (= 3 (do-lifoo () 1 2 +))))
+
+(define-test (:lifoo :cmp)
+  (assert (do-lifoo () "abc" "abc" eq?))
+  (assert (not (do-lifoo () "abc" "abcd" eq?)))
+  (assert (do-lifoo () "abc" "abcd" neq?))
+  (assert (do-lifoo () "abc" "def" lt?))
+  (assert (not (do-lifoo () "abc" "def" gt?))))
 
 (define-test (:lifoo :list)
-  (assert (= 2 (do-lifoo ()
-                 (1 2 3) rest first))))
+  (assert (= 2 (do-lifoo () (1 2 3) rest first))))
 
 (define-test (:lifoo :list :map)
   (assert (equal '(2 4 6)
-                 (do-lifoo ()
-                   (1 2 3) (2 *) map))))
+                 (do-lifoo () (1 2 3) (2 *) map))))
 
 (define-test (:lifoo :print)
   (assert (string= (format nil "hello lifoo!~%")
@@ -140,10 +169,9 @@
                          "hello lifoo!" print ln))))))
 
 (define-test (:lifoo :stack)
-  (assert (= 1 (do-lifoo ()
-                 1 dup drop)))
-  (assert (= 2 (do-lifoo ()
-                 1 2 swap drop))))
+  (assert (= 1 (do-lifoo () 1 dup drop)))
+  (assert (= 2 (do-lifoo () 1 2 swap drop))))
 
-(define-test (:lifoo :when)
-  (assert (eq :ok (do-lifoo () :ok (1 2 <) when))))
+(define-test (:lifoo :branch)
+  (assert (eq :ok (do-lifoo () :ok (1 2 <) when)))
+  (assert (eq :ok (do-lifoo () :ok (1 2 >) unless))))
