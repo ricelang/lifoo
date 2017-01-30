@@ -93,7 +93,9 @@
 
 (defun lifoo-word (exec id)
   "Returns word named ID from EXEC"  
-  (gethash (keyword! id) (words exec)))
+  (let ((word (gethash (keyword! id) (words exec))))
+    (unless word (error "missing word: ~a" id))
+    word))
 
 (defun lifoo-push (exec expr)
   "Pushes EXPR onto EXEC's stack"  
@@ -124,6 +126,11 @@
 
   (define-lisp-word dup (exec)
     (lifoo-push exec (first (stack exec))))
+
+  (define-lisp-word eval (exec)
+    (lifoo-push exec
+                (lifoo-eval exec
+                            (lifoo-pop exec))))
 
   (define-lisp-word first (exec)
     (lifoo-push exec (first (lifoo-pop exec))))

@@ -8,11 +8,14 @@
 
 (define-test (:lifoo :cmp)
   (assert (do-lifoo () "abc" "abc" eq?))
-  ;(assert (not (do-lifoo () "abc" "abcd" eq?)))
-  ;(assert (do-lifoo () "abc" "abcd" neq?))
-  ;(assert (do-lifoo () "abc" "def" lt?))
-  ;(assert (not (do-lifoo () "abc" "def" gt?)))
-  )
+  (assert (not (do-lifoo () "abc" "abcd" eq?)))
+  (assert (do-lifoo () "abc" "abcd" neq?))
+  (assert (do-lifoo () "abc" "def" lt?))
+  (assert (not (do-lifoo () "abc" "def" gt?))))
+
+(define-test (:lifoo :eval)
+  (assert (equal '(1 2 +) (do-lifoo () (1 2 +))))
+  (assert (= 3 (do-lifoo () (1 2 +) eval))))
 
 (define-test (:lifoo :list)
   (assert (= 2 (do-lifoo () (1 2 3) rest first))))
