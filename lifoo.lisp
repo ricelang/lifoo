@@ -115,7 +115,9 @@
       (lifoo-push exec (compare lhs rhs))))
 
   (define-lisp-word nil? (exec)
-    (lifoo-push exec (null (lifoo-eval exec (lifoo-pop exec)))))
+    (lifoo-push exec
+                (null (lifoo-eval exec
+                                  (lifoo-pop exec)))))
   
   (define-lisp-word drop (exec)
     (lifoo-pop exec))
@@ -142,10 +144,12 @@
     (princ (lifoo-pop exec)))
 
   (define-lisp-word rest (exec)
-    (lifoo-push exec (rest (lifoo-pop exec))))
+    (lifoo-push exec
+                (rest (lifoo-pop exec))))
 
   (define-lisp-word swap (exec)
-    (push (lifoo-pop exec) (rest (stack exec))))
+    (push (lifoo-pop exec)
+          (rest (stack exec))))
 
   (define-lisp-word when (exec)
     (let ((cnd (lifoo-pop exec))
