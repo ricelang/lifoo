@@ -1,6 +1,13 @@
-* add define support
+* add format
+** take list of params
 
-def-adder : "~a-adder" format intern : 42 +  
+"~a ~a ~a" (1 2 3) format
+- 1 2 3
+
+* add intern
+
+* add define
+def-adder : "~a-adder" swap list! format intern : 42 +  
 "foo" def-adder
 1 foo-adder
 - 43
