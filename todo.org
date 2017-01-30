@@ -1,5 +1,8 @@
-* rename context to exec
-** change do-lifoo param to keyword
+* add eval
+** use compile like map
+
+(1 2 +) eval
+- 3
 
 * add pair
 
@@ -29,7 +32,7 @@ nil pair
 - (42 43 44)
 
 * add define
-
+** special case in compile
 def-adder : "~a-adder" swap 1 list format intern : 42 +  
 "foo" def-adder
 1 foo-adder

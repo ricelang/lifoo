@@ -3,17 +3,17 @@
 
 (in-package lifoo)
 
-(defmacro define-lifoo (name (context) &body body)
-  `(lifoo-define ,context ',name (lambda () ,@body)))
+(defmacro define-lifoo (name (exec) &body body)
+  `(lifoo-define ,exec ',name (lambda () ,@body)))
 
-(defmacro do-lifoo ((context) &body body)
-  (with-symbols (_context)
-    `(let ((,_context (or ,context (make-lifoo))))
-       (funcall (lifoo-compile ,_context '(,@body)))
-       (lifoo-pop ,_context))))
+(defmacro do-lifoo ((&key exec) &body body)
+  (with-symbols (_exec)
+    `(let ((,_exec (or ,exec (make-lifoo))))
+       (funcall (lifoo-compile ,_exec '(,@body)))
+       (lifoo-pop ,_exec))))
 
-(defstruct (lifoo-context (:conc-name)
-                          (:constructor make-context))
+(defstruct (lifoo-exec (:conc-name)
+                          (:constructor make-exec))
   stack (words (make-hash-table :test 'eq)))
 
 (defstruct (lifoo-word (:conc-name word-)
@@ -21,7 +21,7 @@
   id fn)
 
 (defun make-lifoo ()
-  (let ((cx (make-context)))
+  (let ((cx (make-exec)))
     (define-lifoo + (cx)
       (lifoo-push cx (+ (lifoo-pop cx) (lifoo-pop cx))))
     
@@ -59,7 +59,7 @@
       (lifoo-push cx (rest (lifoo-pop cx))))
     cx))
 
-(defun lifoo-parse (context expr)
+(defun lifoo-parse (exec expr)
   (labels
       ((rec (ex acc)
          (if ex
@@ -67,60 +67,60 @@
                (cond
                  ((consp e)
                   (rec (rest ex)
-                       (cons `(lifoo-push ,context '(,@e))
+                       (cons `(lifoo-push ,exec '(,@e))
                              acc)))
                  ((symbolp e)
                   (rec (rest ex)
                        (cons `(funcall
                                ,(word-fn
-                                 (gethash e (words context))))
+                                 (gethash e (words exec))))
                              acc)))
                  (t
                   (rec (rest ex)
-                       (cons `(lifoo-push ,context ,e)
+                       (cons `(lifoo-push ,exec ,e)
                              acc)))))
              (nreverse acc))))
     (rec expr nil)))
 
-(defun lifoo-compile (context expr)
+(defun lifoo-compile (exec expr)
   (eval `(lambda ()
-           ,@(lifoo-parse context expr))))
+           ,@(lifoo-parse exec expr))))
 
-(defun lifoo-define (context id fn)
-  (setf (gethash id (words context)) (make-word :id id :fn fn)))
+(defun lifoo-define (exec id fn)
+  (setf (gethash id (words exec)) (make-word :id id :fn fn)))
 
-(defun lifoo-undefine (context id)
-  (remhash id (words context)))
+(defun lifoo-undefine (exec id)
+  (remhash id (words exec)))
 
-(defun lifoo-push (context term)
-  (push term (stack context))
+(defun lifoo-push (exec term)
+  (push term (stack exec))
   term)
 
-(defun lifoo-pop (context)
-  (pop (stack context)))
+(defun lifoo-pop (exec)
+  (pop (stack exec)))
 
 (define-test (:lifoo :add)
-  (assert (= 3 (do-lifoo (nil)
+  (assert (= 3 (do-lifoo ()
                  1 2 +))))
 
 (define-test (:lifoo :list)
-  (assert (= 2 (do-lifoo (nil)
+  (assert (= 2 (do-lifoo ()
                  (1 2 3) tail head))))
 
 (define-test (:lifoo :list :map)
   (assert (equal '(2 4 6)
-                 (do-lifoo (nil)
+                 (do-lifoo ()
                    (1 2 3) (2 *) map))))
 
 (define-test (:lifoo :print)
   (assert (string= (format nil "hello lifoo!~%")
                    (with-output-to-string (out)
                      (let ((*standard-output* out))
-                       (do-lifoo (nil)
+                       (do-lifoo ()
                          "hello lifoo!" print ln))))))
 
 (define-test (:lifoo :stack)
-  (assert (= 1 (do-lifoo (nil)
+  (assert (= 1 (do-lifoo ()
                  1 dup drop)))
-  (assert (= 2 (do-lifoo (nil)
+  (assert (= 2 (do-lifoo ()
                  1 2 swap drop))))
