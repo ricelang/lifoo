@@ -1,3 +1,5 @@
+* rewrite map/when using lifoo-eval
+
 * add eval
 ** use compile like map
 

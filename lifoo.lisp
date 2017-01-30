@@ -3,8 +3,11 @@
 
 (in-package lifoo)
 
-(defmacro define-lifoo (name (exec) &body body)
+(defmacro define-lisp-word (name (exec) &body body)
   `(lifoo-define ,exec ',name (lambda () ,@body)))
+
+(defmacro define-word (name (exec) &body body)
+  `(lifoo-define ,exec ',name (lifoo-compile ,exec '(,@body))))
 
 (defmacro do-lifoo ((&key exec) &body body)
   (with-symbols (_exec)
@@ -21,44 +24,54 @@
   id fn)
 
 (defun make-lifoo ()
-  (let ((cx (make-exec)))
-    (define-lifoo + (cx)
-      (lifoo-push cx (+ (lifoo-pop cx) (lifoo-pop cx))))
+  (let ((exec (make-exec)))
+    (define-lisp-word + (exec)
+      (lifoo-push exec (+ (lifoo-pop exec) (lifoo-pop exec))))
     
-    (define-lifoo * (cx)
-      (lifoo-push cx (* (lifoo-pop cx) (lifoo-pop cx))))
+    (define-lisp-word * (exec)
+      (lifoo-push exec (* (lifoo-pop exec) (lifoo-pop exec))))
 
-    (define-lifoo drop (cx)
-      (lifoo-pop cx))
+    (define-lisp-word < (exec)
+      (let ((rhs (lifoo-pop exec))
+            (lhs (lifoo-pop exec)))
+        (lifoo-push exec (< lhs rhs))))
 
-    (define-lifoo dup (cx)
-      (lifoo-push cx (first (stack cx))))
+    (define-lisp-word drop (exec)
+      (lifoo-pop exec))
 
-    (define-lifoo first (cx)
-      (lifoo-push cx (first (lifoo-pop cx))))
+    (define-lisp-word dup (exec)
+      (lifoo-push exec (first (stack exec))))
 
-    (define-lifoo ln (cx)
+    (define-lisp-word first (exec)
+      (lifoo-push exec (first (lifoo-pop exec))))
+
+    (define-lisp-word ln (exec)
       (terpri))
 
-    (define-lifoo map (cx)
-      (let ((fn (lifoo-compile cx (lifoo-pop cx)))
-            (lst (lifoo-pop cx)))
-        (lifoo-push cx (mapcar (lambda (it)
-                                 (lifoo-push cx it)
+    (define-lisp-word map (exec)
+      (let ((fn (lifoo-compile exec (lifoo-pop exec)))
+            (lst (lifoo-pop exec)))
+        (lifoo-push exec (mapcar (lambda (it)
+                                 (lifoo-push exec it)
                                  (funcall fn)
-                                 (lifoo-pop cx))
+                                 (lifoo-pop exec))
                                lst))))
 
-    (define-lifoo print (cx)
-      (princ (lifoo-pop cx)))
+    (define-lisp-word print (exec)
+      (princ (lifoo-pop exec)))
 
-    (define-lifoo rest (cx)
-      (lifoo-push cx (rest (lifoo-pop cx))))
+    (define-lisp-word rest (exec)
+      (lifoo-push exec (rest (lifoo-pop exec))))
 
-    (define-lifoo swap (cx)
-      (push (lifoo-pop cx) (rest (stack cx))))
+    (define-lisp-word swap (exec)
+      (push (lifoo-pop exec) (rest (stack exec))))
 
-    cx))
+    (define-lisp-word when (exec)
+      (let ((cnd (lifoo-parse exec (lifoo-pop exec)))
+            (fn (lifoo-parse exec (lifoo-pop exec))))
+        (when (eval `(progn ,@cnd))
+          (eval `(progn ,@fn)))))
+    exec))
 
 (defun lifoo-parse (exec expr)
   (labels
@@ -70,18 +83,24 @@
                   (rec (rest ex)
                        (cons `(lifoo-push ,exec '(,@e))
                              acc)))
+                 ((keywordp e)
+                  (rec (rest ex) (cons `(lifoo-push ,exec ,e)
+                                       acc)))
                  ((symbolp e)
                   (rec (rest ex)
                        (cons `(funcall
-                               ,(word-fn
-                                 (gethash e (words exec))))
+                               ,(word-fn (gethash e (words exec))))
                              acc)))
                  (t
                   (rec (rest ex)
                        (cons `(lifoo-push ,exec ,e)
                              acc)))))
              (nreverse acc))))
-    (rec expr nil)))
+    (rec (list! expr) nil)))
+
+(defun lifoo-eval (exec expr)
+  (let ((pe (lifoo-parse exec expr)))
+    (eval `(progn ,@pe))))
 
 (defun lifoo-compile (exec expr)
   (eval `(lambda ()
@@ -125,3 +144,6 @@
                  1 dup drop)))
   (assert (= 2 (do-lifoo ()
                  1 2 swap drop))))
+
+(define-test (:lifoo :when)
+  (assert (eq :ok (do-lifoo () :ok (1 2 <) when))))
