@@ -33,12 +33,10 @@
        (funcall (lifoo-compile ,_exec '(,@body)))
        (lifoo-pop ,_exec))))
 
-(defstruct (lifoo-exec (:conc-name)
-                       (:constructor make-lifoo))
+(defstruct (lifoo)
   stack (words (make-hash-table :test 'eq)))
 
-(defstruct (lifoo-word (:conc-name word-)
-                       (:constructor make-word))
+(defstruct (word)
   id fn)
 
 (defun lifoo-parse (exec expr)
@@ -87,32 +85,32 @@
 
 (defun lifoo-define (exec id fn)
   "Defines word named ID in EXEC as FN"  
-  (setf (gethash (keyword! id) (words exec))
+  (setf (gethash (keyword! id) (lifoo-words exec))
         (make-word :id id :fn fn)))
 
 (defun lifoo-undefine (exec id)
   "Undefines word named ID in EXEC"  
-  (remhash (keyword! id) (words exec)))
+  (remhash (keyword! id) (lifoo-words exec)))
 
 (defun lifoo-word (exec id)
   "Returns word named ID from EXEC"  
-  (let ((word (gethash (keyword! id) (words exec))))
+  (let ((word (gethash (keyword! id) (lifoo-words exec))))
     (unless word (error "missing word: ~a" id))
     word))
 
 (defun lifoo-push (exec expr)
   "Pushes EXPR onto EXEC's stack"  
-  (push expr (stack exec))
+  (push expr (lifoo-stack exec))
   expr)
 
 (defun lifoo-pop (exec)
   "Pops EXPR from EXEC's stack"  
-  (pop (stack exec)))
+  (pop (lifoo-stack exec)))
 
 (defun lifoo-init (exec)
   "Initializes EXEC with built-in words"
   
-  (define-lisp-ops (exec) + - * / = /= < >)
+  (define-lisp-ops (exec) + - * / = /= < > cons)
 
   (define-lisp-word cmp (exec)
     (let ((rhs (lifoo-pop exec))
@@ -128,7 +126,7 @@
     (lifoo-pop exec))
 
   (define-lisp-word dup (exec)
-    (lifoo-push exec (first (stack exec))))
+    (lifoo-push exec (first (lifoo-stack exec))))
 
   (define-lisp-word eval (exec)
     (lifoo-push exec
@@ -142,6 +140,11 @@
 
   (define-lisp-word first (exec)
     (lifoo-push exec (first (lifoo-pop exec))))
+
+  (define-lisp-word list (exec)
+    (let ((lst (lifoo-stack exec)))
+      (setf (lifoo-stack exec) nil)
+      (lifoo-push exec (nreverse lst))))
 
   (define-lisp-word ln (exec)
     (terpri))
@@ -164,7 +167,7 @@
 
   (define-lisp-word swap (exec)
     (push (lifoo-pop exec)
-          (rest (stack exec))))
+          (rest (lifoo-stack exec))))
 
   (define-lisp-word when (exec)
     (let ((cnd (lifoo-pop exec))

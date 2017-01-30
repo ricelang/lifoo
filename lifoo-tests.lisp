@@ -26,9 +26,11 @@
   (assert (= 3 (do-lifoo () (1 2 +) compile eval))))
 
 (define-test (:lifoo :list)
+  (assert (equal '(1 . 2) (do-lifoo () 1 2 cons)))
+  (assert (equal '(1 . 2) (do-lifoo () (1 . 2))))
+  (assert (equal '(1 2 3) (do-lifoo () 1 2 3 list)))
   (assert (= 2 (do-lifoo () (1 2 3) rest first)))
-  (assert (equal '(2 4 6)
-                 (do-lifoo () (1 2 3) (2 *) map))))
+  (assert (equal '(2 4 6) (do-lifoo () (1 2 3) (2 *) map))))
 
 (define-test (:lifoo :print)
   (assert (string= (format nil "hello lifoo!~%")

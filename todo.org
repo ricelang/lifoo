@@ -1,14 +1,3 @@
-* add cons
-
-1 2 cons
-- (1 . 2)
-
-* add list
-** replace stack with list of stack
-
-1 2 3 list
-- (1)
-
 * add format
 ** take list of params
 
