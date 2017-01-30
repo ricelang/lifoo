@@ -16,7 +16,7 @@
        (lifoo-pop ,_exec))))
 
 (defstruct (lifoo-exec (:conc-name)
-                          (:constructor make-exec))
+                       (:constructor make-exec))
   stack (words (make-hash-table :test 'eq)))
 
 (defstruct (lifoo-word (:conc-name word-)
@@ -52,10 +52,10 @@
       (let ((fn (lifoo-compile exec (lifoo-pop exec)))
             (lst (lifoo-pop exec)))
         (lifoo-push exec (mapcar (lambda (it)
-                                 (lifoo-push exec it)
-                                 (funcall fn)
-                                 (lifoo-pop exec))
-                               lst))))
+                                   (lifoo-push exec it)
+                                   (funcall fn)
+                                   (lifoo-pop exec))
+                                 lst))))
 
     (define-lisp-word print (exec)
       (princ (lifoo-pop exec)))
