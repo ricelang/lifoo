@@ -5,9 +5,16 @@
 - 1 2 3
 
 * add intern
+** create symbol from string
+
+* add list
+** make list of n items
+
+42 43 44 3 list
+- (42 43 44)
 
 * add define
-def-adder : "~a-adder" swap list! format intern : 42 +  
+def-adder : "~a-adder" swap 1 list format intern : 42 +  
 "foo" def-adder
 1 foo-adder
 - 43
