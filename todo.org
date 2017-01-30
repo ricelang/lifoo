@@ -1,7 +1,14 @@
-* add cons
+* rename context to exec
+** change do-lifoo param to keyword
 
-1 2 cons
+* add pair
+
+1 2 pair
 - (1 . 2)
+
+* add list
+** native def
+nil pair
 
 * add format
 ** take list of params
