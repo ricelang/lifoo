@@ -67,10 +67,10 @@
       (push (lifoo-pop exec) (rest (stack exec))))
 
     (define-lisp-word when (exec)
-      (let ((cnd (lifoo-parse exec (lifoo-pop exec)))
-            (fn (lifoo-parse exec (lifoo-pop exec))))
-        (when (eval `(progn ,@cnd))
-          (eval `(progn ,@fn)))))
+      (let ((cnd (lifoo-pop exec))
+            (res (lifoo-pop exec)))
+        (lifoo-eval exec cnd)
+        (when (lifoo-pop exec) (lifoo-eval exec res))))
     exec))
 
 (defun lifoo-parse (exec expr)

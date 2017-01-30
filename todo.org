@@ -1,4 +1,7 @@
-* rewrite map/when using lifoo-eval
+* rewrite map using lifoo-eval
+
+* add define-lisp-op
+** copy <, use for all ops
 
 * add eval
 ** use compile like map
