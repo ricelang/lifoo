@@ -1,9 +1,3 @@
-* add format
-** take list of params
-
-"~a ~a ~a" (1 2 3) format
-- 1 2 3
-
 * add intern
 ** create keyword from string
 

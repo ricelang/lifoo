@@ -22,6 +22,10 @@
   (assert (equal '(1 2 +) (do-lifoo () (1 2 +))))
   (assert (= 3 (do-lifoo () (1 2 +) eval))))
 
+(define-test (:lifoo :format)
+  (assert (string= "1+2=3"
+                   (do-lifoo () "~a+~a=~a" (1 2 3) format))))
+
 (define-test (:lifoo :compile)
   (assert (= 3 (do-lifoo () (1 2 +) compile eval))))
 

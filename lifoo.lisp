@@ -141,6 +141,11 @@
   (define-lisp-word first (exec)
     (lifoo-push exec (first (lifoo-pop exec))))
 
+  (define-lisp-word format (exec)
+    (let ((args (lifoo-pop exec))
+          (fmt (lifoo-pop exec)))
+      (lifoo-push exec (apply #'format nil fmt args))))
+
   (define-lisp-word list (exec)
     (let ((lst (lifoo-stack exec)))
       (setf (lifoo-stack exec) nil)
