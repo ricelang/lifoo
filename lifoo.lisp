@@ -10,8 +10,8 @@
            lifoo-word make-lifoo
            with-lifoo with-lifoo-env
            *lifoo* *lifoo-env*)
-  (:use bordeaux-threads cl cl4l-chan cl4l-compare cl4l-test
-        cl4l-utils))
+  (:use bordeaux-threads cl cl4l-chan cl4l-clone cl4l-compare
+        cl4l-test cl4l-utils))
 
 (in-package lifoo)
 
@@ -113,11 +113,12 @@
 
 (defun lifoo-eval (expr &key (copy-env? t) (exec *lifoo*))
   "Returns result of parsing and evaluating EXPR in EXEC"
-  (let ((pe (lifoo-parse expr :exec exec)))
-    (eval (if copy-env?
-              `(with-lifoo-env ()
-                 ,@pe)
-              `(progn ,@pe)))))
+  (with-lifoo (:exec exec)
+    (let ((pe (lifoo-parse expr)))
+      (eval (if copy-env?
+                `(with-lifoo-env ()
+                   ,@pe)
+                `(progn ,@pe))))))
 
 (defun lifoo-compile (expr &key (copy-env? t) (exec *lifoo*))
   "Returns result of parsing and compiling EXPR in EXEC"  
@@ -395,17 +396,33 @@
     (define-lisp-word :sleep ()
       (sleep (lifoo-pop)))
 
+    ;; Pops $expr;
+    ;; evaluates it in new thread/exec,
+    ;; and pushes thread
+    (define-lisp-word :thread ()
+      (let* ((expr (lifoo-pop))
+             (exec (make-lifoo :stack (clone (stack *lifoo*))
+                               :words (clone (words *lifoo*))))
+             (thread (make-thread (lambda ()
+                                    (lifoo-eval expr
+                                                :exec exec)))))
+        (lifoo-push thread)))
+
+    ;; Pops $secs and sleeps that many seconds
+    (define-lisp-word :join-thread ()
+      (lifoo-push (join-thread (lifoo-pop))))
+
     ;; Pops $buf-len and pushes new channel
     (define-lisp-word :chan ()
       (lifoo-push (make-chan :max-length (lifoo-pop))))
 
-    ;; Pops $msg and sends to channel in $1
-    (define-lisp-word :send ()
+    ;; Pops $msg and puts on channel in $1
+    (define-lisp-word :chan-put ()
       (let ((msg (lifoo-pop)))
         (chan-put (first (stack *lifoo*)) msg)))
 
-    ;; Receives and pushes message from channel in $1
-    (define-lisp-word :recv ()
+    ;; Gets and pushes message from channel in $1
+    (define-lisp-word :chan-get ()
       (let ((msg (chan-get (first (stack *lifoo*)))))
         (lifoo-push msg)))
 

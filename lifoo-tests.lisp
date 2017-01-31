@@ -89,4 +89,9 @@
 
 (define-test (:lifoo :threads)
   (assert (= 42 (do-lifoo ()
-                  1 chan 42 send recv))))
+                  1 chan 42 chan-put chan-get)))
+  (assert (equal '(:done . 3)
+                 (do-lifoo ()
+                   0 chan (1 2 + chan-put :done) thread swap 
+                   chan-get swap drop swap 
+                   join-thread cons))))

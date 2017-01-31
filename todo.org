@@ -1,15 +1,4 @@
-* add spawn
-** add cl4l-clone package with method like compare
-*** map over copy-list for lists
-*** cons
-*** string
-** start new exec with cloned stack to stack
-** add join
-*** return val from thread
-0 chan ((+ 1 2) eval send :done) spawn swap 
-recv swap drop swap 
-join cons
-- (:done . 3)
+* add separate init fn's per protocol
 * add while loop
 ** eval 0+ times
 - (1 2 3) (pop drop) while 
