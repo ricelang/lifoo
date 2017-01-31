@@ -73,7 +73,7 @@
 (define-test (:lifoo :env)
   (assert (= 42 (do-lifoo ()
                   :foo 42 set drop :foo get)))
-  (assert (equal '((:bar . 7) (:foo . 42))
+  (assert (equal '((:foo . 42) (:bar . 7))
                  (do-lifoo ()
                    :foo 42 set :bar 7 set env)))
   (assert (equal '(nil . 42)

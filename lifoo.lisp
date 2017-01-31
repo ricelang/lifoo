@@ -14,28 +14,41 @@
 (in-package lifoo)
 
 (defvar *lifoo* nil)
+(defvar *lifoo-env* nil)
 
-(defmacro define-lisp-word (name (&key exec) &body body)
+(defmacro with-lifoo-env ((&key env) &body body)
+  `(let ((*lifoo-env* (or ,env (copy-list *lifoo-env*))))
+     ,@body))
+
+(defmacro define-lisp-word (name
+                            (&key (copy-env? t) exec)
+                            &body body)
   "Defines new word with NAME in EXEC from Lisp forms in BODY"
   `(with-lifoo (:exec (or ,exec *lifoo*))
-     (lifoo-define ',name (lambda () ,@body))))
+     (lifoo-define ',name (lambda ()
+                            ,(if copy-env?
+                                 `(with-lifoo-env ()
+                                    ,@body)
+                                 `(progn ,@body))))))
 
 (defmacro define-lisp-ops ((&key exec) &rest ops)
   "Defines new words in EXEC for OPS"
   (with-symbols (_lhs _rhs)
     `(with-lifoo (:exec (or ,exec *lifoo*))
        ,@(mapcar (lambda (op)
-                   `(define-lisp-word ,(keyword! op) ()
+                   `(define-lisp-word ,(keyword! op)
+                        (:copy-env? nil)
                       (let ((,_lhs (lifoo-pop))
                             (,_rhs (lifoo-pop)))
                         (lifoo-push (,op ,_lhs ,_rhs)))))
                  ops))))
 
-(defmacro define-word (name (&key exec) &body body)
+(defmacro define-word (name (&key (copy-env? t) exec) &body body)
   "Defines new word with NAME in EXEC from BODY"
   `(with-lifoo (:exec (or ,exec *lifoo*))
      (lifoo-define ',name
-                   (lifoo-compile '(,@body)))))
+                   (lifoo-compile '(,@body)
+                                  :copy-env? ,copy-env?))))
 
 (defmacro do-lifoo ((&key exec) &body body)
   "Runs BODY in EXEC"
@@ -51,7 +64,6 @@
 (defstruct (lifoo-exec (:conc-name)
                        (:constructor make-lifoo))
   stack traces tracing?
-  env
   (words (make-hash-table :test 'eq)))
 
 (defun lifoo-parse (expr &key (exec *lifoo*))
@@ -89,15 +101,22 @@
       (push more? expr))
     (nreverse expr)))
 
-(defun lifoo-eval (expr &key (exec *lifoo*))
+(defun lifoo-eval (expr &key (copy-env? t) (exec *lifoo*))
   "Returns result of parsing and evaluating EXPR in EXEC"
   (let ((pe (lifoo-parse expr :exec exec)))
-    (eval `(progn ,@pe))))
+    (eval (if copy-env?
+              `(with-lifoo-env ()
+                 ,@pe)
+              `(progn ,@pe)))))
 
-(defun lifoo-compile (expr &key (exec *lifoo*))
+(defun lifoo-compile (expr &key (copy-env? t) (exec *lifoo*))
   "Returns result of parsing and compiling EXPR in EXEC"  
-  (eval `(lambda ()
-           ,@(lifoo-parse expr :exec exec))))
+  (eval (if copy-env?
+            `(lambda ()
+               (with-lifoo-env ()
+                 ,@(lifoo-parse expr :exec exec)))
+            `(lambda ()
+               ,@(lifoo-parse expr :exec exec)))))
 
 (defun lifoo-define (id fn &key (exec *lifoo*))
   "Defines word named ID in EXEC as FN"  
@@ -147,22 +166,22 @@
   (setf (tracing? exec) nil)
   (traces exec))
 
-(defun lifoo-get (var &key (exec *lifoo*))
+(defun lifoo-get (var)
   "Returns value of VAR in EXEC"
-  (rest (assoc var (env exec) :test #'eq))) 
+  (rest (assoc var *lifoo-env* :test #'eq))) 
 
-(defun lifoo-set (var val &key (exec *lifoo*))
+(defun lifoo-set (var val)
   "Sets value of VAR in EXEC to VAL"
-  (let ((found? (assoc var (env exec) :test #'eq)))
+  (let ((found? (assoc var *lifoo-env* :test #'eq)))
     (if found?
         (rplacd found? val)
-        (setf (env exec) (acons var val (env exec)))))
+        (setf *lifoo-env* (acons var val *lifoo-env*))))
   val)
 
-(defun lifoo-rem (var &key (exec *lifoo*))
+(defun lifoo-rem (var)
   "Returns value of VAR in EXEC"
-  (setf (env exec)
-        (delete var (env exec) :key #'first :test #'eq))) 
+  (setf *lifoo-env*
+        (delete var *lifoo-env* :key #'first :test #'eq))) 
 
 (defun lifoo-repl (&key (exec (lifoo-init :exec (make-lifoo)))
                         (in *standard-input*)
@@ -328,23 +347,23 @@
 
     ;; *** env ***
 
-    ;; Pushes env as alist
-    (define-lisp-word :env ()
-      (lifoo-push (env *lifoo*)))
+    ;; Pushes copy of env as alist
+    (define-lisp-word :env (:copy-env? nil)
+      (lifoo-push (copy-list *lifoo-env*)))
 
     ;; Pops $var and returns value
-    (define-lisp-word :get ()
+    (define-lisp-word :get (:copy-env? nil)
       (lifoo-push (lifoo-get (lifoo-pop))))
 
     ;; Pops $val and $var,
     ;; sets $var's value to $val and pushes $val
-    (define-lisp-word :set ()
+    (define-lisp-word :set (:copy-env? nil)
       (let ((val (lifoo-pop))
             (var (lifoo-pop)))
         (lifoo-set var val)
         (lifoo-push val)))
 
-    (define-lisp-word :rem ()
+    (define-lisp-word :rem (:copy-env? nil)
       (let* ((var (lifoo-pop))
              (val (lifoo-get var)))
         (lifoo-rem var)
