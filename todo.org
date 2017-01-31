@@ -1,8 +1,6 @@
-* prefix var names with current word
-** add lifoo-call
-*** use instead of funcall
-*** update current-word in struct
-**** use in lifoo-get/set
+* add rem word
+:foo 42 set drop rem swap get cons
+- (42 . nil) 
 * add inc/dec for increasing/decreasing counter in $1
 ** use incf/decf
 * add bordeaux-threads dep
