@@ -143,7 +143,7 @@
   (define-word :lte? (exec) cmp 1 <)
   (define-word :gte? (exec) cmp -1 >)
 
-  ;; Pops and repeats body in $2 x $1
+  ;; Pops and repeats body in $2 x $1, pushing indexes on stack
   (define-lisp-word :do-times (exec)
     (let ((reps (lifoo-pop exec))
           (body (lifoo-parse exec (lifoo-pop exec))))
