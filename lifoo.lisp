@@ -287,7 +287,7 @@
       (princ (lifoo-pop)))
     
 
-    ;; --- branching ---
+    ;; *** branching ***
     
     ;; Replaces $1 and $2 with results of evaluating $2 if $1,
     ;; otherwise NIL
@@ -300,7 +300,7 @@
             (lifoo-push nil))))
 
 
-    ;; --- loops ---
+    ;; *** loops ***
     
     ;; Pops and repeats body in $2 x $1, pushing indexes on stack
     (define-lisp-word :times ()
