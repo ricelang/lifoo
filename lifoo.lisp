@@ -230,6 +230,10 @@
   (define-lisp-word :reverse (exec)
     (lifoo-push exec (reverse (lifoo-pop exec))))
 
+  ;; Sleeps for $1 seconds
+  (define-lisp-word :sleep (exec)
+    (sleep (lifoo-pop exec)))
+
   ;; Replaces $1 with string representation
   (define-lisp-word :string (exec)
     (let ((val (lifoo-pop exec)))

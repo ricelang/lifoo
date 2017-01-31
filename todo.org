@@ -4,7 +4,7 @@
 * add spawn
 ** create channel
 ** add send / recv
-((+ 1 2) eval send) spawn recv
+** start new exec with chan on stack
+((+ 1 2) eval send) spawn yield recv
 - 3
 * add chan to create chan
-
