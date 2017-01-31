@@ -1,6 +1,6 @@
 (defpackage lifoo
   (:export define-lisp-ops define-lisp-word define-word do-lifoo
-           lifoo-compile lifoo-define
+           lifoo-call lifoo-compile lifoo-define
            lifoo-eval lifoo-init lifoo-parse lifoo-pop lifoo-push
            lifoo-read lifoo-repl lifoo-stack lifoo-trace
            lifoo-untrace lifoo-undefine lifoo-word
@@ -69,15 +69,23 @@
                   (rec (rest ex) (cons `(lifoo-push ,e) acc)))
                  ((symbolp e)
                   (rec (rest ex)
-                       (cons `(funcall ,(lifoo-word e)) acc)))
+                       (cons `(lifoo-call ,(lifoo-word e)) acc)))
                  ((functionp e)
                   (rec (rest ex)
-                       (cons `(funcall ,e) acc)))
+                       (cons `(lifoo-call ,e) acc)))
                  (t
                   (rec (rest ex) (cons `(lifoo-push ,e) acc)))))
              (nreverse acc))))
     (with-lifoo (:exec exec)
       (rec (list! expr) nil))))
+
+(defun lifoo-call (fn &key (exec *lifoo*))
+  (let ((prev-values (values exec)))
+    (unwind-protect
+         (progn
+           (setf (values exec) nil)
+           (funcall fn))
+      (setf (values exec) prev-values))))
 
 (defun lifoo-read (&key (in *standard-input*))
   (let ((more?) (expr))
