@@ -4,6 +4,11 @@
 (in-package lifoo-tests)
 
 (define-test (:lifoo :stack)
+  (with-lifoo ()
+    (assert (equal '(3 2 1) (do-lifoo ()
+                              1 2 3 stack)))
+    (assert (equal '(3 2 1) (lifoo-stack))))
+  
   (assert (= 1 (do-lifoo ()
                  1 dup drop)))
   (assert (= 2 (do-lifoo ()
