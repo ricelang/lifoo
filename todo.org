@@ -8,3 +8,5 @@
 * add until loop
 ** eval 1+ times
 - (1 2 3) nil? (swap pop drop swap) until
+* add error word
+* add assert word
