@@ -45,3 +45,6 @@
 
 (define-test (:lifoo :symbols)
   (assert (eq :lifoo (do-lifoo () "lifoo" intern))))
+
+(define-test (:lifoo :words)
+  (assert (= 3 (do-lifoo () 1 2 "+" word))))

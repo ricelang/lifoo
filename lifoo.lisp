@@ -185,6 +185,10 @@
       (when (lifoo-pop exec)
         (lifoo-eval exec res))))
 
+  (define-lisp-word word (exec)
+    (let ((w (lifoo-word exec (lifoo-pop exec))))
+      (lifoo-push exec (funcall (word-fn w)))))
+
   (define-word eq? (exec) cmp 0 =)
   (define-word neq? (exec) cmp 0 /=)
   (define-word lt? (exec) cmp -1 =)

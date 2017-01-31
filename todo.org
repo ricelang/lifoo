@@ -1,7 +1,1 @@
-* add intern
-** create keyword from string
 
-* add word to lookup word by arg and exec
-
-"hello lifoo!" "print" word
-- hello lifoo!
