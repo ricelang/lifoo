@@ -3,7 +3,7 @@
            lifoo-parse lifoo-compile lifoo-define lifoo-eval
            lifoo-init lifoo-pop lifoo-push make-lifoo
            lifoo-undefine)
-  (:use cl cl4l-test cl4l-utils))
+  (:use cl cl4l-compare cl4l-test cl4l-utils))
 
 (in-package lifoo)
 
@@ -155,10 +155,9 @@
           (fmt (lifoo-pop exec)))
       (lifoo-push exec (apply #'format nil fmt args))))
 
-  ;; Replaces $1 with results of interning it
-  (define-lisp-word intern (exec)
-    (let ((str (string-upcase (lifoo-pop exec))))
-      (lifoo-push exec (intern str :keyword))))
+  ;; Replaces $1 with results of converting it to a symbol
+  (define-lisp-word symbol (exec)
+    (lifoo-push exec (keyword! (lifoo-pop exec))))
   
   ;; Clears and pushes stack
   (define-lisp-word list (exec)
