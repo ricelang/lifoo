@@ -1,14 +1,16 @@
+* add chan
+** add chan word
+** add send / recv words
+*** leave chan on stack
+1 chan 42 send recv
+- 42
 * add bordeaux-threads dep
-* add chan word
-** push new chan
 * add spawn
-** $1 is buffer size
 ** add cl4l-clone package with method like compare
 *** map over copy-list for lists
 *** cons
 *** string
 ** start new exec with cloned stack to stack
-** add send / recv
 ** add join
 *** return val from thread
 0 chan ((+ 1 2) eval send :done) spawn swap 
