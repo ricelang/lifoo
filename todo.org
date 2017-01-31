@@ -1,11 +1,11 @@
 * add bordeaux-threads dep
 * add spawn
 ** $1 is buffer size
-** start new exec with (thread . chan) on stack
+** start new copy of exec with thread & chan added to stack
 ** add send / recv
 ** add join
-((+ 1 2) eval send) 0 spawn recv swap join
-- 3
+((+ 1 2) eval send) 0 spawn recv swap drop swap join cons
+- (NIL . 3)
 * add yield word
 * add chan word
 ** push new chan

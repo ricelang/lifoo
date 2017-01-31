@@ -26,8 +26,8 @@
     `(with-lifoo (:exec (or ,exec *lifoo*))
        ,@(mapcar (lambda (op)
                    `(define-lisp-word ,(keyword! op) ()
-                      (let ((,_rhs (lifoo-pop))
-                            (,_lhs (lifoo-pop)))
+                      (let ((,_lhs (lifoo-pop))
+                            (,_rhs (lifoo-pop)))
                         (lifoo-push (,op ,_lhs ,_rhs)))))
                  ops))))
 
