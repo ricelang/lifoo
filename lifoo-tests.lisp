@@ -9,7 +9,7 @@
 
 (define-test (:lifoo :branch)
   (assert (eq :ok (do-lifoo () :ok (1 2 <) when)))
-  (assert (eq :ok (do-lifoo () :ok (1 2 >) unless))))
+  (assert (eq :ok (do-lifoo () :ok (1 2 =) unless))))
 
 (define-test (:lifoo :cmp)
   (assert (do-lifoo () "abc" "abc" eq?))
@@ -29,7 +29,7 @@
 (define-test (:lifoo :compile)
   (assert (= 3 (do-lifoo () (1 2 +) compile eval))))
 
-(define-test (:lifoo :list)
+(define-test (:lifoo :lists)
   (assert (equal '(1 . 2) (do-lifoo () 1 2 cons)))
   (assert (equal '(1 . 2) (do-lifoo () (1 . 2))))
   (assert (equal '(1 2 3) (do-lifoo () 1 2 3 list)))
@@ -42,3 +42,6 @@
                      (let ((*standard-output* out))
                        (do-lifoo ()
                          "hello lifoo!" print ln))))))
+
+(define-test (:lifoo :symbols)
+  (assert (eq :lifoo (do-lifoo () "lifoo" intern))))
