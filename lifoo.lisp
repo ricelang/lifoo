@@ -147,7 +147,7 @@
       (lifoo-push exec (apply #'format nil fmt args))))
 
   (define-lisp-word intern (exec)
-    (let ((str (string-upcase (lifoo-eval exec (lifoo-pop exec)))))
+    (let ((str (string-upcase (lifoo-pop exec))))
       (lifoo-push exec (intern str :keyword))))
   
   (define-lisp-word list (exec)
