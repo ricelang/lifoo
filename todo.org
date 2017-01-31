@@ -1,10 +1,10 @@
-* add sleep
-* add bordeaux-threads
+* add bordeaux-threads dep
 ** add yield
 * add spawn
-** create channel
+** start new exec with (thread . chan) on stack
 ** add send / recv
-** start new exec with chan on stack
-((+ 1 2) eval send) spawn yield recv
+** add join
+((+ 1 2) eval send) spawn yield recv swap join
 - 3
-* add chan to create chan
+* add chan word
+** push new chan
