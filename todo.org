@@ -1,5 +1,3 @@
-* add define-lifoo-init macro
-** use for all inits
 * add lisp word
 ** compile and put push fn
 * add while loop
