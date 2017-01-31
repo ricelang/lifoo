@@ -4,8 +4,9 @@
 ** start new copy of exec with thread & chan added to stack
 ** add send / recv
 ** add join
-((+ 1 2) eval send) 0 spawn recv swap drop swap join cons
-- (NIL . 3)
+*** return val from thread
+((+ 1 2) eval send :done) 0 spawn recv swap drop swap join cons
+- (:done . 3)
 * add yield word
 * add chan word
 ** push new chan
