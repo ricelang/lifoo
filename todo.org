@@ -1,4 +1,6 @@
 * add bordeaux-threads dep
+* add chan word
+** push new chan
 * add spawn
 ** $1 is buffer size
 ** add cl4l-clone package with method like compare
@@ -14,8 +16,6 @@ recv swap drop swap
 join cons
 - (:done . 3)
 * add yield word
-* add chan word
-** push new chan
 * add while loop
 ** eval 0+ times
 - (1 2 3) (pop drop) while 
