@@ -1,11 +1,13 @@
+* add ++/-- for increasing/decreasing counter in $1
 * add bordeaux-threads dep
-** add yield
 * add spawn
+** $1 is buffer size
 ** start new exec with (thread . chan) on stack
 ** add send / recv
 ** add join
-((+ 1 2) eval send) spawn yield recv swap join
+((+ 1 2) eval send) 0 spawn recv swap join
 - 3
+* add yield word
 * add chan word
 ** push new chan
 * add while loop
