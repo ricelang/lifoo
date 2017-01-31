@@ -1,4 +1,5 @@
-* add separate init fn's per protocol
+* add define-lifoo-init macro
+** use for all inits
 * add while loop
 ** eval 0+ times
 - (1 2 3) (pop drop) while 
