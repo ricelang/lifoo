@@ -1,6 +1,6 @@
 * add define-lifoo-init macro
 ** use for all inits
-* add eval-lisp word
+* add lisp word
 ** like eval but for lisp code
 * add while loop
 ** eval 0+ times
