@@ -17,7 +17,7 @@
 
 (define-test (:lifoo :loop)
   (assert (equal '(2 1 0) (do-lifoo ()
-                            list (push) 3 do-times))))
+                            list (push) 3 times))))
 
 (define-test (:lifoo :cmp)
   (assert (do-lifoo ()

@@ -143,14 +143,6 @@
   (define-word :lte? (exec) cmp 1 <)
   (define-word :gte? (exec) cmp -1 >)
 
-  ;; Pops and repeats body in $2 x $1, pushing indexes on stack
-  (define-lisp-word :do-times (exec)
-    (let ((reps (lifoo-pop exec))
-          (body (lifoo-parse exec (lifoo-pop exec))))
-      (dotimes (i reps)
-        (lifoo-push exec i)
-        (eval `(progn ,@body)))))
-
   ;; Drops $1 from stack
   (define-lisp-word :drop (exec)
     (lifoo-pop exec))
@@ -240,6 +232,14 @@
       (lifoo-push exec (if (listp val)
                            (apply #'string! val)
                            (string! val)))))
+
+  ;; Pops and repeats body in $2 x $1, pushing indexes on stack
+  (define-lisp-word :times (exec)
+    (let ((reps (lifoo-pop exec))
+          (body (lifoo-parse exec (lifoo-pop exec))))
+      (dotimes (i reps)
+        (lifoo-push exec i)
+        (eval `(progn ,@body)))))
 
   ;; Replaces $1 with results of converting it to a symbol
   (define-lisp-word :symbol (exec)
