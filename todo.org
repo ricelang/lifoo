@@ -1,4 +1,2 @@
-* add string word
-** convert anything to string
 * add (lifoo-repl (exec &key in out))
 * add loops

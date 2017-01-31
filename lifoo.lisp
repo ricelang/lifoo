@@ -114,12 +114,14 @@
           (lhs (lifoo-pop exec)))
       (lifoo-push exec (compare lhs rhs))))
 
-  ;; Replaces $1 with T if NIL, otherwise NIL
-  (define-lisp-word nil? (exec)
-    (lifoo-push exec
-                (null (lifoo-eval exec
-                                  (lifoo-pop exec)))))
-  
+  ;; Derived comparison ops
+  (define-word eq? (exec) cmp 0 =)
+  (define-word neq? (exec) cmp 0 /=)
+  (define-word lt? (exec) cmp -1 =)
+  (define-word gt? (exec) cmp 1 =)
+  (define-word lte? (exec) cmp 1 <)
+  (define-word gte? (exec) cmp -1 >)
+
   ;; Drops $1 from stack
   (define-lisp-word drop (exec)
     (lifoo-pop exec))
@@ -127,7 +129,7 @@
   ;; Pushes $1 on stack
   (define-lisp-word dup (exec)
     (lifoo-push exec (first (lifoo-stack exec))))
-
+  
   ;; Replaces $1 with result of evaluating it
   (define-lisp-word eval (exec)
     (lifoo-push exec
@@ -150,10 +152,6 @@
           (fmt (lifoo-pop exec)))
       (lifoo-push exec (apply #'format nil fmt args))))
 
-  ;; Replaces $1 with results of converting it to a symbol
-  (define-lisp-word symbol (exec)
-    (lifoo-push exec (keyword! (lifoo-pop exec))))
-  
   ;; Clears and pushes stack
   (define-lisp-word list (exec)
     (let ((lst (lifoo-stack exec)))
@@ -174,6 +172,12 @@
                                  (lifoo-pop exec))
                                lst))))
 
+  ;; Replaces $1 with T if NIL, otherwise NIL
+  (define-lisp-word nil? (exec)
+    (lifoo-push exec
+                (null (lifoo-eval exec
+                                  (lifoo-pop exec)))))
+
   ;; Pops and prints $1
   (define-lisp-word print (exec)
     (princ (lifoo-pop exec)))
@@ -190,6 +194,10 @@
                            (apply #'string! val)
                            (string! val)))))
 
+  ;; Replaces $1 with results of converting it to a symbol
+  (define-lisp-word symbol (exec)
+    (lifoo-push exec (keyword! (lifoo-pop exec))))
+  
   ;; Swaps $1 and $2
   (define-lisp-word swap (exec)
     (push (lifoo-pop exec)
@@ -205,20 +213,11 @@
           (lifoo-eval exec res)
           (lifoo-push exec nil))))
 
+  (define-word unless (exec) nil? when)
+
   ;; Replaces $1 with the word it represents
   (define-lisp-word word (exec)
     (let ((fn (lifoo-word exec (lifoo-pop exec))))
       (lifoo-push exec fn)))
-
-  ;; Derived comparison ops
-  (define-word eq? (exec) cmp 0 =)
-  (define-word neq? (exec) cmp 0 /=)
-  (define-word lt? (exec) cmp -1 =)
-  (define-word gt? (exec) cmp 1 =)
-  (define-word lte? (exec) cmp 1 <)
-  (define-word gte? (exec) cmp -1 >)
-
-  ; Derived words
-  (define-word unless (exec) nil? when)
 
   exec)
