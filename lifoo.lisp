@@ -1,6 +1,6 @@
 (defpackage lifoo
   (:export define-lisp-ops define-lisp-word define-word do-lifoo
-           lifoo-call lifoo-compile lifoo-define
+           lifoo-compile lifoo-define
            lifoo-eval lifoo-init lifoo-parse lifoo-pop lifoo-push
            lifoo-read lifoo-repl lifoo-stack lifoo-trace
            lifoo-untrace lifoo-undefine lifoo-word
@@ -48,6 +48,7 @@
 (defstruct (lifoo-exec (:conc-name)
                        (:constructor make-lifoo))
   stack traces tracing?
+  variables
   (words (make-hash-table :test 'eq)))
 
 (defun lifoo-parse (expr &key (exec *lifoo*))
@@ -69,23 +70,15 @@
                   (rec (rest ex) (cons `(lifoo-push ,e) acc)))
                  ((symbolp e)
                   (rec (rest ex)
-                       (cons `(lifoo-call ,(lifoo-word e)) acc)))
+                       (cons `(funcall ,(lifoo-word e)) acc)))
                  ((functionp e)
                   (rec (rest ex)
-                       (cons `(lifoo-call ,e) acc)))
+                       (cons `(funcall ,e) acc)))
                  (t
                   (rec (rest ex) (cons `(lifoo-push ,e) acc)))))
              (nreverse acc))))
     (with-lifoo (:exec exec)
       (rec (list! expr) nil))))
-
-(defun lifoo-call (fn &key (exec *lifoo*))
-  (let ((prev-values (values exec)))
-    (unwind-protect
-         (progn
-           (setf (values exec) nil)
-           (funcall fn))
-      (setf (values exec) prev-values))))
 
 (defun lifoo-read (&key (in *standard-input*))
   (let ((more?) (expr))
@@ -138,23 +131,40 @@
       val)))
 
 (defun lifoo-stack (&key (exec *lifoo*))
+  "Returns current stack for EXEC"
   (stack exec))
 
 (defun lifoo-trace (&key (exec *lifoo*))
+  "Enables tracing for EXEC"
   (setf (tracing? exec) t)
   (setf (traces exec) nil))
 
 (defun lifoo-untrace (&key (exec *lifoo*))
+  "Disables tracing for EXEC"
   (setf (tracing? exec) nil)
   (traces exec))
 
 (defun lifoo-words (&key (exec *lifoo*))
+  "Returns EXEC words"
   (words exec))
+
+(defun lifoo-get (var &key (exec *lifoo*))
+  "Returns value of VAR in EXEC"
+  (rest (assoc var (variables exec)))) 
+
+(defun lifoo-set (var val &key (exec *lifoo*))
+  "Sets value of VAR in EXEC to VAL"
+  (let ((found? (assoc var (variables exec))))
+    (if found?
+        (rplacd found? val)
+        (setf (variables exec) (acons var val (variables exec)))))
+  val)
 
 (defun lifoo-repl (&key (exec (lifoo-init :exec (make-lifoo)))
                         (in *standard-input*)
                         (prompt "Lifoo>")
                         (out *standard-output*))
+  "Starts a REPL for EXEC"
   (with-lifoo (:exec exec) 
     (tagbody
      start
@@ -172,6 +182,7 @@
     ;; Define binary ops
     (define-lisp-ops () + - * / = /= < > cons)
     
+
     ;; *** meta ***
     
     ;; Replaces $1 with symbolic representation
@@ -280,17 +291,6 @@
       (let ((args (lifoo-pop))
             (fmt (lifoo-pop)))
         (lifoo-push (apply #'format nil fmt args))))
-
-
-    ;; *** printing ***
-
-    ;; Prints line ending
-    (define-lisp-word :ln ()
-      (terpri))
-
-    ;; Pops and prints $1
-    (define-lisp-word :print ()
-      (princ (lifoo-pop)))
     
 
     ;; *** branching ***
@@ -317,12 +317,35 @@
           (eval `(progn ,@body)))))
 
 
+    ;; *** variables ***
+
+    (define-lisp-word :get ()
+      (lifoo-push (lifoo-get (lifoo-pop))))
+
+    (define-lisp-word :set ()
+      (let ((val (lifoo-pop))
+            (var (lifoo-pop)))
+        (lifoo-set var val)
+        (lifoo-push val)))
+
+    
+    ;; *** printing ***
+
+    ;; Prints line ending
+    (define-lisp-word :ln ()
+      (terpri))
+
+    ;; Pops and prints $1
+    (define-lisp-word :print ()
+      (princ (lifoo-pop)))
+
+    
     ;; *** threads ***
 
     ;; Sleeps for $1 seconds
     (define-lisp-word :sleep ()
       (sleep (lifoo-pop)))
-
+    
 
     ;; *** tracing ***
     
