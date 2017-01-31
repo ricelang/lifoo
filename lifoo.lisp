@@ -3,8 +3,8 @@
            lifoo-compile lifoo-define
            lifoo-eval lifoo-init lifoo-parse lifoo-pop lifoo-push
            lifoo-read lifoo-repl lifoo-stack lifoo-stack-trace
-           lifoo-stack-trace?
-           lifoo-undefine lifoo-word lifoo-words make-lifoo
+           lifoo-stack-untrace lifoo-undefine lifoo-word
+           lifoo-words make-lifoo
            *lifoo*)
   (:use cl cl4l-compare cl4l-test cl4l-utils))
 
@@ -128,6 +128,21 @@
         (push (format nil "POP  ~a~%~a" val (stack exec))
               (stack-trace exec)))
       val)))
+
+(defun  lifoo-stack (&key (exec *lifoo*))
+  (stack exec))
+
+(defun lifoo-stack-trace (&key (exec *lifoo*))
+  (setf (stack-trace? exec) nil)
+  (stack-trace exec))
+
+(defun lifoo-stack-untrace (&key (exec *lifoo*))
+  (let ((trace (stack-trace exec)))
+    (setf (stack-trace? exec) nil)
+    trace))
+
+(defun lifoo-words (&key (exec *lifoo*))
+  (words exec))
 
 (defun lifoo-repl (&key (exec (lifoo-init :exec (make-lifoo)))
                         (in *standard-input*)
