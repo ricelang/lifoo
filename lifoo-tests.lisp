@@ -86,3 +86,7 @@
                      (let ((*standard-output* out))
                        (do-lifoo ()
                          "hello lifoo!" print ln))))))
+
+(define-test (:lifoo :threads)
+  (assert (= 42 (do-lifoo ()
+                  1 chan 42 send recv))))

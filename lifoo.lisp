@@ -10,7 +10,8 @@
            lifoo-word make-lifoo
            with-lifoo with-lifoo-env
            *lifoo* *lifoo-env*)
-  (:use cl cl4l-compare cl4l-test cl4l-utils))
+  (:use bordeaux-threads cl cl4l-chan cl4l-compare cl4l-test
+        cl4l-utils))
 
 (in-package lifoo)
 
@@ -376,21 +377,37 @@
     
     ;; *** printing ***
 
-    ;; Prints line ending
-    (define-lisp-word :ln ()
-      (terpri))
-
     ;; Pops $val and prints it
     (define-lisp-word :print ()
       (princ (lifoo-pop)))
 
+    ;; Prints line ending
+    (define-lisp-word :ln ()
+      (terpri))
     
     ;; *** threads ***
 
-    ;; Pops $secs and sleeps $secs seconds
+    ;; Yields processor and re-schedules thread
+    (define-lisp-word :yield ()
+      (thread-yield))
+
+    ;; Pops $secs and sleeps that many seconds
     (define-lisp-word :sleep ()
       (sleep (lifoo-pop)))
-    
+
+    ;; Pops $buf-len and pushes new channel
+    (define-lisp-word :chan ()
+      (lifoo-push (make-chan :max-length (lifoo-pop))))
+
+    ;; Pops $msg and sends to channel in $1
+    (define-lisp-word :send ()
+      (let ((msg (lifoo-pop)))
+        (chan-put (first (stack *lifoo*)) msg)))
+
+    ;; Receives and pushes message from channel in $1
+    (define-lisp-word :recv ()
+      (let ((msg (chan-get (first (stack *lifoo*)))))
+        (lifoo-push msg)))
 
     ;; *** tracing ***
     

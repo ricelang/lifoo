@@ -1,10 +1,3 @@
-* add chan
-** add chan word
-** add send / recv words
-*** leave chan on stack
-1 chan 42 send recv
-- 42
-* add bordeaux-threads dep
 * add spawn
 ** add cl4l-clone package with method like compare
 *** map over copy-list for lists
@@ -17,7 +10,6 @@
 recv swap drop swap 
 join cons
 - (:done . 3)
-* add yield word
 * add while loop
 ** eval 0+ times
 - (1 2 3) (pop drop) while 
