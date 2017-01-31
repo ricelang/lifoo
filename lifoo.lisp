@@ -183,6 +183,13 @@
     (lifoo-push exec
                 (rest (lifoo-pop exec))))
 
+  ;; Replaces $1 with string representation
+  (define-lisp-word string (exec)
+    (let ((val (lifoo-pop exec)))
+      (lifoo-push exec (if (listp val)
+                           (apply #'string! val)
+                           (string! val)))))
+
   ;; Swaps $1 and $2
   (define-lisp-word swap (exec)
     (push (lifoo-pop exec)
