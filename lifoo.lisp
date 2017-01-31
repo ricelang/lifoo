@@ -2,7 +2,8 @@
   (:export define-lisp-ops define-lisp-word define-word do-lifoo
            lifoo-compile lifoo-define
            lifoo-eval lifoo-init lifoo-parse lifoo-pop lifoo-push
-           lifoo-read lifoo-repl lifoo-stack
+           lifoo-read lifoo-repl lifoo-stack lifoo-stack-trace
+           lifoo-stack-trace?
            lifoo-undefine lifoo-word lifoo-words make-lifoo)
   (:use cl cl4l-compare cl4l-test cl4l-utils))
 
@@ -35,7 +36,8 @@
        (lifoo-pop ,_exec))))
 
 (defstruct (lifoo)
-  stack (words (make-hash-table :test 'eq)))
+  stack stack-trace stack-trace?
+  (words (make-hash-table :test 'eq)))
 
 (defun lifoo-parse (exec expr)
   "Parses EXPR and returns code compiled for EXEC"
@@ -98,16 +100,27 @@
   "Returns word named ID from EXEC or signals error if missing"  
   (let ((word (gethash (keyword! id) (lifoo-words exec))))
     (unless word (error "missing word: ~a" id))
+    (when (lifoo-stack-trace? exec)
+      (push (format nil "WORD ~a" id)
+            (lifoo-stack-trace exec)))
     word))
 
 (defun lifoo-push (exec expr)
   "Pushes EXPR onto EXEC's stack"  
   (push expr (lifoo-stack exec))
+  (when (lifoo-stack-trace? exec)
+    (push (format nil "PUSH ~a~%~a" expr (lifoo-stack exec))
+          (lifoo-stack-trace exec)))
   expr)
 
 (defun lifoo-pop (exec)
-  "Pops EXPR from EXEC's stack"  
-  (pop (lifoo-stack exec)))
+  "Pops EXPR from EXEC's stack"
+  (when (lifoo-stack exec)
+    (let ((val (pop (lifoo-stack exec))))
+      (when (lifoo-stack-trace? exec)
+        (push (format nil "POP  ~a~%~a" val (lifoo-stack exec))
+              (lifoo-stack-trace exec)))
+      val)))
 
 (defun lifoo-repl (&key (exec (lifoo-init (make-lifoo)))
                         (in *standard-input*)
@@ -225,6 +238,17 @@
   ;; Sleeps for $1 seconds
   (define-lisp-word :sleep (exec)
     (sleep (lifoo-pop exec)))
+
+  ;; Enables stack tracing and clears trace
+  (define-lisp-word :stack-trace (exec)
+    (setf (lifoo-stack-trace? exec) t)
+    (setf (lifoo-stack-trace exec) nil))
+
+  ;; Disables stack tracing and prints trace
+  (define-lisp-word :stack-untrace (exec)
+    (dolist (st (reverse (lifoo-stack-trace exec)))
+      (format t "~a~%" st))
+    (setf (lifoo-stack-trace? exec) nil))
 
   ;; Replaces $1 with string representation
   (define-lisp-word :string (exec)
