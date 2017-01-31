@@ -85,8 +85,16 @@
                  ((keywordp e)
                   (rec (rest ex) (cons `(lifoo-push ,e) acc)))
                  ((symbolp e)
-                  (rec (rest ex)
-                       (cons `(funcall ,(lifoo-word e)) acc)))
+                  (let ((found? (or (lifoo-word e)
+                                    (error "missing word: ~a" e))))
+                    (rec (rest ex)
+                         (cons `(progn
+                                  (when (tracing? ,exec)
+                                    (push (format nil "CALL ~a"
+                                                  ',e)
+                                          (traces ,exec)))
+                                  (funcall ,found?))
+                               acc))))
                  ((functionp e)
                   (rec (rest ex)
                        (cons `(funcall ,e) acc)))
@@ -131,16 +139,13 @@
   "Returns word named ID from EXEC or signals error if missing"  
   (let ((word (gethash (keyword! id) (words exec))))
     (unless word (error "missing word: ~a" id))
-    (when (tracing? exec)
-      (push (format nil "WORD ~a" id)
-            (traces exec)))
     word))
 
 (defun lifoo-push (expr &key (exec *lifoo*))
   "Pushes EXPR onto EXEC's stack"  
   (push expr (stack exec))
   (when (tracing? exec)
-    (push (format nil "~a~%PUSH ~a" (stack exec) expr)
+    (push (format nil "PUSH ~a~%~a" expr (stack exec))
           (traces exec)))
   expr)
 
@@ -149,7 +154,7 @@
   (when (stack exec)
     (let ((val (pop (stack exec))))
       (when (tracing? exec)
-        (push (format nil "~a~%POP  ~a" val (stack exec))
+        (push (format nil "POP  ~a~%~a" val (stack exec))
               (traces exec)))
       val)))
 
@@ -398,7 +403,7 @@
 
     ;; Disables tracing and prints trace
     (define-lisp-word :untrace ()
-      (dolist (st (traces *lifoo*))
+      (dolist (st (reverse (traces *lifoo*)))
         (format t "~a~%" st))
       (setf (tracing? *lifoo*) nil))
 
