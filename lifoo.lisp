@@ -319,6 +319,9 @@
 
     ;; *** vars ***
 
+    (define-lisp-word :vars ()
+      (lifoo-push (vars *lifoo*)))
+
     (define-lisp-word :get ()
       (lifoo-push (lifoo-get (lifoo-pop))))
 

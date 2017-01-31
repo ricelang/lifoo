@@ -72,7 +72,10 @@
 
 (define-test (:lifoo :vars)
   (assert (= 42 (do-lifoo ()
-                  :foo 42 set drop :foo get))))
+                  :foo 42 set drop :foo get)))
+  (assert (equal '((:bar . 7) (:foo . 42))
+                 (do-lifoo ()
+                   :foo 42 set :bar 7 set vars))))
 
 (define-test (:lifoo :printing)
   (assert (string= (format nil "hello lifoo!~%")
