@@ -1,3 +1,10 @@
+* add with-lifoo-env macro
+** add *lifoo-env*
+** replaces env in struct
+
+* add copy-env? param to lifoo-define
+** use with-env to open new context if t
+
 * add bordeaux-threads dep
 * add spawn
 ** $1 is buffer size

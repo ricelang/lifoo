@@ -51,7 +51,7 @@
 (defstruct (lifoo-exec (:conc-name)
                        (:constructor make-lifoo))
   stack traces tracing?
-  vars
+  env
   (words (make-hash-table :test 'eq)))
 
 (defun lifoo-parse (expr &key (exec *lifoo*))
@@ -149,20 +149,20 @@
 
 (defun lifoo-get (var &key (exec *lifoo*))
   "Returns value of VAR in EXEC"
-  (rest (assoc var (vars exec) :test #'eq))) 
+  (rest (assoc var (env exec) :test #'eq))) 
 
 (defun lifoo-set (var val &key (exec *lifoo*))
   "Sets value of VAR in EXEC to VAL"
-  (let ((found? (assoc var (vars exec) :test #'eq)))
+  (let ((found? (assoc var (env exec) :test #'eq)))
     (if found?
         (rplacd found? val)
-        (setf (vars exec) (acons var val (vars exec)))))
+        (setf (env exec) (acons var val (env exec)))))
   val)
 
 (defun lifoo-rem (var &key (exec *lifoo*))
   "Returns value of VAR in EXEC"
-  (setf (vars exec)
-        (delete var (vars exec) :key #'first :test #'eq))) 
+  (setf (env exec)
+        (delete var (env exec) :key #'first :test #'eq))) 
 
 (defun lifoo-repl (&key (exec (lifoo-init :exec (make-lifoo)))
                         (in *standard-input*)
@@ -326,11 +326,11 @@
           (eval `(progn ,@body)))))
 
 
-    ;; *** vars ***
+    ;; *** env ***
 
-    ;; Pushes vars as alist
-    (define-lisp-word :vars ()
-      (lifoo-push (vars *lifoo*)))
+    ;; Pushes env as alist
+    (define-lisp-word :env ()
+      (lifoo-push (env *lifoo*)))
 
     ;; Pops $var and returns value
     (define-lisp-word :get ()
