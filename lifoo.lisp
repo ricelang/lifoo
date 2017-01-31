@@ -174,15 +174,14 @@
     ;; Drops $1 from stack
     (define-lisp-word :drop ()
       (lifoo-pop))
-    
-    ;; Pushes $1 on stack
-    (define-lisp-word :dup ()
-      (lifoo-push (first (stack *lifoo*))))
 
     ;; Swaps $1 and $2
     (define-lisp-word :swap ()
       (push (lifoo-pop) (rest (stack *lifoo*))))
-
+    
+    ;; Pushes $1 on stack
+    (define-lisp-word :dup ()
+      (lifoo-push (first (stack *lifoo*))))
 
     ;; *** compiler ***
     
@@ -217,14 +216,6 @@
       (let ((rhs (lifoo-pop))
             (lhs (lifoo-pop)))
         (lifoo-push (compare lhs rhs))))
-
-    ;; Derived comparison ops
-    (define-word :eq? () cmp 0 =)
-    (define-word :neq? () cmp 0 /=)
-    (define-word :lt? () cmp -1 =)
-    (define-word :gt? () cmp 1 =)
-    (define-word :lte? () cmp 1 <)
-    (define-word :gte? () cmp -1 >)
 
 
     ;; *** lists ***
@@ -294,7 +285,7 @@
     ;; Pops and prints $1
     (define-lisp-word :print ()
       (princ (lifoo-pop)))
-        
+    
 
     ;; --- branching ---
     
@@ -307,10 +298,6 @@
         (if (lifoo-pop)
             (lifoo-eval res)
             (lifoo-push nil))))
-
-    ;; Replaces $1 and $2 with results of evaluating $2 if $1
-    ;; is NIL, otherwise NIL
-    (define-word :unless () nil? when)
 
 
     ;; --- loops ---
@@ -343,5 +330,22 @@
       (dolist (st (traces *lifoo*))
         (format t "~a~%" st))
       (setf (tracing? *lifoo*) nil))
+
     
+    ;; *** derived generic comparisons ***
+
+    (define-word :eq? () cmp 0 =)
+    (define-word :neq? () cmp 0 /=)
+    (define-word :lt? () cmp -1 =)
+    (define-word :gt? () cmp 1 =)
+    (define-word :lte? () cmp 1 <)
+    (define-word :gte? () cmp -1 >)
+
+
+    ;; *** derived branching ***
+
+    ;; Replaces $1 and $2 with results of evaluating $2 if $1
+    ;; is NIL, otherwise NIL
+    (define-word :unless () nil? when)
+
     exec))
