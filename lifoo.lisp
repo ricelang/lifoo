@@ -4,42 +4,53 @@
            lifoo-eval lifoo-init lifoo-parse lifoo-pop lifoo-push
            lifoo-read lifoo-repl lifoo-stack lifoo-stack-trace
            lifoo-stack-trace?
-           lifoo-undefine lifoo-word lifoo-words make-lifoo)
+           lifoo-undefine lifoo-word lifoo-words make-lifoo
+           *lifoo*)
   (:use cl cl4l-compare cl4l-test cl4l-utils))
 
 (in-package lifoo)
 
-(defmacro define-lisp-word (name (exec) &body body)
-  "Defines new word with NAME in EXEC from Lisp forms in BODY"
-  `(lifoo-define ,exec ',name (lambda () ,@body)))
+(defvar *lifoo* nil)
 
-(defmacro define-lisp-ops ((exec) &rest ops)
+(defmacro define-lisp-word (name (&key exec) &body body)
+  "Defines new word with NAME in EXEC from Lisp forms in BODY"
+  `(with-lifoo (:exec (or ,exec *lifoo*))
+     (lifoo-define ',name (lambda () ,@body))))
+
+(defmacro define-lisp-ops ((&key exec) &rest ops)
   "Defines new words in EXEC for OPS"
   (with-symbols (_lhs _rhs)
-    `(progn
+    `(with-lifoo (:exec (or ,exec *lifoo*))
        ,@(mapcar (lambda (op)
-                   `(define-lisp-word ,(keyword! op) (exec)
-                      (let ((,_rhs (lifoo-pop ,exec))
-                            (,_lhs (lifoo-pop ,exec)))
-                        (lifoo-push ,exec (,op ,_lhs ,_rhs)))))
+                   `(define-lisp-word ,(keyword! op) ()
+                      (let ((,_rhs (lifoo-pop))
+                            (,_lhs (lifoo-pop)))
+                        (lifoo-push (,op ,_lhs ,_rhs)))))
                  ops))))
 
-(defmacro define-word (name (exec) &body body)
+(defmacro define-word (name (&key exec) &body body)
   "Defines new word with NAME in EXEC from BODY"
-  `(lifoo-define ,exec ',name (lifoo-compile ,exec '(,@body))))
+  `(with-lifoo (:exec (or ,exec *lifoo*))
+     (lifoo-define ',name
+                   (lifoo-compile '(,@body)))))
 
 (defmacro do-lifoo ((&key exec) &body body)
   "Runs BODY in EXEC"
-  (with-symbols (_exec)
-    `(let ((,_exec (or ,exec (lifoo-init (make-lifoo)))))
-       (lifoo-eval ,_exec '(,@body))
-       (lifoo-pop ,_exec))))
+  `(with-lifoo (:exec (or ,exec *lifoo*
+                          (lifoo-init :exec (make-lifoo))))
+     (lifoo-eval '(,@body))
+     (lifoo-pop)))
 
-(defstruct (lifoo)
+(defmacro with-lifoo ((&key exec) &body body)
+  `(let ((*lifoo* (or ,exec (lifoo-init :exec (make-lifoo)))))
+     ,@body))
+
+(defstruct (lifoo-exec (:conc-name)
+                       (:constructor make-lifoo))
   stack stack-trace stack-trace?
   (words (make-hash-table :test 'eq)))
 
-(defun lifoo-parse (exec expr)
+(defun lifoo-parse (expr &key (exec *lifoo*))
   "Parses EXPR and returns code compiled for EXEC"
   (labels
       ((rec (ex acc)
@@ -48,29 +59,25 @@
                (cond
                  ((consp e)
                   (rec (rest ex)
-                       (cons `(lifoo-push ,exec '(,@e))
-                             acc)))
+                       (cons `(lifoo-push '(,@e)) acc)))
                  ((null e)
-                  (rec (rest ex) (cons `(lifoo-push ,exec nil)
-                                       acc)))
+                  (rec (rest ex)
+                       (cons `(lifoo-push nil) acc)))
                  ((eq e t)
-                  (rec (rest ex) (cons `(lifoo-push ,exec t)
-                                       acc)))
+                  (rec (rest ex) (cons `(lifoo-push t) acc)))
                  ((keywordp e)
-                  (rec (rest ex) (cons `(lifoo-push ,exec ,e)
-                                       acc)))
+                  (rec (rest ex) (cons `(lifoo-push ,e) acc)))
                  ((symbolp e)
                   (rec (rest ex)
-                       (cons `(funcall ,(lifoo-word exec e))
-                             acc)))
+                       (cons `(funcall ,(lifoo-word e)) acc)))
                  ((functionp e)
                   (rec (rest ex)
                        (cons `(funcall ,e) acc)))
                  (t
-                  (rec (rest ex) (cons `(lifoo-push ,exec ,e)
-                                       acc)))))
+                  (rec (rest ex) (cons `(lifoo-push ,e) acc)))))
              (nreverse acc))))
-    (rec (list! expr) nil)))
+    (with-lifoo (:exec exec)
+      (rec (list! expr) nil))))
 
 (defun lifoo-read (&key (in *standard-input*))
   (let ((more?) (expr))
@@ -78,219 +85,212 @@
       (push more? expr))
     (nreverse expr)))
 
-(defun lifoo-eval (exec expr)
+(defun lifoo-eval (expr &key (exec *lifoo*))
   "Returns result of parsing and evaluating EXPR in EXEC"
-  (let ((pe (lifoo-parse exec expr)))
+  (let ((pe (lifoo-parse expr :exec exec)))
     (eval `(progn ,@pe))))
 
-(defun lifoo-compile (exec expr)
+(defun lifoo-compile (expr &key (exec *lifoo*))
   "Returns result of parsing and compiling EXPR in EXEC"  
   (eval `(lambda ()
-           ,@(lifoo-parse exec expr))))
+           ,@(lifoo-parse expr :exec exec))))
 
-(defun lifoo-define (exec id fn)
+(defun lifoo-define (id fn &key (exec *lifoo*))
   "Defines word named ID in EXEC as FN"  
-  (setf (gethash (keyword! id) (lifoo-words exec)) fn))
+  (setf (gethash (keyword! id) (words exec)) fn))
 
-(defun lifoo-undefine (exec id)
+(defun lifoo-undefine (id &key (exec *lifoo*))
   "Undefines word named ID in EXEC"  
-  (remhash (keyword! id) (lifoo-words exec)))
+  (remhash (keyword! id) (words exec)))
 
-(defun lifoo-word (exec id)
+(defun lifoo-word (id &key (exec *lifoo*))
   "Returns word named ID from EXEC or signals error if missing"  
-  (let ((word (gethash (keyword! id) (lifoo-words exec))))
+  (let ((word (gethash (keyword! id) (words exec))))
     (unless word (error "missing word: ~a" id))
-    (when (lifoo-stack-trace? exec)
+    (when (stack-trace? exec)
       (push (format nil "WORD ~a" id)
-            (lifoo-stack-trace exec)))
+            (stack-trace exec)))
     word))
 
-(defun lifoo-push (exec expr)
+(defun lifoo-push (expr &key (exec *lifoo*))
   "Pushes EXPR onto EXEC's stack"  
-  (push expr (lifoo-stack exec))
-  (when (lifoo-stack-trace? exec)
-    (push (format nil "PUSH ~a~%~a" expr (lifoo-stack exec))
-          (lifoo-stack-trace exec)))
+  (push expr (stack exec))
+  (when (stack-trace? exec)
+    (push (format nil "PUSH ~a~%~a" expr (stack exec))
+          (stack-trace exec)))
   expr)
 
-(defun lifoo-pop (exec)
+(defun lifoo-pop (&key (exec *lifoo*))
   "Pops EXPR from EXEC's stack"
-  (when (lifoo-stack exec)
-    (let ((val (pop (lifoo-stack exec))))
-      (when (lifoo-stack-trace? exec)
-        (push (format nil "POP  ~a~%~a" val (lifoo-stack exec))
-              (lifoo-stack-trace exec)))
+  (when (stack exec)
+    (let ((val (pop (stack exec))))
+      (when (stack-trace? exec)
+        (push (format nil "POP  ~a~%~a" val (stack exec))
+              (stack-trace exec)))
       val)))
 
-(defun lifoo-repl (&key (exec (lifoo-init (make-lifoo)))
+(defun lifoo-repl (&key (exec (lifoo-init :exec (make-lifoo)))
                         (in *standard-input*)
                         (prompt "lifoo>")
                         (out *standard-output*))
-  (tagbody
-   start
-     (format out "~%~a " prompt)
-     (when-let (line (read-line in nil))
-       (unless (string= "" line)
-         (with-input-from-string (in line)
-           (lifoo-eval exec (lifoo-read :in in))
-           (format out "~a~%" (lifoo-pop exec)))
-         (go start)))))
+  (with-lifoo (:exec exec) 
+    (tagbody
+     start
+       (format out "~%~a " prompt)
+       (when-let (line (read-line in nil))
+         (unless (string= "" line)
+           (with-input-from-string (in line)
+             (lifoo-eval (lifoo-read :in in))
+             (format out "~a~%" (lifoo-pop)))
+           (go start))))))
 
-(defun lifoo-init (exec)
+(defun lifoo-init (&key (exec *lifoo*))
   "Initializes EXEC with built-in words"
+  (with-lifoo (:exec exec)
+    ;; Define binary ops
+    (define-lisp-ops () + - * / = /= < > cons)
 
-  ;; Define binary ops
-  (define-lisp-ops (exec) + - * / = /= < > cons)
+    ;; Replaces $1 and $2 with result of comparing $2 to $1
+    (define-lisp-word :cmp ()
+      (let ((rhs (lifoo-pop))
+            (lhs (lifoo-pop)))
+        (lifoo-push (compare lhs rhs))))
 
-  ;; Replaces $1 and $2 with result of comparing $2 to $1
-  (define-lisp-word :cmp (exec)
-    (let ((rhs (lifoo-pop exec))
-          (lhs (lifoo-pop exec)))
-      (lifoo-push exec (compare lhs rhs))))
+    ;; Derived comparison ops
+    (define-word :eq? () cmp 0 =)
+    (define-word :neq? () cmp 0 /=)
+    (define-word :lt? () cmp -1 =)
+    (define-word :gt? () cmp 1 =)
+    (define-word :lte? () cmp 1 <)
+    (define-word :gte? () cmp -1 >)
 
-  ;; Derived comparison ops
-  (define-word :eq? (exec) cmp 0 =)
-  (define-word :neq? (exec) cmp 0 /=)
-  (define-word :lt? (exec) cmp -1 =)
-  (define-word :gt? (exec) cmp 1 =)
-  (define-word :lte? (exec) cmp 1 <)
-  (define-word :gte? (exec) cmp -1 >)
+    ;; Drops $1 from stack
+    (define-lisp-word :drop ()
+      (lifoo-pop))
 
-  ;; Drops $1 from stack
-  (define-lisp-word :drop (exec)
-    (lifoo-pop exec))
+    ;; Pushes $1 on stack
+    (define-lisp-word :dup ()
+      (lifoo-push (first (stack *lifoo*))))
+    
+    ;; Replaces $1 with result of evaluating it
+    (define-lisp-word :eval ()
+      (lifoo-push (lifoo-eval (lifoo-pop))))
 
-  ;; Pushes $1 on stack
-  (define-lisp-word :dup (exec)
-    (lifoo-push exec (first (lifoo-stack exec))))
-  
-  ;; Replaces $1 with result of evaluating it
-  (define-lisp-word :eval (exec)
-    (lifoo-push exec
-                (lifoo-eval exec
-                            (lifoo-pop exec))))
+    ;; Replaces $1 with result of compiling it
+    (define-lisp-word :compile ()
+      (lifoo-push (lifoo-compile (lifoo-pop))))
 
-  ;; Replaces $1 with result of compiling it
-  (define-lisp-word :compile (exec)
-    (lifoo-push exec
-                (lifoo-compile exec
-                               (lifoo-pop exec))))
+    ;; Replaces $1 with first element of list
+    (define-lisp-word :first ()
+      (lifoo-push (first (lifoo-pop))))
 
-  ;; Replaces $1 with first element of list
-  (define-lisp-word :first (exec)
-    (lifoo-push exec (first (lifoo-pop exec))))
+    ;; Replaces $1 (arguments) and $2 (format) with formatted
+    ;; output
+    (define-lisp-word :format ()
+      (let ((args (lifoo-pop))
+            (fmt (lifoo-pop)))
+        (lifoo-push (apply #'format nil fmt args))))
 
-  ;; Replaces $1 (arguments) and $2 (format) with formatted output
-  (define-lisp-word :format (exec)
-    (let ((args (lifoo-pop exec))
-          (fmt (lifoo-pop exec)))
-      (lifoo-push exec (apply #'format nil fmt args))))
+    ;; Clears and pushes stack
+    (define-lisp-word :list ()
+      (let ((lst (stack *lifoo*)))
+        (setf (stack *lifoo*) nil)
+        (lifoo-push (nreverse lst))))
 
-  ;; Clears and pushes stack
-  (define-lisp-word :list (exec)
-    (let ((lst (lifoo-stack exec)))
-      (setf (lifoo-stack exec) nil)
-      (lifoo-push exec (nreverse lst))))
+    ;; Prints line ending
+    (define-lisp-word :ln ()
+      (terpri))
 
-  ;; Prints line ending
-  (define-lisp-word :ln (exec)
-    (terpri))
+    ;; Replaces $1 and $2 with results of mapping $1 over $2
+    (define-lisp-word :map ()
+      (let ((fn (lifoo-compile (lifoo-pop)))
+            (lst (lifoo-pop)))
+        (lifoo-push (mapcar (lambda (it)
+                              (lifoo-push it)
+                              (funcall fn)
+                              (lifoo-pop))
+                            lst))))
 
-  ;; Replaces $1 and $2 with results of mapping $1 over $2
-  (define-lisp-word :map (exec)
-    (let ((fn (lifoo-compile exec (lifoo-pop exec)))
-          (lst (lifoo-pop exec)))
-      (lifoo-push exec (mapcar (lambda (it)
-                                 (lifoo-push exec it)
-                                 (funcall fn)
-                                 (lifoo-pop exec))
-                               lst))))
+    ;; Replaces $1 with T if NIL, otherwise NIL
+    (define-lisp-word :nil? ()
+      (lifoo-push (null (lifoo-eval (lifoo-pop)))))
 
-  ;; Replaces $1 with T if NIL, otherwise NIL
-  (define-lisp-word :nil? (exec)
-    (lifoo-push exec
-                (null (lifoo-eval exec
-                                  (lifoo-pop exec)))))
+    ;; Pops and prints $1
+    (define-lisp-word :print ()
+      (princ (lifoo-pop)))
 
-  ;; Pops and prints $1
-  (define-lisp-word :print (exec)
-    (princ (lifoo-pop exec)))
+    ;; Pops item from list in $1 and pushes it on stack
+    (define-lisp-word :pop ()
+      (let ((it (pop (first (stack *lifoo*)))))
+        (lifoo-push it)))
 
-  ;; Pops item from list in $1 and pushes it on stack
-  (define-lisp-word :pop (exec)
-    (let ((it (pop (first (lifoo-stack exec)))))
-      (lifoo-push exec it)))
+    ;; Pops $1 from stack and pushes it on list in $2
+    (define-lisp-word :push ()
+      (let ((it (lifoo-pop)))
+        (push it (first (stack *lifoo*)))))
 
-  ;; Pops $1 from stack and pushes it on list in $2
-  (define-lisp-word :push (exec)
-    (let ((it (lifoo-pop exec)))
-      (push it (first (lifoo-stack exec)))))
+    ;; Replaces $1 with rest of list
+    (define-lisp-word :rest ()
+      (lifoo-push (rest (lifoo-pop))))
 
-  ;; Replaces $1 with rest of list
-  (define-lisp-word :rest (exec)
-    (lifoo-push exec
-                (rest (lifoo-pop exec))))
+    ;; Replaces $1 with reversed list
+    (define-lisp-word :reverse ()
+      (lifoo-push (reverse (lifoo-pop))))
 
-  ;; Replaces $1 with reversed list
-  (define-lisp-word :reverse (exec)
-    (lifoo-push exec (reverse (lifoo-pop exec))))
+    ;; Sleeps for $1 seconds
+    (define-lisp-word :sleep ()
+      (sleep (lifoo-pop)))
 
-  ;; Sleeps for $1 seconds
-  (define-lisp-word :sleep (exec)
-    (sleep (lifoo-pop exec)))
+    ;; Enables stack tracing and clears trace
+    (define-lisp-word :stack-trace ()
+      (setf (stack-trace? *lifoo*) t)
+      (setf (stack-trace *lifoo*) nil))
 
-  ;; Enables stack tracing and clears trace
-  (define-lisp-word :stack-trace (exec)
-    (setf (lifoo-stack-trace? exec) t)
-    (setf (lifoo-stack-trace exec) nil))
+    ;; Disables stack tracing and prints trace
+    (define-lisp-word :stack-untrace ()
+      (dolist (st (reverse (stack-trace *lifoo*)))
+        (format t "~a~%" st))
+      (setf (stack-trace? *lifoo*) nil))
 
-  ;; Disables stack tracing and prints trace
-  (define-lisp-word :stack-untrace (exec)
-    (dolist (st (reverse (lifoo-stack-trace exec)))
-      (format t "~a~%" st))
-    (setf (lifoo-stack-trace? exec) nil))
+    ;; Replaces $1 with string representation
+    (define-lisp-word :string ()
+      (let ((val (lifoo-pop)))
+        (lifoo-push (if (listp val)
+                        (apply #'string! val)
+                        (string! val)))))
 
-  ;; Replaces $1 with string representation
-  (define-lisp-word :string (exec)
-    (let ((val (lifoo-pop exec)))
-      (lifoo-push exec (if (listp val)
-                           (apply #'string! val)
-                           (string! val)))))
+    ;; Pops and repeats body in $2 x $1, pushing indexes on stack
+    (define-lisp-word :times ()
+      (let ((reps (lifoo-pop))
+            (body (lifoo-parse (lifoo-pop))))
+        (dotimes (i reps)
+          (lifoo-push i)
+          (eval `(progn ,@body)))))
 
-  ;; Pops and repeats body in $2 x $1, pushing indexes on stack
-  (define-lisp-word :times (exec)
-    (let ((reps (lifoo-pop exec))
-          (body (lifoo-parse exec (lifoo-pop exec))))
-      (dotimes (i reps)
-        (lifoo-push exec i)
-        (eval `(progn ,@body)))))
+    ;; Replaces $1 with results of converting it to a symbol
+    (define-lisp-word :symbol ()
+      (lifoo-push (keyword! (lifoo-pop))))
+    
+    ;; Swaps $1 and $2
+    (define-lisp-word :swap ()
+      (push (lifoo-pop) (rest (stack *lifoo*))))
 
-  ;; Replaces $1 with results of converting it to a symbol
-  (define-lisp-word :symbol (exec)
-    (lifoo-push exec (keyword! (lifoo-pop exec))))
-  
-  ;; Swaps $1 and $2
-  (define-lisp-word :swap (exec)
-    (push (lifoo-pop exec)
-          (rest (lifoo-stack exec))))
+    ;; Replaces $1 and $2 with results of evaluating $2 if $1,
+    ;; otherwise NIL
+    (define-lisp-word :when ()
+      (let ((cnd (lifoo-pop))
+            (res (lifoo-pop)))
+        (lifoo-eval cnd)
+        (if (lifoo-pop)
+            (lifoo-eval res)
+            (lifoo-push nil))))
 
-  ;; Replaces $1 and $2 with results of evaluating $2 if $1,
-  ;; otherwise NIL
-  (define-lisp-word :when (exec)
-    (let ((cnd (lifoo-pop exec))
-          (res (lifoo-pop exec)))
-      (lifoo-eval exec cnd)
-      (if (lifoo-pop exec)
-          (lifoo-eval exec res)
-          (lifoo-push exec nil))))
+    ;; Replaces $1 and $2 with results of evaluating $2 if $1
+    ;; is NIL, otherwise NIL
+    (define-word :unless () nil? when)
 
-  ;; Replaces $1 and $2 with results of evaluating $2 if $1 is NIL,
-  ;; otherwise NIL
-  (define-word :unless (exec) nil? when)
-
-  ;; Replaces $1 with the word it represents
-  (define-lisp-word :word (exec)
-    (let ((fn (lifoo-word exec (lifoo-pop exec))))
-      (lifoo-push exec fn)))
-
+    ;; Replaces $1 with the word it represents
+    (define-lisp-word :word ()
+      (let ((fn (lifoo-word (lifoo-pop))))
+        (lifoo-push fn))))
   exec)
