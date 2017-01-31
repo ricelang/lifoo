@@ -136,10 +136,8 @@
   (remhash (keyword! id) (words exec)))
 
 (defun lifoo-word (id &key (exec *lifoo*))
-  "Returns word named ID from EXEC or signals error if missing"  
-  (let ((word (gethash (keyword! id) (words exec))))
-    (unless word (error "missing word: ~a" id))
-    word))
+  "Returns word named ID from EXEC or NIL if missing"  
+  (gethash (keyword! id) (words exec)))
 
 (defun lifoo-push (expr &key (exec *lifoo*))
   "Pushes EXPR onto EXEC's stack"  
