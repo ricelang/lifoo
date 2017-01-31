@@ -48,7 +48,7 @@
 (defstruct (lifoo-exec (:conc-name)
                        (:constructor make-lifoo))
   stack traces tracing?
-  variables
+  vars
   (words (make-hash-table :test 'eq)))
 
 (defun lifoo-parse (expr &key (exec *lifoo*))
@@ -150,14 +150,14 @@
 
 (defun lifoo-get (var &key (exec *lifoo*))
   "Returns value of VAR in EXEC"
-  (rest (assoc var (variables exec)))) 
+  (rest (assoc var (vars exec)))) 
 
 (defun lifoo-set (var val &key (exec *lifoo*))
   "Sets value of VAR in EXEC to VAL"
-  (let ((found? (assoc var (variables exec))))
+  (let ((found? (assoc var (vars exec))))
     (if found?
         (rplacd found? val)
-        (setf (variables exec) (acons var val (variables exec)))))
+        (setf (vars exec) (acons var val (vars exec)))))
   val)
 
 (defun lifoo-repl (&key (exec (lifoo-init :exec (make-lifoo)))
@@ -317,7 +317,7 @@
           (eval `(progn ,@body)))))
 
 
-    ;; *** variables ***
+    ;; *** vars ***
 
     (define-lisp-word :get ()
       (lifoo-push (lifoo-get (lifoo-pop))))

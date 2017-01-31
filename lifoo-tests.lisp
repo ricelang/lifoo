@@ -70,7 +70,7 @@
   (assert (equal '(2 4 6) (do-lifoo ()
                             (1 2 3) (2 *) map))))
 
-(define-test (:lifoo :variables)
+(define-test (:lifoo :vars)
   (assert (= 42 (do-lifoo ()
                   :foo 42 set drop :foo get))))
 
