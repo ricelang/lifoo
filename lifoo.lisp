@@ -189,16 +189,17 @@
                         (prompt "Lifoo>")
                         (out *standard-output*))
   "Starts a REPL for EXEC"
-  (with-lifoo (:exec exec) 
-    (tagbody
-     start
-       (format out "~%~a " prompt)
-       (when-let (line (read-line in nil))
-         (unless (string= "" line)
-           (with-input-from-string (in line)
-             (lifoo-eval (lifoo-read :in in) :copy-env? nil)
-             (format out "~a~%" (lifoo-pop)))
-           (go start))))))
+  (with-lifoo (:exec exec)
+    (with-lifoo-env ()
+      (tagbody
+       start
+         (format out "~%~a " prompt)
+         (when-let (line (read-line in nil))
+           (unless (string= "" line)
+             (with-input-from-string (in line)
+               (lifoo-eval (lifoo-read :in in) :copy-env? nil)
+               (format out "~a~%" (lifoo-pop)))
+             (go start)))))))
 
 (defun lifoo-init (&key (exec *lifoo*))
   "Initializes EXEC with built-in words"
