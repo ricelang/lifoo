@@ -3,6 +3,19 @@
 
 (in-package lifoo-tests)
 
+(define-test (:lifoo :meta)
+  (assert (eq t (do-lifoo () nil nil?)))
+  (assert (eq :lifoo (do-lifoo ()
+                       "lifoo" symbol)))
+  (assert (= 3 (do-lifoo ()
+                 1 2 "+" word eval)))
+  (assert (equal '(1 2 +) (do-lifoo ()
+                            (1 2 +))))
+  (assert (= 3 (do-lifoo ()
+                 (1 2 +) eval)))
+  (assert (= 3 (do-lifoo ()
+                 (1 2 +) compile eval))))
+
 (define-test (:lifoo :stack)
   (with-lifoo ()
     (assert (equal '(3 2 1) (do-lifoo ()
@@ -14,17 +27,17 @@
   (assert (= 2 (do-lifoo ()
                  1 2 swap drop))))
 
-(define-test (:lifoo :branch)
+(define-test (:lifoo :branching)
   (assert (eq :ok (do-lifoo ()
                     :ok (1 2 <) when)))
   (assert (eq :ok (do-lifoo ()
                     :ok (1 2 =) unless))))
 
-(define-test (:lifoo :loop)
+(define-test (:lifoo :loops)
   (assert (equal '(2 1 0) (do-lifoo ()
                             list (push) 3 times))))
 
-(define-test (:lifoo :cmp)
+(define-test (:lifoo :comparisons)
   (assert (do-lifoo ()
             "abc" "abc" eq?))
   (assert (not (do-lifoo ()
@@ -35,6 +48,11 @@
             "abc" "def" lt?))
   (assert (not (do-lifoo ()
                  "abc" "def" gt?))))
+
+(define-test (:lifoo :strings)
+  (assert (string= "123ABC" (do-lifoo () (1 2 3 abc) string)))
+  (assert (string= "1+2=3"
+                   (do-lifoo () "~a+~a=~a" (1 2 3) format))))
 
 (define-test (:lifoo :lists)
   (assert (equal '(1 . 2) (do-lifoo ()
@@ -52,32 +70,9 @@
   (assert (equal '(2 4 6) (do-lifoo ()
                             (1 2 3) (2 *) map))))
 
-(define-test (:lifoo :print)
+(define-test (:lifoo :printing)
   (assert (string= (format nil "hello lifoo!~%")
                    (with-output-to-string (out)
                      (let ((*standard-output* out))
                        (do-lifoo ()
                          "hello lifoo!" print ln))))))
-
-(define-test (:lifoo :string)
-  (assert (string= "123ABC" (do-lifoo () (1 2 3 abc) string)))
-  (assert (string= "1+2=3"
-                   (do-lifoo () "~a+~a=~a" (1 2 3) format))))
-
-(define-test (:lifoo :symbol)
-  (assert (eq :lifoo (do-lifoo ()
-                       "lifoo" symbol))))
-
-(define-test (:lifoo :eval)
-  (assert (equal '(1 2 +) (do-lifoo ()
-                            (1 2 +))))
-  (assert (= 3 (do-lifoo ()
-                 (1 2 +) eval))))
-
-(define-test (:lifoo :compile)
-  (assert (= 3 (do-lifoo ()
-                 (1 2 +) compile eval))))
-
-(define-test (:lifoo :word)
-  (assert (= 3 (do-lifoo ()
-                 1 2 "+" word eval))))

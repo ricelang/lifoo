@@ -172,8 +172,31 @@
     ;; Define binary ops
     (define-lisp-ops () + - * / = /= < > cons)
     
+    ;; *** meta ***
+    
+    ;; Replaces $1 with symbolic representation
+    (define-lisp-word :symbol ()
+      (lifoo-push (keyword! (lifoo-pop))))
 
-    ;; *** stack management ***
+    ;; Replaces $1 with the word it represents
+    (define-lisp-word :word ()
+      (let ((fn (lifoo-word (lifoo-pop))))
+        (lifoo-push fn)))
+
+    ;; Replaces $1 with T if NIL, otherwise NIL
+    (define-lisp-word :nil? ()
+      (lifoo-push (null (lifoo-eval (lifoo-pop)))))
+
+    ;; Replaces $1 with result of evaluating it
+    (define-lisp-word :eval ()
+      (lifoo-push (lifoo-eval (lifoo-pop))))
+    
+    ;; Replaces $1 with result of compiling it
+    (define-lisp-word :compile ()
+      (lifoo-push (lifoo-compile (lifoo-pop))))
+
+    
+    ;; *** stack ***
     
     ;; Pushes stack on stack
     (define-lisp-word :stack ()
@@ -190,34 +213,9 @@
     ;; Pushes $1 on stack
     (define-lisp-word :dup ()
       (lifoo-push (first (stack *lifoo*))))
-
-    ;; *** compiler ***
-    
-    ;; Replaces $1 with result of evaluating it
-    (define-lisp-word :eval ()
-      (lifoo-push (lifoo-eval (lifoo-pop))))
-    
-    ;; Replaces $1 with result of compiling it
-    (define-lisp-word :compile ()
-      (lifoo-push (lifoo-compile (lifoo-pop))))
     
 
-    ;; *** introspection ***
-    
-    ;; Replaces $1 with symbolic representation
-    (define-lisp-word :symbol ()
-      (lifoo-push (keyword! (lifoo-pop))))
-
-    ;; Replaces $1 with the word it represents
-    (define-lisp-word :word ()
-      (let ((fn (lifoo-word (lifoo-pop))))
-        (lifoo-push fn)))
-
-    ;; Replaces $1 with T if NIL, otherwise NIL
-    (define-lisp-word :nil? ()
-      (lifoo-push (null (lifoo-eval (lifoo-pop)))))
-
-    ;; *** generic comparisons ***
+    ;; *** comparisons ***
     
     ;; Replaces $1 and $2 with result of comparing $2 to $1
     (define-lisp-word :cmp ()
@@ -340,7 +338,7 @@
       (setf (tracing? *lifoo*) nil))
 
     
-    ;; *** derived generic comparisons ***
+    ;; *** derived comparisons ***
 
     (define-word :eq? () cmp 0 =)
     (define-word :neq? () cmp 0 /=)
