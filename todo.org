@@ -1,12 +1,17 @@
-* add SET tracing with env
 * add bordeaux-threads dep
 * add spawn
-** $1 is buffer size
-** start new copy of exec with thread & chan added to stack
+** $2 is buffer size
+** add cl4l-clone package with method like compare
+*** map over copy-list for lists
+*** cons
+*** string
+** start new exec with cloned stack to stack
 ** add send / recv
 ** add join
 *** return val from thread
-((+ 1 2) eval send :done) 0 spawn recv swap drop swap join cons
+0 chan ((+ 1 2) eval send :done) spawn swap 
+recv swap drop swap 
+join cons
 - (:done . 3)
 * add yield word
 * add chan word
