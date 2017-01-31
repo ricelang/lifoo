@@ -1,8 +1,9 @@
 (defpackage lifoo
   (:export define-lisp-ops define-lisp-word define-word do-lifoo
-           lifoo-parse lifoo-compile lifoo-define lifoo-eval
-           lifoo-init lifoo-pop lifoo-push lifoo-word make-lifoo
-           lifoo-undefine)
+           lifoo-compile lifoo-define
+           lifoo-eval lifoo-init lifoo-parse lifoo-pop lifoo-push
+           lifoo-read lifoo-repl lifoo-stack
+           lifoo-undefine lifoo-word lifoo-words make-lifoo)
   (:use cl cl4l-compare cl4l-test cl4l-utils))
 
 (in-package lifoo)
@@ -30,7 +31,7 @@
   "Runs BODY in EXEC"
   (with-symbols (_exec)
     `(let ((,_exec (or ,exec (lifoo-init (make-lifoo)))))
-       (funcall (lifoo-compile ,_exec '(,@body)))
+       (lifoo-eval ,_exec '(,@body))
        (lifoo-pop ,_exec))))
 
 (defstruct (lifoo)
@@ -68,6 +69,12 @@
                                        acc)))))
              (nreverse acc))))
     (rec (list! expr) nil)))
+
+(defun lifoo-read (&key (in *standard-input*))
+  (let ((more?) (expr))
+    (do-while ((setf more? (read in nil)))
+      (push more? expr))
+    (nreverse expr)))
 
 (defun lifoo-eval (exec expr)
   "Returns result of parsing and evaluating EXPR in EXEC"
@@ -221,3 +228,16 @@
       (lifoo-push exec fn)))
 
   exec)
+
+(defun lifoo-repl (exec &key (in *standard-input*)
+                             (prompt "lifoo>")
+                             (out *standard-output*))
+  (tagbody
+   start
+     (format out "~%~a " prompt)
+     (when-let (line (read-line in nil))
+       (unless (string= "" line)
+         (with-input-from-string (in line)
+           (lifoo-eval exec (lifoo-read :in in))
+           (format out "~a~%" (lifoo-pop exec)))
+         (go start)))))
