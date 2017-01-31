@@ -1,5 +1,3 @@
-* add lisp word
-** compile and put push fn
 * add while loop
 ** eval 0+ times
 - (1 2 3) (pop drop) while 

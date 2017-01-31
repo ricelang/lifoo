@@ -14,7 +14,10 @@
   (assert (= 3 (do-lifoo ()
                  (1 2 +) eval)))
   (assert (= 3 (do-lifoo ()
-                 (1 2 +) compile eval))))
+                 (1 2 +) compile eval)))
+  (assert (= 42
+             (do-lifoo ()
+               42 (lifoo-pop) lisp eval))))
 
 (define-test (:lifoo :stack)
   (with-lifoo ()

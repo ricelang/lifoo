@@ -213,7 +213,7 @@
 
 (defmacro define-lifoo-init (name &body body)
   "Defines NAME-init around BODY with exec"
-  `(defun ,(symbol! 'lifo-init name) (&key (exec *lifoo*)) 
+  `(defun ,(symbol! 'lifoo- name) (&key (exec *lifoo*)) 
      (with-lifoo (:exec exec) ,@body)
      exec))
 
@@ -346,6 +346,10 @@
   (define-lisp-word :nil? ()
     (lifoo-push (null (lifoo-eval (lifoo-pop)))))
 
+  ;; Pops $expr and pushes function that evaluates $expr as Lisp
+  (define-lisp-word :lisp ()
+    (lifoo-push (eval `(lambda () ,(lifoo-pop)))))
+  
   ;; Pops $expr and pushes result of evaluating
   (define-lisp-word :eval ()
     (lifoo-push (lifoo-eval (lifoo-pop))))
