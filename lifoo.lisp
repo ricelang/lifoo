@@ -140,7 +140,7 @@
   "Pushes EXPR onto EXEC's stack"  
   (push expr (stack exec))
   (when (tracing? exec)
-    (push (format nil "PUSH ~a~%~a" expr (stack exec))
+    (push (format nil "~a~%PUSH ~a" (stack exec) expr)
           (traces exec)))
   expr)
 
@@ -149,7 +149,7 @@
   (when (stack exec)
     (let ((val (pop (stack exec))))
       (when (tracing? exec)
-        (push (format nil "POP  ~a~%~a" val (stack exec))
+        (push (format nil "~a~%POP  ~a" val (stack exec))
               (traces exec)))
       val)))
 
@@ -196,7 +196,7 @@
        (when-let (line (read-line in nil))
          (unless (string= "" line)
            (with-input-from-string (in line)
-             (lifoo-eval (lifoo-read :in in))
+             (lifoo-eval (lifoo-read :in in) :copy-env? nil)
              (format out "~a~%" (lifoo-pop)))
            (go start))))))
 

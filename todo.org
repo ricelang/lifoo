@@ -1,3 +1,4 @@
+* add SET/GET tracing with env
 * add bordeaux-threads dep
 * add spawn
 ** $1 is buffer size
