@@ -1,4 +1,5 @@
-* add ++/-- for increasing/decreasing counter in $1
+* add inc/dec for increasing/decreasing counter in $1
+** use incf/decf
 * add bordeaux-threads dep
 * add spawn
 ** $1 is buffer size
