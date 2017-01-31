@@ -1,7 +1,7 @@
 (defpackage lifoo
   (:export define-lisp-ops define-lisp-word define-word do-lifoo
            lifoo-parse lifoo-compile lifoo-define lifoo-eval
-           lifoo-init lifoo-pop lifoo-push make-lifoo
+           lifoo-init lifoo-pop lifoo-push lifoo-word make-lifoo
            lifoo-undefine)
   (:use cl cl4l-compare cl4l-test cl4l-utils))
 
@@ -36,9 +36,6 @@
 (defstruct (lifoo)
   stack (words (make-hash-table :test 'eq)))
 
-(defstruct (word)
-  id fn)
-
 (defun lifoo-parse (exec expr)
   "Parses EXPR and returns code compiled for EXEC"
   (labels
@@ -61,8 +58,7 @@
                                        acc)))
                  ((symbolp e)
                   (rec (rest ex)
-                       (cons `(funcall
-                               ,(word-fn (lifoo-word exec e)))
+                       (cons `(funcall ,(lifoo-word exec e))
                              acc)))
                  ((functionp e)
                   (rec (rest ex)
@@ -85,15 +81,14 @@
 
 (defun lifoo-define (exec id fn)
   "Defines word named ID in EXEC as FN"  
-  (setf (gethash (keyword! id) (lifoo-words exec))
-        (make-word :id id :fn fn)))
+  (setf (gethash (keyword! id) (lifoo-words exec)) fn))
 
 (defun lifoo-undefine (exec id)
   "Undefines word named ID in EXEC"  
   (remhash (keyword! id) (lifoo-words exec)))
 
 (defun lifoo-word (exec id)
-  "Returns word named ID from EXEC"  
+  "Returns word named ID from EXEC or signals error if missing"  
   (let ((word (gethash (keyword! id) (lifoo-words exec))))
     (unless word (error "missing word: ~a" id))
     word))
@@ -205,8 +200,8 @@
 
   ;; Replaces $1 with the word it represents
   (define-lisp-word word (exec)
-    (let ((w (lifoo-word exec (lifoo-pop exec))))
-      (lifoo-push exec (word-fn w))))
+    (let ((fn (lifoo-word exec (lifoo-pop exec))))
+      (lifoo-push exec fn)))
 
   ;; Derived comparison ops
   (define-word eq? (exec) cmp 0 =)
