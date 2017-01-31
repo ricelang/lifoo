@@ -1,6 +1,6 @@
 * add bordeaux-threads dep
 * add spawn
-** $2 is buffer size
+** $1 is buffer size
 ** add cl4l-clone package with method like compare
 *** map over copy-list for lists
 *** cons
