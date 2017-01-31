@@ -8,17 +8,14 @@
            lifoo-trace
            lifoo-untrace lifoo-undefine
            lifoo-word make-lifoo
-           with-lifoo *lifoo*)
+           with-lifoo with-lifoo-env
+           *lifoo* *lifoo-env*)
   (:use cl cl4l-compare cl4l-test cl4l-utils))
 
 (in-package lifoo)
 
 (defvar *lifoo* nil)
 (defvar *lifoo-env* nil)
-
-(defmacro with-lifoo-env ((&key env) &body body)
-  `(let ((*lifoo-env* (or ,env (copy-list *lifoo-env*))))
-     ,@body))
 
 (defmacro define-lisp-word (name
                             (&key (copy-env? t) exec)
@@ -59,6 +56,10 @@
 
 (defmacro with-lifoo ((&key exec) &body body)
   `(let ((*lifoo* (or ,exec (lifoo-init :exec (make-lifoo)))))
+     ,@body))
+
+(defmacro with-lifoo-env ((&key env) &body body)
+  `(let ((*lifoo-env* (or ,env (copy-list *lifoo-env*))))
      ,@body))
 
 (defstruct (lifoo-exec (:conc-name)
