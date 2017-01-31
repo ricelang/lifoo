@@ -1,5 +1,7 @@
 * add define-lifoo-init macro
 ** use for all inits
+* add eval-lisp word
+** like eval but for lisp code
 * add while loop
 ** eval 0+ times
 - (1 2 3) (pop drop) while 
