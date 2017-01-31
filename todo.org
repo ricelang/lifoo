@@ -1,1 +1,10 @@
-* add loops
+* add sleep
+* add bordeaux-threads
+** add yield
+* add spawn
+** create channel
+** add send / recv
+((+ 1 2) eval send) spawn recv
+- 3
+* add chan to create chan
+

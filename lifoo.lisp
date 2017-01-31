@@ -143,6 +143,14 @@
   (define-word :lte? (exec) cmp 1 <)
   (define-word :gte? (exec) cmp -1 >)
 
+  ;; Pops and repeats body in $2 x $1
+  (define-lisp-word :do-times (exec)
+    (let ((reps (lifoo-pop exec))
+          (body (lifoo-parse exec (lifoo-pop exec))))
+      (dotimes (i reps)
+        (lifoo-push exec i)
+        (eval `(progn ,@body)))))
+
   ;; Drops $1 from stack
   (define-lisp-word :drop (exec)
     (lifoo-pop exec))
@@ -203,10 +211,24 @@
   (define-lisp-word :print (exec)
     (princ (lifoo-pop exec)))
 
+  ;; Pops item from list in $1 and pushes it on stack
+  (define-lisp-word :pop (exec)
+    (let ((it (pop (first (lifoo-stack exec)))))
+      (lifoo-push exec it)))
+
+  ;; Pops $1 from stack and pushes it on list in $2
+  (define-lisp-word :push (exec)
+    (let ((it (lifoo-pop exec)))
+      (push it (first (lifoo-stack exec)))))
+
   ;; Replaces $1 with rest of list
   (define-lisp-word :rest (exec)
     (lifoo-push exec
                 (rest (lifoo-pop exec))))
+
+  ;; Replaces $1 with reversed list
+  (define-lisp-word :reverse (exec)
+    (lifoo-push exec (reverse (lifoo-pop exec))))
 
   ;; Replaces $1 with string representation
   (define-lisp-word :string (exec)
@@ -223,10 +245,6 @@
   (define-lisp-word :swap (exec)
     (push (lifoo-pop exec)
           (rest (lifoo-stack exec))))
-  
-  ;; Replaces $1 and $2 with results of evaluating $2 if $1 is NIL,
-  ;; otherwise NIL
-  (define-word :unless (exec) nil? when)
 
   ;; Replaces $1 and $2 with results of evaluating $2 if $1,
   ;; otherwise NIL
@@ -237,6 +255,10 @@
       (if (lifoo-pop exec)
           (lifoo-eval exec res)
           (lifoo-push exec nil))))
+
+  ;; Replaces $1 and $2 with results of evaluating $2 if $1 is NIL,
+  ;; otherwise NIL
+  (define-word :unless (exec) nil? when)
 
   ;; Replaces $1 with the word it represents
   (define-lisp-word :word (exec)
