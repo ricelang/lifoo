@@ -1,7 +1,11 @@
 (defpackage lifoo
   (:export define-lisp-ops define-lisp-word define-word do-lifoo
            lifoo-compile lifoo-define
-           lifoo-eval lifoo-get lifoo-init
+           lifoo-eval lifoo-get
+           lifoo-init lifoo-init-comparisons lifoo-init-env
+           lifoo-init-flow lifoo-init-io lifoo-init-lists
+           lifoo-init-meta lifoo-init-numbers lifoo-init-stack
+           lifoo-init-strings lifoo-init-threads
            lifoo-parse lifoo-pop lifoo-push
            lifoo-read lifoo-rem lifoo-repl
            lifoo-set lifoo-stack
@@ -206,68 +210,91 @@
                (format out "~a~%" (lifoo-pop)))
              (go start)))))))
 
-(defun lifoo-init (&key (exec *lifoo*))
-  "Initializes EXEC with built-in words"
+(defun lifoo-init-comparisons (&key (exec *lifoo*))
   (with-lifoo (:exec exec)
-    ;; Define binary ops
-    (define-lisp-ops () + - * / = /= < > cons)
-    
-
-    ;; *** meta ***
-    
-    ;; Pops $val and pushes its symbolic representation
-    (define-lisp-word :symbol ()
-      (lifoo-push (keyword! (lifoo-pop))))
-
-    ;; Pops $val and pushes the word it represents
-    (define-lisp-word :word ()
-      (let ((fn (lifoo-word (lifoo-pop))))
-        (lifoo-push fn)))
-
-    ;; Pops $val and pushes T if NIL,
-    ;; otherwise NIL
-    (define-lisp-word :nil? ()
-      (lifoo-push (null (lifoo-eval (lifoo-pop)))))
-
-    ;; Pops $expr and pushes result of evaluating
-    (define-lisp-word :eval ()
-      (lifoo-push (lifoo-eval (lifoo-pop))))
-    
-    ;; Pops $expr and pushes compiled word
-    (define-lisp-word :compile ()
-      (lifoo-push (lifoo-compile (lifoo-pop))))
-
-    
-    ;; *** stack ***
-    
-    ;; Pushes stack on stack as list
-    (define-lisp-word :stack ()
-      (lifoo-push (stack *lifoo*)))
-    
-    ;; Pops stack
-    (define-lisp-word :drop ()
-      (lifoo-pop))
-
-    ;; Swaps $1 and $2
-    (define-lisp-word :swap ()
-      (push (lifoo-pop) (rest (stack *lifoo*))))
-    
-    ;; Pushes $1 on stack
-    (define-lisp-word :dup ()
-      (lifoo-push (first (stack *lifoo*))))
-    
-
-    ;; *** comparisons ***
-    
     ;; Pops $rhs and $lhs,
     ;; and pushes result of comparing $lhs to $rhs
     (define-lisp-word :cmp ()
       (let ((rhs (lifoo-pop))
             (lhs (lifoo-pop)))
         (lifoo-push (compare lhs rhs))))
+    
+    (define-word :eq? () cmp 0 =)
+    (define-word :neq? () cmp 0 /=)
+    (define-word :lt? () cmp -1 =)
+    (define-word :gt? () cmp 1 =)
+    (define-word :lte? () cmp 1 <)
+    (define-word :gte? () cmp -1 >))
+  exec)
 
+(defun lifoo-init-env (&key (exec *lifoo*))
+  (with-lifoo (:exec exec)
+    ;; Pushes copy of env as alist
+    (define-lisp-word :env (:copy-env? nil)
+      (lifoo-push (copy-list *lifoo-env*)))
 
-    ;; *** lists ***
+    ;; Pops $var and returns value
+    (define-lisp-word :get (:copy-env? nil)
+      (lifoo-push (lifoo-get (lifoo-pop))))
+
+    ;; Pops $val and $var,
+    ;; sets $var's value to $val and pushes $val
+    (define-lisp-word :set (:copy-env? nil)
+      (let ((val (lifoo-pop))
+            (var (lifoo-pop)))
+        (lifoo-set var val)
+        (lifoo-push val)))
+
+    (define-lisp-word :rem (:copy-env? nil)
+      (let* ((var (lifoo-pop))
+             (val (lifoo-get var)))
+        (lifoo-rem var)
+        (lifoo-push val))))
+  exec)
+
+(defun lifoo-init-flow (&key (exec *lifoo*))
+  (with-lifoo (:exec exec)
+    ;; Pops $cnd and $res;
+    ;; and pushes $res if $cnd, otherwise NIL
+    (define-lisp-word :when ()
+      (let ((cnd (lifoo-pop))
+            (res (lifoo-pop)))
+        (lifoo-eval cnd)
+        (if (lifoo-pop)
+            (lifoo-eval res)
+            (lifoo-push nil))))
+
+    ;; Pops $cnd and $res;
+    ;; and pushes $res unless $cnd, otherwise NIL
+    (define-word :unless () nil? when)
+
+    ;; Pops $reps and $body;
+    ;; and repeats $body $reps times,
+    ;; pushing indexes before evaluating body
+    (define-lisp-word :times ()
+      (let ((reps (lifoo-pop))
+            (body (lifoo-parse (lifoo-pop))))
+        (dotimes (i reps)
+          (lifoo-push i)
+          (eval `(progn ,@body))))))
+  exec)
+
+(defun lifoo-init-io (&key (exec *lifoo*))
+  (with-lifoo (:exec exec)
+    ;; *** io ***
+
+    ;; Pops $val and prints it
+    (define-lisp-word :print ()
+      (princ (lifoo-pop)))
+
+    ;; Prints line ending
+    (define-lisp-word :ln ()
+      (terpri)))
+  exec)
+
+(defun lifoo-init-lists (&key (exec *lifoo*))
+  (with-lifoo (:exec exec)
+    (define-lisp-ops () cons)
 
     ;; Clears stack and pushes previous contents as list
     (define-lisp-word :list ()
@@ -306,11 +333,71 @@
                               (lifoo-push it)
                               (funcall fn)
                               (lifoo-pop))
-                            lst))))
+                            lst)))))
+  exec)
 
+(defun lifoo-init-meta (&key (exec *lifoo*))
+  (with-lifoo (:exec exec)
+    ;; Pops $val and pushes its symbolic representation
+    (define-lisp-word :symbol ()
+      (lifoo-push (keyword! (lifoo-pop))))
 
-    ;; *** strings ***
+    ;; Pops $val and pushes the word it represents
+    (define-lisp-word :word ()
+      (let ((fn (lifoo-word (lifoo-pop))))
+        (lifoo-push fn)))
 
+    ;; Pops $val and pushes T if NIL,
+    ;; otherwise NIL
+    (define-lisp-word :nil? ()
+      (lifoo-push (null (lifoo-eval (lifoo-pop)))))
+
+    ;; Pops $expr and pushes result of evaluating
+    (define-lisp-word :eval ()
+      (lifoo-push (lifoo-eval (lifoo-pop))))
+    
+    ;; Pops $expr and pushes compiled word
+    (define-lisp-word :compile ()
+      (lifoo-push (lifoo-compile (lifoo-pop))))
+
+    ;; Enables tracing and clears trace
+    (define-lisp-word :trace ()
+      (setf (tracing? *lifoo*) t)
+      (setf (traces *lifoo*) nil))
+
+    ;; Disables tracing and prints trace
+    (define-lisp-word :untrace ()
+      (dolist (st (reverse (traces *lifoo*)))
+        (format t "~a~%" st))
+      (setf (tracing? *lifoo*) nil)))
+  exec)
+
+(defun lifoo-init-numbers (&key (exec *lifoo*))
+  (with-lifoo (:exec exec)
+    (define-lisp-ops () + - * / = /= < > cons))
+  exec)
+
+(defun lifoo-init-stack (&key (exec *lifoo*))
+  (with-lifoo (:exec exec)
+    ;; Pushes stack on stack as list
+    (define-lisp-word :stack ()
+      (lifoo-push (stack *lifoo*)))
+    
+    ;; Pops stack
+    (define-lisp-word :drop ()
+      (lifoo-pop))
+
+    ;; Swaps $1 and $2
+    (define-lisp-word :swap ()
+      (push (lifoo-pop) (rest (stack *lifoo*))))
+    
+    ;; Pushes $1 on stack
+    (define-lisp-word :dup ()
+      (lifoo-push (first (stack *lifoo*)))))
+  exec)
+
+(defun lifoo-init-strings (&key (exec *lifoo*))
+  (with-lifoo (:exec exec)
     ;; Pops $val and pushes string representation
     (define-lisp-word :string ()
       (let ((val (lifoo-pop)))
@@ -323,71 +410,11 @@
     (define-lisp-word :format ()
       (let ((args (lifoo-pop))
             (fmt (lifoo-pop)))
-        (lifoo-push (apply #'format nil fmt args))))
-    
+        (lifoo-push (apply #'format nil fmt args)))))
+  exec)
 
-    ;; *** branching ***
-    
-    ;; Pops $cnd and $res;
-    ;; and pushes $res if $cnd, otherwise NIL
-    (define-lisp-word :when ()
-      (let ((cnd (lifoo-pop))
-            (res (lifoo-pop)))
-        (lifoo-eval cnd)
-        (if (lifoo-pop)
-            (lifoo-eval res)
-            (lifoo-push nil))))
-
-
-    ;; *** loops ***
-    
-    ;; Pops $reps and $body;
-    ;; and repeats $body $reps times,
-    ;; pushing indexes before evaluating body
-    (define-lisp-word :times ()
-      (let ((reps (lifoo-pop))
-            (body (lifoo-parse (lifoo-pop))))
-        (dotimes (i reps)
-          (lifoo-push i)
-          (eval `(progn ,@body)))))
-
-
-    ;; *** env ***
-
-    ;; Pushes copy of env as alist
-    (define-lisp-word :env (:copy-env? nil)
-      (lifoo-push (copy-list *lifoo-env*)))
-
-    ;; Pops $var and returns value
-    (define-lisp-word :get (:copy-env? nil)
-      (lifoo-push (lifoo-get (lifoo-pop))))
-
-    ;; Pops $val and $var,
-    ;; sets $var's value to $val and pushes $val
-    (define-lisp-word :set (:copy-env? nil)
-      (let ((val (lifoo-pop))
-            (var (lifoo-pop)))
-        (lifoo-set var val)
-        (lifoo-push val)))
-
-    (define-lisp-word :rem (:copy-env? nil)
-      (let* ((var (lifoo-pop))
-             (val (lifoo-get var)))
-        (lifoo-rem var)
-        (lifoo-push val)))
-    
-    ;; *** printing ***
-
-    ;; Pops $val and prints it
-    (define-lisp-word :print ()
-      (princ (lifoo-pop)))
-
-    ;; Prints line ending
-    (define-lisp-word :ln ()
-      (terpri))
-    
-    ;; *** threads ***
-
+(defun lifoo-init-threads (&key (exec *lifoo*))
+  (with-lifoo (:exec exec)
     ;; Yields processor and re-schedules thread
     (define-lisp-word :yield ()
       (thread-yield))
@@ -424,36 +451,20 @@
     ;; Gets and pushes message from channel in $1
     (define-lisp-word :chan-get ()
       (let ((msg (chan-get (first (stack *lifoo*)))))
-        (lifoo-push msg)))
+        (lifoo-push msg))))
+  exec)
 
-    ;; *** tracing ***
-    
-    ;; Enables tracing and clears trace
-    (define-lisp-word :trace ()
-      (setf (tracing? *lifoo*) t)
-      (setf (traces *lifoo*) nil))
-
-    ;; Disables tracing and prints trace
-    (define-lisp-word :untrace ()
-      (dolist (st (reverse (traces *lifoo*)))
-        (format t "~a~%" st))
-      (setf (tracing? *lifoo*) nil))
-
-    
-    ;; *** derived comparisons ***
-
-    (define-word :eq? () cmp 0 =)
-    (define-word :neq? () cmp 0 /=)
-    (define-word :lt? () cmp -1 =)
-    (define-word :gt? () cmp 1 =)
-    (define-word :lte? () cmp 1 <)
-    (define-word :gte? () cmp -1 >)
-
-
-    ;; *** derived branching ***
-
-    ;; Pops $cnd and $res;
-    ;; and pushes $res unless $cnd, otherwise NIL
-    (define-word :unless () nil? when)
-
-    exec))
+(defun lifoo-init (&key (exec *lifoo*))
+  "Initializes EXEC with built-in words"
+  (with-lifoo (:exec exec)
+    (lifoo-init-meta)
+    (lifoo-init-stack)
+    (lifoo-init-flow)
+    (lifoo-init-numbers)
+    (lifoo-init-strings)
+    (lifoo-init-comparisons)
+    (lifoo-init-lists)
+    (lifoo-init-env)
+    (lifoo-init-io)
+    (lifoo-init-threads))
+  exec)
