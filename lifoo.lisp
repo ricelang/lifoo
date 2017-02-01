@@ -412,7 +412,7 @@
 (define-lifoo-init init-stack
   ;; Pushes stack on stack as list
   (define-lisp-word :stack ()
-    (lifoo-push (stack *lifoo*)))
+    (lifoo-push (copy-list (stack *lifoo*))))
   
   ;; Pops stack
   (define-lisp-word :drop ()
