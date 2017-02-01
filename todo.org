@@ -2,14 +2,8 @@
 * add lifoo-inline fn
 ** like lifoo-call but returns rep for inlining
 ** delay parsing words if possible
-** change lifoo-call to use lifoo-inline
-* convert tracing to per word
-** add word.tracing
-** turn on tracing for all of stack after passing traced word
-** t untrace removed all
-** convert logs to array
-** use vector-push-extend
-* change arg order in :map?
+** change lifoo-call to use lifoo-inline if not compiled
+** returns code for funcall if already compiled
 * change stack to array
 ** add stack-index
 ** update push/pop/top
@@ -31,6 +25,7 @@
 ** change parse pull in parsed rep from words
 *** inline down to lisp code
 *** use lifoo-inline
+* change arg order in :map?
 * add type check words
 ** t?
 ** string? number? list? cons? word? symbol? chan? thread?

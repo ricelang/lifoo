@@ -13,18 +13,18 @@
 
     (lifoo-asseq 3
       1 2 "+" word eval)
-    
+
     (lifoo-asseq '(1 2 +)
       (1 2 +))
-    
+
     (lifoo-asseq 3
       (1 2 +) eval)
 
-    (lifoo-asseq 42
-      42 (lifoo-pop) lisp eval)
+    (lifoo-asseq 43
+      42 (lifoo-push (1+ (lifoo-pop))) lisp eval)
 
     (lifoo-asseq '(:log (:any :message))
-      (:any :message) log logs first)
+      (:any :message) log dump-log first)
 
     (assert (eq
              :failed
