@@ -3,6 +3,7 @@
 ** add stack-index
 ** update push/pop/top
 ** remove copy-list in :stack
+** use (make-array stack-size :adjustable :fill-pointer 0)
 ** use vector-push-extend and vector-pop
 * add lifoo-word struct
 ** add source parsed compiled
