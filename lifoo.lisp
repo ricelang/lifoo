@@ -63,10 +63,12 @@
      (lifoo-pop)))
 
 (defmacro with-lifoo ((&key exec) &body body)
+  "Runs body with *LIFOO* bound to EXEC or new"
   `(let ((*lifoo* (or ,exec (lifoo-init :exec (make-lifoo)))))
      ,@body))
 
 (defmacro with-lifoo-env ((&key env) &body body)
+  "Runs body with *LIFOO-ENV* bound to ENV or copy"
   `(let ((*lifoo-env* (or ,env (copy-list *lifoo-env*))))
      ,@body))
 
