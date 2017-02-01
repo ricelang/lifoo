@@ -9,7 +9,7 @@
            lifoo-init-meta lifoo-init-numbers
            lifoo-init-stack
            lifoo-init-strings lifoo-init-threads
-           lifoo-parse lifoo-pop lifoo-push
+           lifoo-parse lifoo-pop lifoo-print-trace lifoo-push
            lifoo-read lifoo-rem lifoo-repl
            lifoo-set lifoo-stack
            lifoo-trace lifoo-top
@@ -111,7 +111,7 @@
                          (cons
                           `(progn
                              (when (tracing? ,exec)
-                               (push (format nil "CALL ~a" ',e)
+                               (push (list :call ',e)
                                      (traces ,exec)))
                              (funcall ,found?))
                           acc))))
@@ -164,7 +164,7 @@
   "Pushes EXPR onto EXEC's stack"  
   (push expr (stack exec))
   (when (tracing? exec)
-    (push (format nil "PUSH ~a~%~a" expr (stack exec))
+    (push (list :push expr (clone (stack exec)))
           (traces exec)))
   expr)
 
@@ -173,9 +173,19 @@
   (when (stack exec)
     (let ((val (pop (stack exec))))
       (when (tracing? exec)
-        (push (format nil "POP  ~a~%~a" val (stack exec))
+        (push (list :pop val (clone (stack exec)))
               (traces exec)))
       val)))
+
+(defun lifoo-print-trace (trace &key (out *standard-output*))
+  "Prints TRACE to OUT"
+  (ecase (first trace)
+    (:call
+     (format out "CALL ~a~%" (second trace)))
+    (:pop
+     (format out "POP  ~a~%~a~%" (second trace) (third trace)))
+    (:push
+     (format out "PUSH ~a~%~a~%" (second trace) (third trace)))))
 
 (defun lifoo-top (&key (exec *lifoo*))
   "Returns top of EXEC's stack"
@@ -392,8 +402,8 @@
 
   ;; Disables tracing and prints trace
   (define-lisp-word :untrace ()
-    (dolist (st (reverse (traces *lifoo*)))
-      (format t "~a~%" st))
+    (dolist (trace (reverse (traces *lifoo*)))
+      (lifoo-print-trace trace))
     (setf (tracing? *lifoo*) nil))
 
   ;; Pops $msg and signals error

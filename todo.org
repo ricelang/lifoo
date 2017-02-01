@@ -1,5 +1,1 @@
-* convert stack trace from string to list
-** cons (:op . args) on traces
-** add (lifoo-print-trace :out *std*)
-*** call from untrace
 * add log word that writes :log trace
