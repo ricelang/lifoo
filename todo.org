@@ -1,4 +1,3 @@
-* add more eval of args in built ins
 * convert stack trace from string to list
 ** cons (:op . args) on traces
 ** format to string in untrace
