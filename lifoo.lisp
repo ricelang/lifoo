@@ -62,8 +62,8 @@
      (lifoo-eval '(,@body))
      (lifoo-pop)))
 
-(defmacro lifoo-assert ((test exp) &body body)
-  `(assert (,test ,exp (do-lifoo () ,@body))))
+(defmacro lifoo-assert ((test exp &key exec) &body body)
+  `(assert (,test ,exp (do-lifoo (:exec ,exec) ,@body))))
 
 (defmacro with-lifoo ((&key exec) &body body)
   "Runs body with *LIFOO* bound to EXEC or new"
