@@ -1,4 +1,9 @@
 * lifoo TODO
+* change stack to array
+** add stack-index
+** update push/pop/top
+** remove copy-list in :stack
+* rename dup
 * add lifoo-word struct
 ** add source parsed compiled
 ** add lifoo-source word exec
