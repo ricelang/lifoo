@@ -2,7 +2,7 @@
   (:export define-lifoo-init define-lisp-ops define-lisp-word
            define-word do-lifoo
            lifoo-asseq lifoo-call lifoo-define lifoo-dump-log
-           lifoo-error lifoo-eval
+           lifoo-env? lifoo-error lifoo-eval
            lifoo-get
            lifoo-init lifoo-init-comparisons lifoo-init-env
            lifoo-init-flow lifoo-init-io lifoo-init-lists
@@ -180,6 +180,14 @@
   (when (stack exec)
     (let ((val (pop (stack exec))))
       val)))
+
+(defun lifoo-env? (word)
+  "Returns T if WORD runs in fresh environment, otherwise NIL"
+  (trace? word))
+
+(defun (setf lifoo-env?) (on? word)
+  "Enables/disables env? for WORD"
+  (setf (env? word) on?))
 
 (defun lifoo-trace? (word)
   "Returns T if WORD is traced, otherwise NIL"
