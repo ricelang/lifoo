@@ -31,11 +31,13 @@
                             &body body)
   "Defines new word with NAME in EXEC from Lisp forms in BODY"
   `(with-lifoo (:exec (or ,exec *lifoo*))
-     (lifoo-define ',name (lambda ()
-                            ,(if copy-env?
-                                 `(with-lifoo-env ()
-                                    ,@body)
-                                 `(progn ,@body))))))
+     (lifoo-define ',name
+                   (make-lifoo-word
+                    :source ',body
+                    :compiled (if ,copy-env?
+                                  (lambda ()
+                                    (with-lifoo-env () ,@body))
+                                  (lambda () ,@body))))))
 
 (defmacro define-lisp-ops ((&key exec) &rest ops)
   "Defines new words in EXEC for OPS"
@@ -53,8 +55,13 @@
   "Defines new word with NAME in EXEC from BODY"
   `(with-lifoo (:exec (or ,exec *lifoo*))
      (lifoo-define ',name
-                   (lifoo-compile '(,@body)
-                                  :copy-env? ,copy-env?))))
+                   (let* ((expr ',body)
+                          (pexpr (lifoo-parse expr)))
+                     (make-lifoo-word
+                      :source expr
+                      :parsed (if ,copy-env?
+                                  `(with-lifoo-env () ,@pexpr)
+                                  `(progn ,@pexpr)))))))
 
 (defmacro do-lifoo ((&key exec) &body body)
   "Runs BODY in EXEC"
@@ -82,6 +89,9 @@
                        (:constructor make-lifoo))
   stack logs tracing?
   (words (make-hash-table :test 'eq)))
+
+(defstruct (lifoo-word (:conc-name))
+  source parsed compiled)
 
 (define-condition lifoo-error (simple-error)
   ((message :initarg :message :reader lifoo-error)))
@@ -112,11 +122,11 @@
                              (when (tracing? ,exec)
                                (push (list :call ',e)
                                      (logs ,exec)))
-                             (funcall ,found?))
+                             (lifoo-call ,found?))
                           acc))))
-                 ((functionp e)
+                 ((lifoo-word-p e)
                   (rec (rest ex)
-                       (cons `(funcall ,e) acc)))
+                       (cons `(lifoo-call ,e) acc)))
                  (t
                   (rec (rest ex) (cons `(lifoo-push ,e) acc)))))
              (nreverse acc))))
@@ -138,18 +148,14 @@
                    ,@pe)
                 `(progn ,@pe))))))
 
-(defun lifoo-compile (expr &key (copy-env? t) (exec *lifoo*))
-  "Returns result of parsing and compiling EXPR in EXEC"  
-  (eval (if copy-env?
-            `(lambda ()
-               (with-lifoo-env ()
-                 ,@(lifoo-parse expr :exec exec)))
-            `(lambda ()
-               ,@(lifoo-parse expr :exec exec)))))
+(defun lifoo-call (word)
+  (funcall (or (compiled word)
+               (setf (compiled word)
+                     (eval `(lambda () ,(parsed word)))))))
 
-(defun lifoo-define (id fn &key (exec *lifoo*))
-  "Defines word named ID in EXEC as FN"  
-  (setf (gethash (keyword! id) (words exec)) fn))
+(defun lifoo-define (id word &key (exec *lifoo*))
+  "Defines ID as WORD in EXEC"  
+  (setf (gethash (keyword! id) (words exec)) word))
 
 (defun lifoo-undefine (id &key (exec *lifoo*))
   "Undefines word named ID in EXEC"  
@@ -355,12 +361,11 @@
   ;; Pops $fn and $lst,
   ;; and pushes result of mapping $fn over $lst
   (define-lisp-word :map ()
-    (let ((fn (lifoo-compile (lifoo-pop)))
-          (lst (lifoo-pop)))
-      (lifoo-push (mapcar (lambda (it)
-                            (lifoo-push it)
-                            (funcall fn)
-                            (lifoo-pop))
+    (let ((expr (lifoo-pop)) (lst (lifoo-pop)))
+      (lifoo-push (mapcar (eval `(lambda (it)
+                                   (lifoo-push it)
+                                   ,@(lifoo-parse expr)
+                                   (lifoo-pop)))
                           lst)))))
 
 (define-lifoo-init init-meta
@@ -370,8 +375,8 @@
 
   ;; Pops $val and pushes the word it represents
   (define-lisp-word :word ()
-    (let ((fn (lifoo-word (lifoo-pop))))
-      (lifoo-push fn)))
+    (let ((word (lifoo-word (lifoo-pop))))
+      (lifoo-push word)))
 
   ;; Pops $val and pushes T if NIL,
   ;; otherwise NIL
@@ -380,16 +385,15 @@
 
   ;; Pops $expr and pushes function that evaluates $expr as Lisp
   (define-lisp-word :lisp ()
-    (lifoo-push (eval `(lambda () ,(lifoo-pop)))))
+    (let ((expr (lifoo-pop)))
+      (lifoo-push (make-lifoo-word
+                   :source expr
+                   :parsed expr))))
   
   ;; Pops $expr and pushes result of evaluating
   (define-lisp-word :eval ()
     (lifoo-push (lifoo-eval (lifoo-pop))))
   
-  ;; Pops $expr and pushes compiled word
-  (define-lisp-word :compile ()
-    (lifoo-push (lifoo-compile (lifoo-pop))))
-
   ;; Enables tracing and clears trace
   (define-lisp-word :trace ()
     (setf (tracing? *lifoo*) t)
@@ -401,12 +405,13 @@
       (lifoo-print-trace trace))
     (setf (tracing? *lifoo*) nil))
 
-  (define-lisp-word :logs ()
-    (lifoo-push (logs *lifoo*)))
-
-  ;; Pops $msg and traces it unconditionally
+  ;; Pops $msg and logs it
   (define-lisp-word :log ()
     (lifoo-log (lifoo-pop)))
+
+  ;; Pushes logs on stack
+  (define-lisp-word :logs ()
+    (lifoo-push (logs *lifoo*)))
 
   ;; Pops $msg and signals error
   (define-lisp-word :error ()

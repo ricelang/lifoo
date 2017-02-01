@@ -20,9 +20,6 @@
     (lifoo-asseq 3
       (1 2 +) eval)
 
-    (lifoo-asseq 3
-      (1 2 +) compile eval)
-    
     (lifoo-asseq 42
       42 (lifoo-pop) lisp eval)
 

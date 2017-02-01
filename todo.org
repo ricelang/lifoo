@@ -1,6 +1,6 @@
 * lifoo TODO
 * add lifoo-word struct
-** add source inline compiled tracing?
+** add word.tracing?
 ** add lifoo-source word exec
 ** add lifoo-call word exec
 *** compile parsed source on demand
@@ -9,6 +9,7 @@
 ** change compile to return word
 * change trace/untrace to take param and act on word
 ** t untrace untraces all traced
+* change arg order in :map?
 * change stack to array
 ** add stack-index
 ** update push/pop/top
