@@ -1,5 +1,5 @@
 * lifoo TODO
-* add lifoo-inline
+* add lifoo-inline fn
 ** like lifoo call but returns rep for inlining
 ** delay parsing words until inline if possible
 ** change lifoo-call to use lifoo-inline
@@ -30,3 +30,6 @@
 *** grep all callers and forward
 ** change parse pull in parsed rep from words
 *** inline down to lisp code
+* add type check words
+** t?
+** string? number? list? cons? word? symbol? chan? thread?
