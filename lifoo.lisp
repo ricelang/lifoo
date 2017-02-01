@@ -303,7 +303,7 @@
 
   ;; Pops $cnd and $res;
   ;; and pushes $res unless $cnd, otherwise NIL
-  (define-word :unless () nil? when)
+  (define-word :unless () eval nil? when)
 
   ;; Pops $reps and $body;
   ;; and repeats $body $reps times,
@@ -388,7 +388,7 @@
   ;; Pops $val and pushes T if NIL,
   ;; otherwise NIL
   (define-lisp-word :nil? ()
-    (lifoo-push (null (lifoo-eval (lifoo-pop)))))
+    (lifoo-push (null (lifoo-pop))))
 
   ;; Pops $expr and pushes function that evaluates $expr as Lisp
   (define-lisp-word :lisp ()
@@ -418,11 +418,11 @@
 
   ;; Pops $msg and traces it unconditionally
   (define-lisp-word :log ()
-    (lifoo-log (lifoo-eval (lifoo-pop))))
+    (lifoo-log (lifoo-pop)))
 
   ;; Pops $msg and signals error
   (define-lisp-word :error ()
-    (signal 'lifoo-error :message (lifoo-eval (lifoo-pop))))
+    (signal 'lifoo-error :message (lifoo-pop)))
 
   ;; Pops $cnd and signals error if NIL
   (define-lisp-word :assert ()
