@@ -1,1 +1,14 @@
 * lifoo TODO
+* add lifoo-word struct
+** add source parsed compiled
+** add lifoo-source word exec
+** add lifoo-call word exec
+*** compile parsed source on demand
+** add source word
+** replaces functions on stack
+** change compile to return word
+** rename define-word to define-lifoo-word
+* add inlining
+** inline? flag to lifoo-parse
+*** grep all callers and forward
+** change parse pull in parsed rep from words
