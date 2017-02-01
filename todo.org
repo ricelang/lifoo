@@ -3,7 +3,7 @@
 ** add stack-index
 ** update push/pop/top
 ** remove copy-list in :stack
-* rename dup
+** use vector-push-extend and vector-pop
 * add lifoo-word struct
 ** add source parsed compiled
 ** add lifoo-source word exec
