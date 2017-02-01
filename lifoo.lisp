@@ -1,7 +1,7 @@
 (defpackage lifoo
   (:export define-lifoo-init define-lisp-ops define-lisp-word
            define-word do-lifoo
-           lifoo-asseq lifoo-compile lifoo-define
+           lifoo-asseq lifoo-call lifoo-define
            lifoo-error lifoo-eval
            lifoo-get
            lifoo-init lifoo-init-comparisons lifoo-init-env
