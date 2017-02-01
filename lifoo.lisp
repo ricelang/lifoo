@@ -63,11 +63,6 @@
      (lifoo-eval '(,@body))
      (lifoo-pop)))
 
-(defmacro asseq (expected &body body)
-  "Asserts that evaluating BODY  
-   according to COMPARE"
-  `(assert (zerop (compare ,expected (progn ,@body)))))
-
 (defmacro lifoo-asseq (res &body body)
   "Asserts that evaluating BODY pushes value equal to RES 
    according to COMPARE"
