@@ -20,18 +20,18 @@
                42 (lifoo-pop) lisp eval)))
   
   (assert (eq
-           :ok
+           :failed
            (handler-case (do-lifoo ()
                            :any-message error)    
              (lifoo-error (e)
                (assert (eq :any-message (lifoo-error e)))
-               :ok))))
+               :failed))))
 
   (assert (eq
-           :ok
+           :failed
            (handler-case (do-lifoo ()
                            (1 2 =) assert)    
-             (lifoo-assert () :ok)))))
+             (lifoo-assert () :failed)))))
 
 (define-test (:lifoo :stack)
   (with-lifoo ()
