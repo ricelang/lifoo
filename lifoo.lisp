@@ -11,7 +11,7 @@
            lifoo-read lifoo-rem lifoo-repl
            lifoo-set lifoo-stack
            lifoo-trace lifoo-top
-           lifoo-untrace lifoo-undefine
+           lifoo-undefine lifoo-untrace
            lifoo-word make-lifoo
            with-lifoo with-lifoo-env
            *lifoo* *lifoo-env*)
