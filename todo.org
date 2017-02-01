@@ -5,8 +5,17 @@
 ** remove copy-list in :stack
 ** use (make-array stack-size :adjustable :fill-pointer 0)
 ** use vector-push-extend and vector-pop
+* add backup word
+** push copy-sequence to exec.backups
+* add restore word
+** pop backup and replace stack
+* add stash word
+** push stack to exec.backups and clear
+* add cond word
+:failed :ok (1 2 >) cond
+- :ok
 * add lifoo-word struct
-** add source parsed compiled
+** add source inline compiled
 ** add lifoo-source word exec
 ** add lifoo-call word exec
 *** compile parsed source on demand
@@ -18,3 +27,4 @@
 ** inline? flag to lifoo-parse
 *** grep all callers and forward
 ** change parse pull in parsed rep from words
+*** inline down to lisp code
