@@ -17,7 +17,21 @@
                  (1 2 +) compile eval)))
   (assert (= 42
              (do-lifoo ()
-               42 (lifoo-pop) lisp eval))))
+               42 (lifoo-pop) lisp eval)))
+  
+  (assert (eq
+           :ok
+           (handler-case (do-lifoo ()
+                           :any-message error)    
+             (lifoo-error (e)
+               (assert (eq :any-message (lifoo-error e)))
+               :ok))))
+
+  (assert (eq
+           :ok
+           (handler-case (do-lifoo ()
+                           (1 2 =) assert)    
+             (lifoo-assert () :ok)))))
 
 (define-test (:lifoo :stack)
   (with-lifoo ()

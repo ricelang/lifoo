@@ -1,11 +1,13 @@
 (defpackage lifoo
   (:export define-lifoo-init define-lisp-ops define-lisp-word
            define-word do-lifoo
-           lifoo-compile lifoo-define
-           lifoo-eval lifoo-get
+           lifoo-assert lifoo-compile lifoo-define
+           lifoo-error lifoo-eval
+           lifoo-get
            lifoo-init lifoo-init-comparisons lifoo-init-env
            lifoo-init-flow lifoo-init-io lifoo-init-lists
-           lifoo-init-meta lifoo-init-numbers lifoo-init-stack
+           lifoo-init-meta lifoo-init-numbers
+           lifoo-init-stack
            lifoo-init-strings lifoo-init-threads
            lifoo-parse lifoo-pop lifoo-push
            lifoo-read lifoo-rem lifoo-repl
@@ -73,6 +75,11 @@
   stack traces tracing?
   (words (make-hash-table :test 'eq)))
 
+(define-condition lifoo-error (error)
+  ((message :initarg :message :reader lifoo-error)))
+
+(define-condition lifoo-assert (lifoo-error) ())
+
 (defun lifoo-parse (expr &key (exec *lifoo*))
   "Parses EXPR and returns code compiled for EXEC"
   (labels
@@ -94,13 +101,13 @@
                   (let ((found? (or (lifoo-word e)
                                     (error "missing word: ~a" e))))
                     (rec (rest ex)
-                         (cons `(progn
-                                  (when (tracing? ,exec)
-                                    (push (format nil "CALL ~a"
-                                                  ',e)
-                                          (traces ,exec)))
-                                  (funcall ,found?))
-                               acc))))
+                         (cons
+                          `(progn
+                             (when (tracing? ,exec)
+                               (push (format nil "CALL ~a" ',e)
+                                     (traces ,exec)))
+                             (funcall ,found?))
+                          acc))))
                  ((functionp e)
                   (rec (rest ex)
                        (cons `(funcall ,e) acc)))
@@ -380,7 +387,19 @@
   (define-lisp-word :untrace ()
     (dolist (st (reverse (traces *lifoo*)))
       (format t "~a~%" st))
-    (setf (tracing? *lifoo*) nil)))
+    (setf (tracing? *lifoo*) nil))
+
+  ;; Pops $msg and signals error
+  (define-lisp-word :error ()
+    (signal 'lifoo-error :message (lifoo-eval (lifoo-pop))))
+
+  ;; Pops $cnd and signals error if NIL
+  (define-lisp-word :assert ()
+    (let* ((cnd (lifoo-pop))
+           (ok? (progn (lifoo-eval cnd) (lifoo-pop))))
+      (unless ok?
+        (signal 'lifoo-assert
+                :message (format nil "assert failed: ~a" cnd))))))
 
 (define-lifoo-init init-numbers
   (define-lisp-ops () + - * / = /= < > cons)
