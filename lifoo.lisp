@@ -9,6 +9,7 @@
            lifoo-init-meta lifoo-init-numbers
            lifoo-init-stack
            lifoo-init-strings lifoo-init-threads
+           lifoo-log
            lifoo-parse lifoo-pop lifoo-print-trace lifoo-push
            lifoo-read lifoo-rem lifoo-repl
            lifoo-set lifoo-stack
@@ -182,6 +183,8 @@
   (ecase (first trace)
     (:call
      (format out "CALL ~a~%" (second trace)))
+    (:log
+     (format out "LOG  ~a~%" (second trace)))
     (:pop
      (format out "POP  ~a~%~a~%" (second trace) (third trace)))
     (:push
@@ -204,6 +207,10 @@
   "Disables tracing for EXEC"
   (setf (tracing? exec) nil)
   (traces exec))
+
+(defun lifoo-log (msg &key (exec *lifoo*))
+  "Traces MSG in EXEC unconditionally"
+  (push (list :log msg) (traces exec)))
 
 (defun lifoo-get (var)
   "Returns value of VAR in EXEC"
@@ -405,6 +412,13 @@
     (dolist (trace (reverse (traces *lifoo*)))
       (lifoo-print-trace trace))
     (setf (tracing? *lifoo*) nil))
+
+  (define-lisp-word :traces ()
+    (lifoo-push (copy-list (traces *lifoo*))))
+
+  ;; Pops $msg and traces it unconditionally
+  (define-lisp-word :log ()
+    (lifoo-log (lifoo-eval (lifoo-pop))))
 
   ;; Pops $msg and signals error
   (define-lisp-word :error ()
