@@ -1,4 +1,14 @@
 * lifoo TODO
+* add lifoo-word struct
+** add source inline compiled tracing?
+** add lifoo-source word exec
+** add lifoo-call word exec
+*** compile parsed source on demand
+** add source word
+** replaces functions on stack
+** change compile to return word
+* change trace/untrace to take param and act on word
+** t untrace untraces all traced
 * change stack to array
 ** add stack-index
 ** update push/pop/top
@@ -14,15 +24,6 @@
 * add cond word
 :failed :ok (1 2 >) cond
 - :ok
-* add lifoo-word struct
-** add source inline compiled
-** add lifoo-source word exec
-** add lifoo-call word exec
-*** compile parsed source on demand
-** add source word
-** replaces functions on stack
-** change compile to return word
-** rename define-word to define-lifoo-word
 * add inlining
 ** inline? flag to lifoo-parse
 *** grep all callers and forward

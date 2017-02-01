@@ -27,7 +27,7 @@
       42 (lifoo-pop) lisp eval)
 
     (lifoo-asseq '(:log (:any :message))
-      (:any :message) log traces first)
+      (:any :message) log logs first)
 
     (assert (eq
              :failed

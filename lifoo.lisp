@@ -13,8 +13,8 @@
            lifoo-parse lifoo-pop lifoo-print-trace lifoo-push
            lifoo-read lifoo-rem lifoo-repl
            lifoo-set lifoo-stack
-           lifoo-trace lifoo-top
-           lifoo-undefine lifoo-untrace
+           lifoo-trace lifoo-tracing?
+           lifoo-undefine
            lifoo-word make-lifoo
            with-lifoo with-lifoo-env
            *lifoo* *lifoo-env*)
@@ -80,7 +80,7 @@
 
 (defstruct (lifoo-exec (:conc-name)
                        (:constructor make-lifoo))
-  stack traces tracing?
+  stack logs tracing?
   (words (make-hash-table :test 'eq)))
 
 (define-condition lifoo-error (simple-error)
@@ -111,7 +111,7 @@
                           `(progn
                              (when (tracing? ,exec)
                                (push (list :call ',e)
-                                     (traces ,exec)))
+                                     (logs ,exec)))
                              (funcall ,found?))
                           acc))))
                  ((functionp e)
@@ -164,7 +164,7 @@
   (push expr (stack exec))
   (when (tracing? exec)
     (push (list :push expr (clone (stack exec)))
-          (traces exec)))
+          (logs exec)))
   expr)
 
 (defun lifoo-pop (&key (exec *lifoo*))
@@ -173,7 +173,7 @@
     (let ((val (pop (stack exec))))
       (when (tracing? exec)
         (push (list :pop val (clone (stack exec)))
-              (traces exec)))
+              (logs exec)))
       val)))
 
 (defun lifoo-print-trace (trace &key (out *standard-output*))
@@ -188,27 +188,17 @@
     (:push
      (format out "PUSH ~a~%~a~%" (second trace) (third trace)))))
 
-(defun lifoo-top (&key (exec *lifoo*))
-  "Returns top of EXEC's stack"
-  (first (stack exec)))
-
 (defun lifoo-stack (&key (exec *lifoo*))
   "Returns current stack for EXEC"
   (stack exec))
 
-(defun lifoo-trace (&key (exec *lifoo*))
-  "Enables tracing for EXEC"
-  (setf (tracing? exec) t)
-  (setf (traces exec) nil))
-
-(defun lifoo-untrace (&key (exec *lifoo*))
-  "Disables tracing for EXEC"
-  (setf (tracing? exec) nil)
-  (traces exec))
+(defun (setf lifoo-tracing?) (on? &key (exec *lifoo*))
+  "Enables/disables tracing for EXEC"
+  (setf (tracing? exec) on?))
 
 (defun lifoo-log (msg &key (exec *lifoo*))
-  "Traces MSG in EXEC unconditionally"
-  (push (list :log msg) (traces exec)))
+  "Logs MSG in EXEC"
+  (push (list :log msg) (logs exec)))
 
 (defun lifoo-get (var)
   "Returns value of VAR in EXEC"
@@ -318,7 +308,7 @@
     (let ((body (lifoo-parse (lifoo-pop))) (res))
       (do-while ((progn
                    (eval `(progn ,@body))
-                   (setf res (lifoo-top)))
+                   (setf res (first (lifoo-stack))))
                  res)
         (lifoo-pop)))))
 
@@ -403,16 +393,16 @@
   ;; Enables tracing and clears trace
   (define-lisp-word :trace ()
     (setf (tracing? *lifoo*) t)
-    (setf (traces *lifoo*) nil))
+    (setf (logs *lifoo*) nil))
 
   ;; Disables tracing and prints trace
   (define-lisp-word :untrace ()
-    (dolist (trace (reverse (traces *lifoo*)))
+    (dolist (trace (reverse (logs *lifoo*)))
       (lifoo-print-trace trace))
     (setf (tracing? *lifoo*) nil))
 
-  (define-lisp-word :traces ()
-    (lifoo-push (copy-list (traces *lifoo*))))
+  (define-lisp-word :logs ()
+    (lifoo-push (logs *lifoo*)))
 
   ;; Pops $msg and traces it unconditionally
   (define-lisp-word :log ()
