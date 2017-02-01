@@ -4,20 +4,26 @@
 (in-package lifoo-tests)
 
 (define-test (:lifoo :meta)
-  (assert (eq t (do-lifoo () nil nil?)))
-  (assert (eq :lifoo (do-lifoo ()
-                       "lifoo" symbol)))
-  (assert (= 3 (do-lifoo ()
-                 1 2 "+" word eval)))
-  (assert (equal '(1 2 +) (do-lifoo ()
-                            (1 2 +))))
-  (assert (= 3 (do-lifoo ()
-                 (1 2 +) eval)))
-  (assert (= 3 (do-lifoo ()
-                 (1 2 +) compile eval)))
-  (assert (= 42
-             (do-lifoo ()
-               42 (lifoo-pop) lisp eval)))
+  (lifoo-assert (eq t)
+    nil nil?)
+
+  (lifoo-assert (eq :lifoo)
+    "lifoo" symbol)
+
+  (lifoo-assert (= 3)
+    1 2 "+" word eval)
+  
+  (lifoo-assert (equal '(1 2 +))
+    (1 2 +))
+  
+  (lifoo-assert (= 3)
+    (1 2 +) eval)
+
+  (lifoo-assert (= 3)
+    (1 2 +) compile eval)
+  
+  (lifoo-assert (= 42)
+    42 (lifoo-pop) lisp eval)
   
   (assert (eq
            :failed
@@ -35,67 +41,85 @@
 
 (define-test (:lifoo :stack)
   (with-lifoo ()
-    (assert (equal '(3 2 1) (do-lifoo ()
-                              1 2 3 stack)))
+    (lifoo-assert (equal '(3 2 1))
+      1 2 3 stack)
+
+    ;; Make sure that stack is left intact
     (assert (equal '(3 2 1) (lifoo-stack))))
   
-  (assert (= 1 (do-lifoo ()
-                 1 dup drop)))
-  (assert (= 2 (do-lifoo ()
-                 1 2 swap drop))))
+  (lifoo-assert (= 1)
+    1 dup drop)
+  
+  (lifoo-assert (= 2)
+    1 2 swap drop))
 
 (define-test (:lifoo :flow)
-  (assert (eq :ok (do-lifoo ()
-                    :ok (2 1 <) when)))
-  (assert (eq :ok (do-lifoo ()
-                    :ok (1 2 =) unless)))
-  (assert (= 3 (do-lifoo ()
-                 0 (inc dup 3 >) while drop)))
-  (assert (equal '(2 1 0) (do-lifoo ()
-                            list (push) 3 times))))
+  (lifoo-assert (eq :ok)
+    :ok (2 1 <) when)
+  
+  (lifoo-assert (eq :ok)
+    :ok (1 2 =) unless)
+  
+  (lifoo-assert (= 3)
+    0 (inc dup 3 >) while drop)
+  
+  (lifoo-assert (equal '(2 1 0))
+    list (push) 3 times))
 
 (define-test (:lifoo :strings)
-  (assert (string= "123ABC" (do-lifoo () (1 2 3 abc) string)))
-  (assert (string= "1+2=3"
-                   (do-lifoo () "~a+~a=~a" (1 2 3) format))))
+  (lifoo-assert (string= "123ABC")
+    (1 2 3 abc) string)
+  
+  (lifoo-assert (string= "1+2=3")
+    "~a+~a=~a" (1 2 3) format))
 
 (define-test (:lifoo :lists)
-  (assert (equal '(2 . 1) (do-lifoo ()
-                            1 2 cons)))
-  (assert (equal '(1 . 2) (do-lifoo ()
-                            (1 . 2))))
-  (assert (equal '(1 2 3) (do-lifoo ()
-                            1 2 3 list)))
-  (assert (= 2 (do-lifoo ()
-                 (1 2 3) rest first)))
-  (assert (= 2 (do-lifoo ()
-                 (1 2 3) pop drop pop)))
-  (assert (equal '(1 2 3) (do-lifoo ()
-                            (1) 2 push 3 push reverse)))
-  (assert (equal '(2 4 6) (do-lifoo ()
-                            (1 2 3) (2 *) map))))
+  (lifoo-assert (equal '(2 . 1))
+    1 2 cons)
+  
+  (lifoo-assert (equal '(1 . 2))
+    (1 . 2))
+  
+  (lifoo-assert (equal '(1 2 3))
+    1 2 3 list)
+  
+  (lifoo-assert (= 2)
+    (1 2 3) rest first)
+  
+  (lifoo-assert (= 2)
+    (1 2 3) pop drop pop)
+  
+  (lifoo-assert (equal '(1 2 3))
+    (1) 2 push 3 push reverse)
+  
+  (lifoo-assert (equal '(2 4 6))
+    (1 2 3) (2 *) map))
 
 (define-test (:lifoo :comparisons)
-  (assert (do-lifoo ()
-            "abc" "abc" eq?))
-  (assert (not (do-lifoo ()
-                 "abc" "abcd" eq?)))
-  (assert (do-lifoo ()
-            "abc" "abcd" neq?))
-  (assert (do-lifoo ()
-            "abc" "def" lt?))
-  (assert (not (do-lifoo ()
-                 "abc" "def" gt?))))
+  (lifoo-assert (eq t)
+    "abc" "abc" eq?)
+  
+  (lifoo-assert (eq nil)
+    "abc" "abcd" eq?)
+  
+  (lifoo-assert (eq t)
+    "abc" "abcd" neq?)
+  
+  (lifoo-assert (eq t)
+    "abc" "def" lt?)
+  
+  (lifoo-assert (eq nil)
+    "abc" "def" gt?))
 
 (define-test (:lifoo :env)
-  (assert (= 42 (do-lifoo ()
-                  :foo 42 set drop :foo get)))
-  (assert (equal '((:bar . 7) (:foo . 42))
-                 (do-lifoo ()
-                   :foo 42 set :bar 7 set env)))
-  (assert (equal '(nil . 42)
-                 (do-lifoo ()
-                   :foo dup 42 set drop dup rem swap get cons))))
+  (lifoo-assert (= 42)
+    :foo 42 set drop :foo get)
+  
+  (lifoo-assert (equal '((:bar . 7) (:foo . 42)))
+    :foo 42 set :bar 7 set env)
+  
+  (lifoo-assert (equal '(nil . 42))
+    :foo dup 42 set drop dup rem swap get cons))
 
 (define-test (:lifoo :io)
   (assert (string= (format nil "hello lifoo!~%")
@@ -105,10 +129,10 @@
                          "hello lifoo!" print ln))))))
 
 (define-test (:lifoo :threads)
-  (assert (= 42 (do-lifoo ()
-                  1 chan 42 chan-put chan-get)))
-  (assert (equal '(:done . 3)
-                 (do-lifoo ()
-                   0 chan (1 2 + chan-put :done) thread swap 
-                   chan-get swap drop swap 
-                   join-thread cons))))
+  (lifoo-assert (= 42)
+    1 chan 42 chan-put chan-get)
+  
+  (lifoo-assert (equal '(:done . 3))
+    0 chan (1 2 + chan-put :done) thread swap 
+    chan-get swap drop swap 
+    join-thread cons))
