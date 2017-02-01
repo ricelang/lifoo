@@ -35,6 +35,8 @@
                     :ok (2 1 <) when)))
   (assert (eq :ok (do-lifoo ()
                     :ok (1 2 =) unless)))
+  (assert (= 3 (do-lifoo ()
+                 0 (inc dup 3 >) while drop)))
   (assert (equal '(2 1 0) (do-lifoo ()
                             list (push) 3 times))))
 

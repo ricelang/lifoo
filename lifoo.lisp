@@ -10,7 +10,7 @@
            lifoo-parse lifoo-pop lifoo-push
            lifoo-read lifoo-rem lifoo-repl
            lifoo-set lifoo-stack
-           lifoo-trace
+           lifoo-trace lifoo-top
            lifoo-untrace lifoo-undefine
            lifoo-word make-lifoo
            with-lifoo with-lifoo-env
@@ -163,6 +163,10 @@
               (traces exec)))
       val)))
 
+(defun lifoo-top (&key (exec *lifoo*))
+  "Returns top of EXEC's stack"
+  (first (stack exec)))
+
 (defun lifoo-stack (&key (exec *lifoo*))
   "Returns current stack for EXEC"
   (stack exec))
@@ -278,7 +282,16 @@
           (body (lifoo-parse (lifoo-pop))))
       (dotimes (i reps)
         (lifoo-push i)
-        (eval `(progn ,@body))))))
+        (eval `(progn ,@body)))))
+
+  ;; Pops $body and loops while $body evaluates to T
+  (define-lisp-word :while ()
+    (let ((body (lifoo-parse (lifoo-pop))) (res))
+      (do-while ((progn
+                   (eval `(progn ,@body))
+                   (setf res (lifoo-top)))
+                 res)
+        (lifoo-pop)))))
 
 (define-lifoo-init init-io
   ;; Pops $val and prints it
@@ -306,7 +319,7 @@
   (define-lisp-word :rest ()
     (lifoo-push (rest (lifoo-pop))))
 
-  ;; Pops item from $1 and pushes it
+  ;; Pops item from list in $1 and pushes it
   (define-lisp-word :pop ()
     (let ((it (pop (first (stack *lifoo*)))))
       (lifoo-push it)))
@@ -370,7 +383,10 @@
     (setf (tracing? *lifoo*) nil)))
 
 (define-lifoo-init init-numbers
-  (define-lisp-ops () + - * / = /= < > cons))
+  (define-lisp-ops () + - * / = /= < > cons)
+
+  (define-lisp-word :inc ()
+    (incf (first (stack *lifoo*)))))
 
 (define-lifoo-init init-stack
   ;; Pushes stack on stack as list
