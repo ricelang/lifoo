@@ -4,6 +4,8 @@
 ** delay parsing words if possible
 ** change lifoo-call to use lifoo-inline if not compiled
 ** returns code for funcall if already compiled
+** add word.copy-env?
+*** set in define macros
 * change stack to array
 ** add stack-index
 ** update push/pop/top
