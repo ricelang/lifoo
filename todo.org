@@ -1,4 +1,8 @@
 * lifoo TODO
+* add lifoo-inline
+** like lifoo call but returns rep for inlining
+** delay parsing words until inline if possible
+** change lifoo-call to use lifoo-inline
 * convert tracing to per word
 ** add word.tracing
 ** turn on tracing for all of stack after passing traced word
