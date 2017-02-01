@@ -1,7 +1,7 @@
 (defpackage lifoo
   (:export define-lifoo-init define-lisp-ops define-lisp-word
            define-word do-lifoo
-           lifoo-assert lifoo-compile lifoo-define
+           lifoo-asseq lifoo-compile lifoo-define
            lifoo-error lifoo-eval
            lifoo-get
            lifoo-init lifoo-init-comparisons lifoo-init-env
@@ -63,10 +63,15 @@
      (lifoo-eval '(,@body))
      (lifoo-pop)))
 
-(defmacro lifoo-assert (res &body body)
+(defmacro asseq (expected &body body)
+  "Asserts that evaluating BODY  
+   according to COMPARE"
+  `(assert (zerop (compare ,expected (progn ,@body)))))
+
+(defmacro lifoo-asseq (res &body body)
   "Asserts that evaluating BODY pushes value equal to RES 
    according to COMPARE"
-  `(assert (zerop (compare ,res (do-lifoo () ,@body)))))
+  `(asseq ,res (do-lifoo () ,@body)))
 
 (defmacro with-lifoo ((&key exec) &body body)
   "Runs body with *LIFOO* bound to EXEC or new"
@@ -83,10 +88,8 @@
   stack traces tracing?
   (words (make-hash-table :test 'eq)))
 
-(define-condition lifoo-error (error)
+(define-condition lifoo-error (simple-error)
   ((message :initarg :message :reader lifoo-error)))
-
-(define-condition lifoo-assert (lifoo-error) ())
 
 (defun lifoo-parse (expr &key (exec *lifoo*))
   "Parses EXPR and returns code compiled for EXEC"
@@ -429,7 +432,7 @@
     (let* ((cnd (lifoo-pop))
            (ok? (progn (lifoo-eval cnd) (lifoo-pop))))
       (unless ok?
-        (signal 'lifoo-assert
+        (signal 'lifoo-error
                 :message (format nil "assert failed: ~a" cnd))))))
 
 (define-lifoo-init init-numbers
