@@ -7,8 +7,8 @@
            lifoo-init lifoo-init-comparisons lifoo-init-env
            lifoo-init-flow lifoo-init-io lifoo-init-lists
            lifoo-init-meta lifoo-init-numbers
-           lifoo-init-stack
-           lifoo-init-strings lifoo-init-threads
+           lifoo-init-stack lifoo-init-strings lifoo-init-threads
+           lifoo-inline
            lifoo-log
            lifoo-parse lifoo-pop lifoo-print-log lifoo-push
            lifoo-read lifoo-rem lifoo-repl
@@ -53,12 +53,9 @@
   "Defines new word with NAME in EXEC from BODY"
   `(with-lifoo (:exec (or ,exec *lifoo*))
      (lifoo-define ',name
-                   (let* ((expr ',body)
-                          (pexpr (lifoo-parse expr)))
-                     (make-lifoo-word :id ,(keyword! name)
-                                      :env? ,env?
-                                      :source expr
-                                      :parsed `(progn ,@pexpr))))))
+                   (make-lifoo-word :id ,(keyword! name)
+                                    :env? ,env?
+                                    :source ',body))))
 
 (defmacro do-lifoo ((&key exec) &body body)
   "Runs BODY in EXEC"
@@ -137,10 +134,18 @@
   (with-lifoo (:exec exec)
     (eval `(progn ,@(lifoo-parse expr)))))
 
+(defun lifoo-inline (word &key (exec *lifoo*))
+  (if (compiled word)
+      `(funcall ,(compiled word))
+      (or (parsed word)
+          (setf (parsed word)
+                `(progn
+                   ,@(lifoo-parse (source word) :exec exec))))))
+
 (defun lifoo-call (word &key (exec *lifoo*))
   (let ((fn (or (compiled word)
                 (setf (compiled word)
-                      (eval `(lambda () ,(parsed word))))))
+                      (eval `(lambda () ,(lifoo-inline word))))))
         (log))
     (when (trace? word)
       (setf log (list (clone (stack exec)) (id word) :trace)))
@@ -152,7 +157,7 @@
     (when log
       (push (clone (stack exec)) log)
       (push (nreverse log) (logs exec)))))
-
+  
 (defun lifoo-define (id word &key (exec *lifoo*))
   "Defines ID as WORD in EXEC"  
   (setf (gethash (keyword! id) (words exec)) word))

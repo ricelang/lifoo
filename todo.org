@@ -1,17 +1,14 @@
 * lifoo TODO
-* add lifoo-inline fn
-** like lifoo-call but returns rep for inlining
-** delay parsing words if possible
-** change lifoo-call to use lifoo-inline if not compiled
-** returns code for funcall if already compiled
-** add word.copy-env?
-*** set in define macros
 * change stack to array
 ** add stack-index
 ** update push/pop/top
 ** remove copy-list in :stack
 ** use (make-array stack-size :adjustable :fill-pointer 0)
 ** use vector-push-extend and vector-pop
+* add inlining
+** change parse pull in parsed rep from words
+*** inline down to lisp code
+*** use lifoo-inline
 * add backup word
 ** push copy-sequence to exec.backups
 * add restore word
@@ -21,12 +18,6 @@
 * add cond word
 :failed :ok (1 2 >) cond
 - :ok
-* add inlining
-** inline? flag to lifoo-parse
-*** grep all callers and forward
-** change parse pull in parsed rep from words
-*** inline down to lisp code
-*** use lifoo-inline
 * change arg order in :map?
 * add type check words
 ** t?
