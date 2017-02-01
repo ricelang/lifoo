@@ -284,7 +284,7 @@
         (lifoo-push i)
         (eval `(progn ,@body)))))
 
-  ;; Pops $body and loops while $body evaluates to T
+  ;; Pops $body and loops until $body pushes nil 
   (define-lisp-word :while ()
     (let ((body (lifoo-parse (lifoo-pop))) (res))
       (do-while ((progn
