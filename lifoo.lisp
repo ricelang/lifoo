@@ -310,6 +310,15 @@
       (lifoo-push val))))
 
 (define-lifoo-init init-flow
+  ;; Pops $cnd, $true and $false;
+  ;; and pushes $true if $cnd, otherwise $false
+  (define-lisp-word :cond (:env? t)
+    (let ((cnd (lifoo-pop))
+          (true (lifoo-pop))
+          (false (lifoo-pop)))
+      (lifoo-eval cnd)
+      (lifoo-push (if (lifoo-pop) true false))))
+  
   ;; Pops $cnd and $res;
   ;; and pushes $res if $cnd, otherwise NIL
   (define-lisp-word :when (:env? t)

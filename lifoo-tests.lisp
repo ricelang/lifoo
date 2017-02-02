@@ -67,6 +67,9 @@
 
 (define-test (:lifoo :flow)
   (with-lifoo ()
+    (lifoo-asseq :true
+      :false :true (1 1 =) cond)
+    
     (lifoo-asseq :ok
       :ok (2 1 <) when)
     
