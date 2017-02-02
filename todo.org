@@ -1,4 +1,2 @@
 * lifoo TODO
-* add length word
-** support strings/lists/arrays
 * add each word to loop lists/arrays

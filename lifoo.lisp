@@ -375,7 +375,7 @@
       (lifoo-push it)))
 
   ;; Pops $idx and $it,
-  ;; and updates item in $1
+  ;; and updates seq in $1
   (define-lisp-word :set-nth ()
     (let ((it (lifoo-pop))
           (idx (lifoo-pop))
@@ -385,6 +385,10 @@
          (setf (aref seq idx) it))
         (t
          (setf (nth idx seq) it)))))
+
+  ;; Pushes length of seq in $1
+  (define-lisp-word :length ()
+    (lifoo-push (length (lifoo-pop))))
   
   ;; Pops item from seq in $1 and pushes it
   (define-lisp-word :pop ()

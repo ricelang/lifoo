@@ -84,6 +84,9 @@
 
 (define-test (:lifoo :strings)
   (with-lifoo ()
+    (lifoo-asseq 3
+      "abc" length)
+    
     (lifoo-asseq "123ABC"
       (1 2 3 abc) string)
     
@@ -97,7 +100,10 @@
     
     (lifoo-asseq '(1 . 2)
       (1 . 2))
-    
+
+    (lifoo-asseq 3
+      (1 2 3) length)
+
     (lifoo-asseq '(1 2 3)
       1 2 3 list)
     
@@ -114,6 +120,9 @@
 
     (lifoo-asseq #(1 4 3)
       #(1 2 3) 1 4 set-nth)
+
+    (lifoo-asseq 3
+      #(1 2 3) length)
 
     (lifoo-asseq 2
       (1 2 3) array pop drop pop)
