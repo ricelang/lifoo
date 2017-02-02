@@ -35,8 +35,7 @@
                    (make-lifoo-word :id ,(keyword! name)
                                     :env? ,env?
                                     :source ',body
-                                    :compiled (lambda ()
-                                                ,@body)))))
+                                    :parsed '(progn ,@body)))))
 
 (defmacro define-lisp-ops ((&key exec) &rest ops)
   "Defines new words in EXEC for OPS"
