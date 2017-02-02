@@ -14,6 +14,3 @@
 :failed :ok (1 2 >) cond
 - :ok
 * add length word strings/lists/arrays
-* add type check words
-** t?
-** string? number? list? cons? word? symbol? chan? thread?
