@@ -155,11 +155,11 @@
   (setf (gethash (keyword! id) (words exec)) word))
 
 (defun lifoo-undefine (id &key (exec *lifoo*))
-  "Undefines word named ID in EXEC"  
+  "Undefines word for ID in EXEC"  
   (remhash (keyword! id) (words exec)))
 
 (defun lifoo-word (id &key (exec *lifoo*))
-  "Returns word named ID from EXEC or NIL if missing"  
+  "Returns word for ID from EXEC, or NIL if missing"  
   (gethash (keyword! id) (words exec)))
 
 (defun lifoo-push (val &key (exec *lifoo*))
