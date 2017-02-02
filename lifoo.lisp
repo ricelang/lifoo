@@ -7,7 +7,7 @@
            lifoo-fn lifoo-get
            lifoo-init lifoo-init-comparisons lifoo-init-env
            lifoo-init-flow lifoo-init-io lifoo-init-lists
-           lifoo-init-meta lifoo-init-numbers
+           lifoo-init-meta lifoo-init-numbers lifoo-init-seqs
            lifoo-init-stack lifoo-init-strings lifoo-init-threads
            lifoo-log
            lifoo-parse lifoo-parse-word lifoo-pop lifoo-print-log
@@ -362,23 +362,7 @@
     (terpri)))
 
 (define-lifoo-init init-seqs
-  (define-binary-words () cons)
-
-  ;; Pushes stack as list and clears stack
-  (define-lisp-word :list ()
-    (let ((lst (map 'list #'identity (stack *lifoo*))))
-      (setf (fill-pointer (stack *lifoo*)) 0)
-      (lifoo-push lst))) 
-
-  ;; Pops $list and pushes first element
-  (define-lisp-word :first ()
-    (lifoo-push (first (lifoo-pop))))
-
-  ;; Pops $list and pushes rest
-  (define-lisp-word :rest ()
-    (lifoo-push (rest (lifoo-pop))))
-
-  ;; Pops item from $1 and pushes it
+  ;; Pops item from seq in $1 and pushes it
   (define-lisp-word :pop ()
     (let* ((seq (lifoo-peek))
            (it (cond
@@ -409,13 +393,30 @@
       (lifoo-push (map
                    (cond
                      ((stringp seq) 'string)
-                     ((arrayp seq) 'array)
+                     ((vectorp seq) 'vector)
                      (t 'list))
                    (eval `(lambda (it)
                             (lifoo-push it)
                             ,@(lifoo-parse expr)
                             (lifoo-pop)))
                    seq)))))
+
+(define-lifoo-init init-lists
+  (define-binary-words () cons)
+
+  ;; Pushes stack as list and clears stack
+  (define-lisp-word :list ()
+    (let ((lst (map 'list #'identity (stack *lifoo*))))
+      (setf (fill-pointer (stack *lifoo*)) 0)
+      (lifoo-push lst))) 
+
+  ;; Pops $list and pushes rest
+  (define-lisp-word :rest ()
+    (lifoo-push (rest (lifoo-pop))))
+
+  ;; Pops $list and pushes first element
+  (define-lisp-word :first ()
+    (lifoo-push (first (lifoo-pop)))))
 
 (define-lifoo-init init-meta
   ;; Pops $val and pushes its symbolic representation
@@ -587,6 +588,7 @@
   (lifoo-init-numbers)
   (lifoo-init-strings)
   (lifoo-init-seqs)
+  (lifoo-init-lists)
   (lifoo-init-comparisons)
   (lifoo-init-env)
   (lifoo-init-io)

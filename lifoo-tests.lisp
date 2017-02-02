@@ -92,6 +92,17 @@
 
 (define-test (:lifoo :seqs)
   (with-lifoo ()
+    (lifoo-asseq 2
+      (1 2 3) pop drop pop)
+    
+    (lifoo-asseq '(1 2 3)
+      (1) 2 push 3 push reverse)
+    
+    (lifoo-asseq #(2 4 6)
+      #(1 2 3) (2 *) map)))
+
+(define-test (:lifoo :lists)
+  (with-lifoo ()
     (lifoo-asseq '(2 . 1)
       1 2 cons)
     
@@ -102,19 +113,7 @@
       1 2 3 list)
     
     (lifoo-asseq 2
-      (1 2 3) rest first)
-    
-    (lifoo-asseq 2
-      (1 2 3) pop drop pop)
-    
-    (lifoo-asseq '(1 2 3)
-      (1) 2 push 3 push reverse)
-    
-    (lifoo-asseq '(2 4 6)
-      (1 2 3) (2 *) map)
-
-    (lifoo-asseq "***"
-      "abc" (drop #\*) map)))
+      (1 2 3) rest first)))
 
 (define-test (:lifoo :comparisons)
   (with-lifoo ()
