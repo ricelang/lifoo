@@ -8,7 +8,6 @@
            lifoo-init-flow lifoo-init-io lifoo-init-lists
            lifoo-init-meta lifoo-init-numbers
            lifoo-init-stack lifoo-init-strings lifoo-init-threads
-           lifoo-inline
            lifoo-log
            lifoo-parse lifoo-pop lifoo-print-log lifoo-push
            lifoo-read lifoo-rem lifoo-repl
@@ -114,10 +113,10 @@
                   (let ((found? (or (lifoo-word e)
                                     (error "missing word: ~a" e))))
                     (rec (rest ex)
-                         (cons (lifoo-inline found?) acc))))
+                         (cons `(lifoo-call ,found?) acc))))
                  ((lifoo-word-p e)
                   (rec (rest ex)
-                       (cons (lifoo-inline e) acc)))
+                       (cons `(lifoo-call ,e) acc)))
                  (t
                   (rec (rest ex) (cons `(lifoo-push ,e) acc)))))
              (nreverse acc))))
@@ -135,30 +134,24 @@
   (with-lifoo (:exec exec)
     (eval `(progn ,@(lifoo-parse expr)))))
 
-(defun lifoo-inline (word &key (exec *lifoo*))
-  (if (compiled word)
-      `(funcall ,(compiled word))
-      (or (parsed word)
-          (setf (parsed word)
-                `(progn
-                   ,@(lifoo-parse (source word) :exec exec))))))
-
 (defun lifoo-call (word &key (exec *lifoo*))
   (let ((fn (or (compiled word)
                 (setf (compiled word)
-                      (eval `(lambda () ,(lifoo-inline word))))))
-        (log))
+                      (eval `(lambda ()
+                               ,@(lifoo-parse (source word)
+                                              :exec exec)))))))
     (when (trace? word)
-      (setf log (list (clone (stack exec)) (id word) :trace)))
-
+      (push (list :enter (id word) (clone (stack exec)))
+            (logs exec)))
+    
     (if (env? word)
         (with-lifoo-env () (funcall fn))
         (funcall fn))
+    
+    (when (trace? word)
+      (push (list :exit (id word) (clone (stack exec)))
+            (logs exec)))))
 
-    (when log
-      (push (clone (stack exec)) log)
-      (push (nreverse log) (logs exec)))))
-  
 (defun lifoo-define (id word &key (exec *lifoo*))
   "Defines ID as WORD in EXEC"  
   (setf (gethash (keyword! id) (words exec)) word))
@@ -432,7 +425,7 @@
     (let ((expr (lifoo-pop)))
       (lifoo-push (make-lifoo-word
                    :source expr
-                   :parsed expr))))
+                   :compiled (eval `(lambda () ,expr))))))
   
   ;; Pops $expr and pushes result of evaluating
   (define-lisp-word :eval ()
