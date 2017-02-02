@@ -1,8 +1,4 @@
 * lifoo TODO
-* add lifoo-inline fn
-** generate same code as is run in lifoo-call
-** add inline? param to lifoo-parse
-** call lifoo-inline instead of call if inline?
 * add backup word
 ** push copy-sequence to exec.backups
 * add restore word
