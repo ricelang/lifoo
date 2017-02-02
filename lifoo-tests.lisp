@@ -1,7 +1,12 @@
 (defpackage lifoo-tests
-  (:use cl cl4l-compare cl4l-test lifoo))
+  (:use cl cl4l-compare cl4l-test cl4l-utils lifoo))
 
 (in-package lifoo-tests)
+
+(defmacro lifoo-asseq (res &body body)
+  "Asserts that evaluating BODY with reset stack pushes value 
+   equal to RES according to COMPARE"
+  `(asseq ,res (do-lifoo () reset ,@body)))
 
 (define-test (:lifoo :meta)
   (with-lifoo ()
@@ -55,7 +60,10 @@
       1 dup drop)
     
     (lifoo-asseq 2
-      1 2 swap drop)))
+      1 2 swap drop)
+
+    (lifoo-asseq #(1 2)
+      1 2 backup 3 4 restore stack)))
 
 (define-test (:lifoo :flow)
   (with-lifoo ()

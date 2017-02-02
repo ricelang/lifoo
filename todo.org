@@ -1,12 +1,4 @@
 * lifoo TODO
-* add reset
-** clear stack
-* add backup
-** push copy-sequence to exec.backups
-* add stash word
-** backup reset
-* add restore word
-** pop backup and replace stack
 * add cond word
 :failed :ok (1 2 >) cond
 - :ok
