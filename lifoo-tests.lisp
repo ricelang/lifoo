@@ -4,8 +4,8 @@
 (in-package lifoo-tests)
 
 (defmacro lifoo-asseq (res &body body)
-  "Asserts that evaluating BODY with reset stack pushes value 
-   equal to RES according to COMPARE"
+  "Asserts that evaluating BODY after stack reset pushes value 
+   that compares equal to RES"
   `(asseq ,res (do-lifoo () reset ,@body)))
 
 (define-test (:lifoo :meta)
