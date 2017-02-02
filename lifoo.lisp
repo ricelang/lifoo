@@ -123,9 +123,11 @@
     (with-lifoo (:exec exec)
       (rec (list! expr) nil))))
 
+(defparameter *eof* (gensym))
+
 (defun lifoo-read (&key (in *standard-input*))
   (let ((more?) (expr))
-    (do-while ((setf more? (read in nil)))
+    (do-while ((not (eq (setf more? (read in nil *eof*)) *eof*)))
       (push more? expr))
     (nreverse expr)))
 
@@ -135,22 +137,22 @@
     (eval `(progn ,@(lifoo-parse expr)))))
 
 (defun lifoo-call (word &key (exec *lifoo*))
-  (let ((fn (or (compiled word)
-                (setf (compiled word)
-                      (eval `(lambda ()
-                               ,@(lifoo-parse (source word)
-                                              :exec exec)))))))
-    (when (trace? word)
-      (push (list :enter (id word) (clone (stack exec)))
-            (logs exec)))
-    
-    (if (env? word)
-        (with-lifoo-env () (funcall fn))
-        (funcall fn))
-    
-    (when (trace? word)
-      (push (list :exit (id word) (clone (stack exec)))
-            (logs exec)))))
+  (with-lifoo (:exec exec)
+    (let ((fn (or (compiled word)
+                  (setf (compiled word)
+                        (eval `(lambda ()
+                                 ,@(lifoo-parse (source word))))))))
+      (when (trace? word)
+        (push (list :enter (id word) (clone (stack exec)))
+              (logs exec)))
+      
+      (if (env? word)
+          (with-lifoo-env () (funcall fn))
+          (funcall fn))
+      
+      (when (trace? word)
+        (push (list :exit (id word) (clone (stack exec)))
+              (logs exec))))))
 
 (defun lifoo-define (id word &key (exec *lifoo*))
   "Defines ID as WORD in EXEC"  
@@ -220,8 +222,9 @@
   (dolist (e log)
     (apply #'format out
            (ecase (first e)
-             (:log   "LOG   ~a~%")
-             (:trace "TRACE ~a ~a ~a~%"))
+             (:enter "ENTER ~a ~a~%")
+             (:exit  "EXIT  ~a ~a~%")
+             (:log   "LOG   ~a~%"))
            (rest e))))
 
 (defun lifoo-stack (&key (exec *lifoo*))

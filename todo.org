@@ -13,4 +13,3 @@
 :failed :ok (1 2 >) cond
 - :ok
 * add length word strings/lists/arrays
-
