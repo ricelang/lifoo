@@ -2,7 +2,7 @@
   (:export define-lifoo-init define-binary-words define-lisp-word
            define-word do-lifoo
            lifoo-call lifoo-define
-           lifoo-dump-log
+           lifoo-del lifoo-dump-log
            lifoo-env lifoo-env? lifoo-error lifoo-eval
            lifoo-fn lifoo-get
            lifoo-init lifoo-init-arrays
@@ -13,7 +13,7 @@
            lifoo-log
            lifoo-parse lifoo-parse-word lifoo-pop lifoo-print-log
            lifoo-push
-           lifoo-read lifoo-rem lifoo-repl
+           lifoo-read lifoo-repl
            lifoo-stack
            lifoo-trace?
            lifoo-undefine
@@ -92,6 +92,7 @@
   (error 'lifoo-error :format-control fmt :format-arguments args))
 
 (defun lifoo-read (&key (in *standard-input*))
+  "Reads Lifoo code from IN until end of file"
   (let ((eof? (gensym)) (more?) (expr))
     (do-while ((not (eq (setf more? (read in nil eof?)) eof?)))
       (push more? expr))
@@ -247,8 +248,8 @@
   (push (cons var val) (lifoo-env))
   val)
 
-(defun lifoo-rem (var)
-  "Returns value of VAR in EXEC"
+(defun lifoo-del (var)
+  "Deletes VAR from EXEC and returns value"
   (setf (lifoo-env)
         (delete var (lifoo-env) :key #'first :test #'eq))) 
 
@@ -311,10 +312,10 @@
       (setf (lifoo-get var) val)
       (lifoo-push val)))
 
-  (define-lisp-word :rem ()
+  (define-lisp-word :del ()
     (let* ((var (lifoo-pop))
            (val (lifoo-get var)))
-      (lifoo-rem var)
+      (lifoo-del var)
       (lifoo-push val))))
 
 (define-lifoo-init init-flow

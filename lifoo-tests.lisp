@@ -170,7 +170,7 @@
       :foo 42 set env)
     
     (lifoo-asseq '(nil . 42)
-      :foo dup 42 set drop dup rem swap get cons)
+      :foo dup 42 set drop dup del swap get cons)
 
     (lifoo-asseq 42
       :foo 42 set (:foo 43 set) eval :foo get)))
