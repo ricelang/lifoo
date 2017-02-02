@@ -17,7 +17,7 @@
            lifoo-trace?
            lifoo-undefine
            lifoo-word make-lifoo
-           with-lifoo with-lifoo-env
+           with-lifoo
            *lifoo* *lifoo-env*)
   (:use bordeaux-threads cl cl4l-chan cl4l-clone cl4l-compare
         cl4l-test cl4l-utils))
@@ -56,25 +56,23 @@
                                     :env? ,env?
                                     :source ',body))))
 
-(defmacro do-lifoo ((&key env exec) &body body)
+(defmacro do-lifoo ((&key (env t) exec) &body body)
   "Runs BODY in EXEC"
   `(with-lifoo (:exec (or ,exec *lifoo*
-                          (lifoo-init :exec (make-lifoo))))
-     (with-lifoo-env (:env ,env)
-       (lifoo-eval ',body)
-       (lifoo-pop))))
+                          (lifoo-init :exec (make-lifoo)))
+                :env ,env)
+     (lifoo-eval ',body)
+     (lifoo-pop)))
 
-(defmacro with-lifoo ((&key exec) &body body)
-  "Runs body with *LIFOO* bound to EXEC or new"
+(defmacro with-lifoo ((&key env exec) &body body)
+  "Runs body with *LIFOO* bound to EXEC or new; environment
+   is bound to ENV if not NIL, or copy of current if T"
   `(let ((*lifoo* (or ,exec (lifoo-init :exec (make-lifoo)))))
-     ,@body))
-
-(defmacro with-lifoo-env ((&key env) &body body)
-  "Runs body with in ENV or copy of current environment"
-  `(progn
-     (push (or ,env (copy-list (lifoo-env))) *lifoo-env*)
+     (when ,env
+       (push (if (eq t ,env) (copy-list (lifoo-env)) ,env)
+             *lifoo-env*))
      (unwind-protect (progn ,@body)
-       (pop *lifoo-env*))))
+       (when ,env (pop *lifoo-env*)))))
 
 (defstruct (lifoo-exec (:conc-name)
                        (:constructor make-lifoo))
@@ -141,15 +139,13 @@
 
 (defun lifoo-call (word &key (exec *lifoo*))
   "Calls WORD in EXEC"
-  (with-lifoo (:exec exec)
+  (with-lifoo (:exec exec :env (env? word))
     (let ((fn (lifoo-fn word)))
       (when (trace? word)
         (push (list :enter (id word) (clone (stack exec)))
               (logs exec)))
 
-      (if (env? word)
-          (with-lifoo-env () (funcall fn))
-          (funcall fn))
+      (funcall fn)
       
       (when (trace? word)
         (push (list :exit (id word) (clone (stack exec)))
@@ -259,9 +255,8 @@
                         (prompt "Lifoo>")
                         (out *standard-output*))
   "Starts a REPL for EXEC"
-  (with-lifoo (:exec exec)
-    (with-lifoo-env ()
-      (tagbody
+  (with-lifoo (:exec exec :env t)
+    (tagbody
        start
          (format out "~%~a " prompt)
          (when-let (line (read-line in nil))
@@ -269,7 +264,7 @@
              (with-input-from-string (in line)
                (lifoo-eval (lifoo-read :in in))
                (format out "~a~%" (lifoo-pop)))
-             (go start)))))))
+             (go start))))))
 
 (defmacro define-lifoo-init (name &body body)
   "Defines NAME-init around BODY with exec"
