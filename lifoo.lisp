@@ -4,7 +4,7 @@
            lifoo-call lifoo-define
            lifoo-dump-log
            lifoo-env lifoo-env? lifoo-error lifoo-eval
-           lifoo-fn
+           lifoo-fn lifoo-get
            lifoo-init lifoo-init-comparisons lifoo-init-env
            lifoo-init-flow lifoo-init-io lifoo-init-lists
            lifoo-init-meta lifoo-init-numbers
@@ -56,12 +56,13 @@
                                     :env? ,env?
                                     :source ',body))))
 
-(defmacro do-lifoo ((&key exec) &body body)
+(defmacro do-lifoo ((&key env exec) &body body)
   "Runs BODY in EXEC"
   `(with-lifoo (:exec (or ,exec *lifoo*
                           (lifoo-init :exec (make-lifoo))))
-     (lifoo-eval ',body)
-     (lifoo-pop)))
+     (with-lifoo-env (:env ,env)
+       (lifoo-eval ',body)
+       (lifoo-pop))))
 
 (defmacro with-lifoo ((&key exec) &body body)
   "Runs body with *LIFOO* bound to EXEC or new"
@@ -69,9 +70,11 @@
      ,@body))
 
 (defmacro with-lifoo-env ((&key env) &body body)
-  "Runs body with *LIFOO-ENV* bound to ENV or copy of previous"
-  `(let ((*lifoo-env* (or ,env (copy-list *lifoo-env*))))
-     ,@body))
+  "Runs body with in ENV or copy of current environment"
+  `(progn
+     (push (or ,env (copy-list (lifoo-env))) *lifoo-env*)
+     (unwind-protect (progn ,@body)
+       (pop *lifoo-env*))))
 
 (defstruct (lifoo-exec (:conc-name)
                        (:constructor make-lifoo))
@@ -143,7 +146,7 @@
       (when (trace? word)
         (push (list :enter (id word) (clone (stack exec)))
               (logs exec)))
-      
+
       (if (env? word)
           (with-lifoo-env () (funcall fn))
           (funcall fn))
@@ -191,7 +194,7 @@
 
 (defun lifoo-env? (word)
   "Returns T if WORD requires separate environment, otherwise NIL"
-  (trace? word))
+  (env? word))
 
 (defun (setf lifoo-env?) (on? word)
   "Enables/disables separate environment for WORD"
@@ -229,22 +232,25 @@
   "Returns current stack for EXEC"
   (stack exec))
 
-(defun lifoo-env (var)
-  "Returns value of VAR in EXEC"
-  (rest (assoc var *lifoo-env* :test #'eq))) 
+(defun lifoo-env ()
+  (first *lifoo-env*))
 
-(defun (setf lifoo-env) (val var)
+(defun (setf lifoo-env) (env)
+  (rplaca *lifoo-env* env))
+
+(defun lifoo-get (var)
+  "Returns value of VAR in EXEC"
+  (rest (assoc var (lifoo-env) :test #'eq))) 
+
+(defun (setf lifoo-get) (val var)
   "Sets value of VAR in EXEC to VAL"
-  (let ((found? (assoc var *lifoo-env* :test #'eq)))
-    (if found?
-        (rplacd found? val)
-        (setf *lifoo-env* (acons var val *lifoo-env*))))
+  (push (cons var val) (lifoo-env))
   val)
 
 (defun lifoo-rem (var)
   "Returns value of VAR in EXEC"
-  (setf *lifoo-env*
-        (delete var *lifoo-env* :key #'first :test #'eq))) 
+  (setf (lifoo-env)
+        (delete var (lifoo-env) :key #'first :test #'eq))) 
 
 (defun lifoo-repl (&key (exec (lifoo-init :exec (make-lifoo)))
                         (in *standard-input*)
@@ -285,25 +291,25 @@
   (define-word :gte? () cmp -1 >))
 
 (define-lifoo-init init-env
-  ;; Pushes copy of env as alist
+  ;; Pushes current environment on stack
   (define-lisp-word :env ()
-    (lifoo-push (copy-list *lifoo-env*)))
+    (lifoo-push (lifoo-env)))
 
   ;; Pops $var and returns value
   (define-lisp-word :get ()
-    (lifoo-push (lifoo-env (lifoo-pop))))
+    (lifoo-push (lifoo-get (lifoo-pop))))
 
   ;; Pops $val and $var,
   ;; sets $var's value to $val and pushes $val
   (define-lisp-word :set ()
     (let ((val (lifoo-pop))
           (var (lifoo-pop)))
-      (setf (lifoo-env var) val)
+      (setf (lifoo-get var) val)
       (lifoo-push val)))
 
   (define-lisp-word :rem ()
     (let* ((var (lifoo-pop))
-           (val (lifoo-env var)))
+           (val (lifoo-get var)))
       (lifoo-rem var)
       (lifoo-push val))))
 
@@ -502,13 +508,13 @@
     (setf (fill-pointer (stack *lifoo*)) 0))
 
   (let ((var (gensym)))
-    ;; Pushes backup of stack in *LIFOO-ENV*
+    ;; Pushes backup of stack to environment
     (define-lisp-word :backup ()
-      (push (copy-seq (stack *lifoo*)) (lifoo-env var)))
+      (push (copy-seq (stack *lifoo*)) (lifoo-get var)))
 
-    ;; Pops and restores backup from *LIFOO-ENV*
+    ;; Pops and restores backup from environment
     (define-lisp-word :restore ()
-      (let* ((prev (pop (lifoo-env var)))
+      (let* ((prev (pop (lifoo-get var)))
              (curr (stack *lifoo*))
              (len (length prev)))
         (setf (fill-pointer curr) len)
