@@ -233,9 +233,11 @@
   (stack exec))
 
 (defun lifoo-env ()
+  "Returns current environment"
   (first *lifoo-env*))
 
 (defun (setf lifoo-env) (env)
+  "Replaces current environment"
   (rplaca *lifoo-env* env))
 
 (defun lifoo-get (var)
