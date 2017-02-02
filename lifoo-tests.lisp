@@ -47,6 +47,9 @@
 
     ;; Make sure that stack is left intact
     (assert (zerop (compare #(1 2 3) (lifoo-stack))))
+
+    (lifoo-asseq 42
+      stack 42 push)
     
     (lifoo-asseq 1
       1 dup drop)
@@ -76,7 +79,7 @@
     (lifoo-asseq "1+2=3"
       "~a+~a=~a" (1 2 3) format)))
 
-(define-test (:lifoo :lists)
+(define-test (:lifoo :seqs)
   (with-lifoo ()
     (lifoo-asseq '(2 . 1)
       1 2 cons)

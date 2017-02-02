@@ -356,7 +356,7 @@
   (define-lisp-word :ln ()
     (terpri)))
 
-(define-lifoo-init init-lists
+(define-lifoo-init init-seqs
   (define-lisp-ops () cons)
 
   ;; Pushes stack as list and clears stack
@@ -373,29 +373,43 @@
   (define-lisp-word :rest ()
     (lifoo-push (rest (lifoo-pop))))
 
-  ;; Pops item from list in $1 and pushes it
+  ;; Pops item from $1 and pushes it
   (define-lisp-word :pop ()
-    (let ((it (pop (lifoo-peek))))
+    (let* ((seq (lifoo-peek))
+           (it (cond
+                 ((arrayp seq)
+                  (vector-pop seq))
+                 (t
+                  (pop (lifoo-peek))))))
       (lifoo-push it)))
 
-  ;; Pops $it and pushes it on list in $1
+  ;; Pops $it and pushes it on $1
   (define-lisp-word :push ()
-    (let ((it (lifoo-pop)))
-      (push it (lifoo-peek))))
+    (let ((it (lifoo-pop))
+          (seq (lifoo-peek)))
+      (cond
+        ((arrayp seq)
+         (vector-push-extend it seq))
+        (t
+         (push it (lifoo-peek))))))
 
-  ;; Pops $list and pushes reversed list
+  ;; Pops $seq and pushes reversed
   (define-lisp-word :reverse ()
     (lifoo-push (reverse (lifoo-pop))))
 
-  ;; Pops $fn and $lst,
-  ;; and pushes result of mapping $fn over $lst
+  ;; Pops $fn and $seq,
+  ;; and pushes result of mapping $fn over $seq
   (define-lisp-word :map ()
-    (let ((expr (lifoo-pop)) (lst (lifoo-pop)))
-      (lifoo-push (mapcar (eval `(lambda (it)
-                                   (lifoo-push it)
-                                   ,@(lifoo-parse expr)
-                                   (lifoo-pop)))
-                          lst)))))
+    (let ((expr (lifoo-pop)) (seq (lifoo-pop)))
+      (lifoo-push (map
+                   (cond
+                     ((arrayp seq) 'array)
+                     (t 'list))
+                   (eval `(lambda (it)
+                            (lifoo-push it)
+                            ,@(lifoo-parse expr)
+                            (lifoo-pop)))
+                   seq)))))
 
 (define-lifoo-init init-meta
   ;; Pops $val and pushes its symbolic representation
@@ -548,7 +562,7 @@
   (lifoo-init-flow)
   (lifoo-init-numbers)
   (lifoo-init-strings)
-  (lifoo-init-lists)
+  (lifoo-init-seqs)
   (lifoo-init-comparisons)
   (lifoo-init-env)
   (lifoo-init-io)

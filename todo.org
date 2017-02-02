@@ -1,6 +1,6 @@
 * lifoo TODO
 * add inlining
-** change parse pull in parsed rep from words
+** change parse to pull in parsed rep from words
 *** inline down to lisp code
 *** use lifoo-inline
 
@@ -13,7 +13,6 @@
 * add cond word
 :failed :ok (1 2 >) cond
 - :ok
-* change arg order in :map?
 * make push/pop work on lists/arrays
 * add length for strings/lists/arrays
 * add type check words
