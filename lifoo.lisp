@@ -1,5 +1,5 @@
 (defpackage lifoo
-  (:export define-lifoo-init define-lisp-ops define-lisp-word
+  (:export define-lifoo-init define-binary-words define-lisp-word
            define-word do-lifoo
            lifoo-asseq lifoo-call lifoo-compile-word lifoo-define
            lifoo-dump-log
@@ -40,7 +40,7 @@
                                     :compiled (lambda ()
                                                 ,@body)))))
 
-(defmacro define-lisp-ops ((&key exec) &rest ops)
+(defmacro define-binary-words ((&key exec) &rest ops)
   "Defines new words in EXEC for OPS"
   (with-symbols (_lhs _rhs)
     `(with-lifoo (:exec (or ,exec *lifoo*))
@@ -365,7 +365,7 @@
     (terpri)))
 
 (define-lifoo-init init-seqs
-  (define-lisp-ops () cons)
+  (define-binary-words () cons)
 
   ;; Pushes stack as list and clears stack
   (define-lisp-word :list ()
@@ -485,7 +485,7 @@
                 :message (format nil "assert failed: ~a" cnd))))))
 
 (define-lifoo-init init-numbers
-  (define-lisp-ops () + - * / = /= < > cons)
+  (define-binary-words () + - * / = /= < > cons)
 
   (define-lisp-word :inc ()
     (incf (lifoo-peek)))
