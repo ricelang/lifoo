@@ -86,8 +86,10 @@
   env? trace?
   source fn)
 
-(define-condition lifoo-error (simple-error)
-  ((message :initarg :message :reader lifoo-error)))
+(define-condition lifoo-error (simple-error) ()) 
+
+(defun lifoo-error (fmt &rest args)
+  (error 'lifoo-error :format-control fmt :format-arguments args))
 
 (defun lifoo-read (&key (in *standard-input*))
   (let ((eof? (gensym)) (more?) (expr))
@@ -388,7 +390,7 @@
 
   ;; Pushes length of $1
   (define-lisp-word :length ()
-    (let ((val (lifoo-pop)))
+    (let ((val (lifoo-peek)))
       (lifoo-push
        (cond
          ((chan? val)
@@ -536,15 +538,22 @@
 
   ;; Pops $msg and signals error
   (define-lisp-word :error ()
-    (signal 'lifoo-error :message (lifoo-pop)))
+    (lifoo-error (lifoo-pop)))
 
   ;; Pops $cnd and signals error if NIL
   (define-lisp-word :assert ()
     (let* ((cnd (lifoo-pop))
            (ok? (progn (lifoo-eval cnd) (lifoo-pop))))
       (unless ok?
-        (signal 'lifoo-error
-                :message (format nil "assert failed: ~a" cnd))))))
+        (lifoo-error "assert failed: ~a" cnd))))
+
+  ;; Pops $expected and $actual,
+  ;; and signals error they don't compare equal  
+  (define-lisp-word :asseq ()
+    (let ((expected (lifoo-pop))
+          (actual (lifoo-pop)))
+      (unless (zerop (compare expected actual))
+        (lifoo-error "assert failed: ~a /= ~a" actual expected)))))
 
 (define-lifoo-init init-numbers
   (define-binary-words () + - * / = /= < > cons)

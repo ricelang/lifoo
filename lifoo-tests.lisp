@@ -32,18 +32,22 @@
       (:any :message) log dump-log first)
 
     (assert (eq
-             :failed
+             :ok
              (handler-case (do-lifoo ()
-                             :any-message error)    
-               (lifoo-error (e)
-                 (assert (eq :any-message (lifoo-error e)))
-                 :failed))))
+                              "message" error)    
+               (lifoo-error () :ok))))
 
     (assert (eq
-             :failed
+             :ok
              (handler-case (do-lifoo ()
                              (1 2 =) assert)    
-               (lifoo-error () :failed))))))
+               (lifoo-error () :ok))))
+
+    (assert (eq
+             :ok
+             (handler-case (do-lifoo ()
+                             1 2 asseq)    
+               (lifoo-error () :ok))))))
 
 (define-test (:lifoo :stack)
   (with-lifoo ()
@@ -137,7 +141,8 @@
       #(1 2 3) (2 *) map)
 
     (lifoo-asseq 6
-      #(1 2 3) (+) reduce)))
+      #(1 2 3) (+) reduce
+      stack length 2 asseq drop)))
 
 (define-test (:lifoo :comparisons)
   (with-lifoo ()
