@@ -99,10 +99,10 @@
       #(1 2 3) 1 4 set-nth)
 
     (lifoo-asseq 2
-      (1 2 3) pop drop pop)
+      (1 2 3) array pop drop pop)
     
-    (lifoo-asseq '(1 2 3)
-      (1) 2 push 3 push reverse)
+    (lifoo-asseq #(3 2 1)
+      nil array 1 push 2 push 3 push reverse)
     
     (lifoo-asseq #(2 4 6)
       #(1 2 3) (2 *) map)))

@@ -5,7 +5,8 @@
            lifoo-dump-log
            lifoo-env lifoo-env? lifoo-error lifoo-eval
            lifoo-fn lifoo-get
-           lifoo-init lifoo-init-comparisons lifoo-init-env
+           lifoo-init lifoo-init-arrays
+           lifoo-init-comparisons lifoo-init-env
            lifoo-init-flow lifoo-init-io lifoo-init-lists
            lifoo-init-meta lifoo-init-numbers lifoo-init-seqs
            lifoo-init-stack lifoo-init-strings lifoo-init-threads
@@ -441,6 +442,16 @@
   (define-lisp-word :first ()
     (lifoo-push (first (lifoo-pop)))))
 
+(define-lifoo-init init-arrays
+  ;; Pops $items and pushes new array
+  (define-lisp-word :array ()
+    (let* ((items (lifoo-pop))
+           (len (length items)))
+      (lifoo-push (make-array len
+                              :initial-contents items
+                              :adjustable t
+                              :fill-pointer len)))))
+
 (define-lifoo-init init-meta
   ;; Pops $val and pushes its symbolic representation
   (define-lisp-word :symbol ()
@@ -612,6 +623,7 @@
   (lifoo-init-strings)
   (lifoo-init-seqs)
   (lifoo-init-lists)
+  (lifoo-init-arrays)
   (lifoo-init-comparisons)
   (lifoo-init-env)
   (lifoo-init-io)
