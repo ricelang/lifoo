@@ -35,7 +35,8 @@
                    (make-lifoo-word :id ,(keyword! name)
                                     :env? ,env?
                                     :source ',body
-                                    :parsed '(progn ,@body)))))
+                                    :compiled (lambda ()
+                                                ,@body)))))
 
 (defmacro define-lisp-ops ((&key exec) &rest ops)
   "Defines new words in EXEC for OPS"
@@ -60,7 +61,7 @@
   "Runs BODY in EXEC"
   `(with-lifoo (:exec (or ,exec *lifoo*
                           (lifoo-init :exec (make-lifoo))))
-     (lifoo-eval '(,@body))
+     (lifoo-eval ',body)
      (lifoo-pop)))
 
 (defmacro lifoo-asseq (res &body body)
@@ -101,7 +102,7 @@
                (cond
                  ((consp e)
                   (rec (rest ex)
-                       (cons `(lifoo-push '(,@e)) acc)))
+                       (cons `(lifoo-push ',e) acc)))
                  ((null e)
                   (rec (rest ex)
                        (cons `(lifoo-push nil) acc)))
