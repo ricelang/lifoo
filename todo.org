@@ -13,8 +13,7 @@
 * add cond word
 :failed :ok (1 2 >) cond
 - :ok
-* make push/pop work on lists/arrays
-* add length for strings/lists/arrays
+* add length word strings/lists/arrays
 * add type check words
 ** t?
 ** string? number? list? cons? word? symbol? chan? thread?

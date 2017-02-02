@@ -403,6 +403,7 @@
     (let ((expr (lifoo-pop)) (seq (lifoo-pop)))
       (lifoo-push (map
                    (cond
+                     ((stringp seq) 'string)
                      ((arrayp seq) 'array)
                      (t 'list))
                    (eval `(lambda (it)

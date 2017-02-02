@@ -100,7 +100,10 @@
       (1) 2 push 3 push reverse)
     
     (lifoo-asseq '(2 4 6)
-      (1 2 3) (2 *) map)))
+      (1 2 3) (2 *) map)
+
+    (lifoo-asseq "***"
+      "abc" (drop #\*) map)))
 
 (define-test (:lifoo :comparisons)
   (with-lifoo ()
