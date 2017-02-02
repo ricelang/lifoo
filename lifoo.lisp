@@ -34,6 +34,7 @@
                    (make-lifoo-word :id ,(keyword! name)
                                     :env? ,env?
                                     :source ',body
+                                    :parsed ',(cons 'progn body)
                                     :compiled (lambda ()
                                                 ,@body)))))
 
@@ -136,13 +137,21 @@
   (with-lifoo (:exec exec)
     (eval `(progn ,@(lifoo-parse expr)))))
 
+(defun lifoo-parse-word (word &key (exec *lifoo*))
+  (or (parsed word)
+      (setf (parsed word)
+            (cons 'progn
+                  (lifoo-parse (source word) :exec exec)))))
+
+(defun lifoo-compile (word &key (exec *lifoo*))
+  (or (compiled word)
+      (setf (compiled word)
+            (eval `(lambda ()
+                     ,(lifoo-parse-word word :exec exec))))))
+
 (defun lifoo-call (word &key (exec *lifoo*))
   (with-lifoo (:exec exec)
-    (let ((fn (or (compiled word)
-                  (setf (compiled word)
-                        (eval
-                         `(lambda ()
-                            ,@(lifoo-parse (source word))))))))
+    (let ((fn (lifoo-compile word)))
       (when (trace? word)
         (push (list :enter (id word) (clone (stack exec)))
               (logs exec)))
@@ -154,6 +163,22 @@
       (when (trace? word)
         (push (list :exit (id word) (clone (stack exec)))
               (logs exec))))))
+
+(defun lifoo-inline (word &key (exec *lifoo*))
+  (with-lifoo (:exec exec)
+    (let ((expr (lifoo-parse-word word)))
+      `(progn
+         (when ,(trace? word)
+           (push (list :enter ,(id word) (clone (stack exec)))
+                 (logs exec)))
+         
+         (if ,(env? word)
+             (with-lifoo-env () ,expr)
+             ,expr)
+         
+         (when ,(trace? word)
+           (push (list :exit ,(id word) (clone (stack exec)))
+                 (logs exec)))))))
 
 (defun lifoo-define (id word &key (exec *lifoo*))
   "Defines ID as WORD in EXEC"  
@@ -333,13 +358,13 @@
           (body (lifoo-parse (lifoo-pop))))
       (dotimes (i reps)
         (lifoo-push i)
-        (eval `(progn ,@body)))))
+        (eval (cons 'progn body)))))
 
   ;; Pops $body and loops until $body pushes nil 
   (define-lisp-word :while ()
     (let ((body (lifoo-parse (lifoo-pop))) (res))
       (do-while ((progn
-                   (eval `(progn ,@body))
+                   (eval (cons 'progn body))
                    (setf res (lifoo-peek)))
                  res)
         (lifoo-pop)))))
@@ -429,6 +454,7 @@
     (let ((expr (lifoo-pop)))
       (lifoo-push (make-lifoo-word
                    :source expr
+                   :parsed expr
                    :compiled (eval `(lambda () ,expr))))))
   
   ;; Pops $expr and pushes result of evaluating
