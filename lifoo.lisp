@@ -104,7 +104,7 @@
       (push more? expr))
     (nreverse expr)))
 
-(defun lifoo-parse (expr &key (exec *lifoo*) (inline? nil))
+(defun lifoo-parse (expr &key (exec *lifoo*))
   "Parses EXPR and returns code compiled for EXEC"
   (labels
       ((rec (ex acc)
@@ -122,44 +122,34 @@
                  ((keywordp e)
                   (rec (rest ex) (cons `(lifoo-push ,e) acc)))
                  ((symbolp e)
-                  (let ((found? (or (lifoo-word e)
-                                    (error "missing word: ~a" e))))
+                  (let ((found (or (lifoo-word e)
+                                   (error "missing word: ~a" e))))
                     (rec (rest ex)
-                         (cons (if inline?
-                                   (lifoo-inline found?)
-                                   `(lifoo-call ,found?))
-                               acc))))
+                         (cons `(lifoo-call ,found) acc))))
                  ((lifoo-word-p e)
                   (rec (rest ex)
-                       (cons (if inline?
-                                 (lifoo-inline e)
-                                 `(lifoo-call ,e))
-                             acc)))
+                       (cons `(lifoo-call ,e) acc)))
                  (t
                   (rec (rest ex) (cons `(lifoo-push ,e) acc)))))
              (nreverse acc))))
     (with-lifoo (:exec exec)
       (rec (list! expr) nil))))
 
-(defun lifoo-parse-word (word &key (exec *lifoo*) (inline? nil))
+(defun lifoo-parse-word (word &key (exec *lifoo*))
   (setf (parsed word)
         (cons 'progn
-              (lifoo-parse (source word)
-                           :exec exec
-                           :inline? inline?))))
+              (lifoo-parse (source word) :exec exec))))
 
 (defun lifoo-eval (expr &key (exec *lifoo*))
   "Returns result of parsing and evaluating EXPR in EXEC"
   (with-lifoo (:exec exec)
     (eval `(progn ,@(lifoo-parse expr)))))
 
-(defun lifoo-compile (word &key (exec *lifoo*) (inline? nil))
+(defun lifoo-compile (word &key (exec *lifoo*))
   (setf (compiled word)
         (eval `(lambda ()
                  ,(or (parsed word)
-                      (lifoo-parse-word word
-                                        :exec exec
-                                        :inline? inline?))))))
+                      (lifoo-parse-word word :exec exec))))))
 
 (defun lifoo-call (word &key (exec *lifoo*))
   (with-lifoo (:exec exec)
