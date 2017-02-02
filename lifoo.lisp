@@ -1,7 +1,7 @@
 (defpackage lifoo
   (:export define-lifoo-init define-lisp-ops define-lisp-word
            define-word do-lifoo
-           lifoo-asseq lifoo-call lifoo-compile lifoo-define
+           lifoo-asseq lifoo-call lifoo-compile-word lifoo-define
            lifoo-dump-log
            lifoo-env? lifoo-error lifoo-eval
            lifoo-get
@@ -135,17 +135,17 @@
     (with-lifoo (:exec exec)
       (rec (list! expr) nil))))
 
-(defun lifoo-parse-word (word &key (exec *lifoo*))
-  (setf (parsed word)
-        (cons 'progn
-              (lifoo-parse (source word) :exec exec))))
-
 (defun lifoo-eval (expr &key (exec *lifoo*))
   "Returns result of parsing and evaluating EXPR in EXEC"
   (with-lifoo (:exec exec)
     (eval `(progn ,@(lifoo-parse expr)))))
 
-(defun lifoo-compile (word &key (exec *lifoo*))
+(defun lifoo-parse-word (word &key (exec *lifoo*))
+  (setf (parsed word)
+        (cons 'progn
+              (lifoo-parse (source word) :exec exec))))
+
+(defun lifoo-compile-word (word &key (exec *lifoo*))
   (setf (compiled word)
         (eval `(lambda ()
                  ,(or (parsed word)
@@ -153,7 +153,7 @@
 
 (defun lifoo-call (word &key (exec *lifoo*))
   (with-lifoo (:exec exec)
-    (let ((fn (or (compiled word) (lifoo-compile word))))
+    (let ((fn (or (compiled word) (lifoo-compile-word word))))
       (when (trace? word)
         (push (list :enter (id word) (clone (stack exec)))
               (logs exec)))
