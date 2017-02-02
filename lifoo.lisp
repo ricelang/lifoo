@@ -114,10 +114,10 @@
                   (let ((found? (or (lifoo-word e)
                                     (error "missing word: ~a" e))))
                     (rec (rest ex)
-                         (cons `(lifoo-call ,found?) acc))))
+                         (cons (lifoo-inline found?) acc))))
                  ((lifoo-word-p e)
                   (rec (rest ex)
-                       (cons `(lifoo-call ,e) acc)))
+                       (cons (lifoo-inline e) acc)))
                  (t
                   (rec (rest ex) (cons `(lifoo-push ,e) acc)))))
              (nreverse acc))))
