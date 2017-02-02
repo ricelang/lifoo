@@ -264,8 +264,12 @@
          (when-let (line (read-line in nil))
            (unless (string= "" line)
              (with-input-from-string (in line)
-               (lifoo-eval (lifoo-read :in in))
-               (format out "~a~%" (lifoo-pop)))
+               (restart-case
+                   (progn
+                     (lifoo-eval (lifoo-read :in in))
+                     (format out "~a~%" (lifoo-pop)))
+                 (ignore ()
+                   :report "Ignore error and continue.")))
              (go start))))))
 
 (defmacro define-lifoo-init (name &body body)
