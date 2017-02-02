@@ -437,7 +437,18 @@
                                 (lifoo-push it)
                                 ,@pred
                                 (lifoo-pop)))
-                       (lifoo-peek))))))
+                       (lifoo-peek)))))
+
+  ;; Pops $fn and replaces $1 with reduction by $fn
+  (define-lisp-word :reduce (:env? t)
+    (let ((fn (lifoo-parse (lifoo-pop))))
+      (setf (lifoo-peek)
+            (reduce (eval `(lambda (x y)
+                             (lifoo-push x)
+                             (lifoo-push y)
+                             ,@fn
+                             (lifoo-pop)))
+                    (lifoo-peek))))))
 
 (define-lifoo-init init-lists
   (define-binary-words () cons)

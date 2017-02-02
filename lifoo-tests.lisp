@@ -134,7 +134,10 @@
       nil array 1 push 2 push 3 push)
     
     (lifoo-asseq #(2 4 6)
-      #(1 2 3) (2 *) map)))
+      #(1 2 3) (2 *) map)
+
+    (lifoo-asseq 6
+      #(1 2 3) (+) reduce)))
 
 (define-test (:lifoo :comparisons)
   (with-lifoo ()
