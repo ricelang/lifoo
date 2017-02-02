@@ -256,7 +256,8 @@
                         (in *standard-input*)
                         (prompt "Lifoo>")
                         (out *standard-output*))
-  "Starts a REPL for EXEC"
+  "Starts a REPL for EXEC with input from IN and output to OUT,
+   using PROMPT"
   (with-lifoo (:exec exec :env t)
     (tagbody
        start
