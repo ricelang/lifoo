@@ -140,8 +140,9 @@
   (with-lifoo (:exec exec)
     (let ((fn (or (compiled word)
                   (setf (compiled word)
-                        (eval `(lambda ()
-                                 ,@(lifoo-parse (source word))))))))
+                        (eval
+                         `(lambda ()
+                            ,@(lifoo-parse (source word))))))))
       (when (trace? word)
         (push (list :enter (id word) (clone (stack exec)))
               (logs exec)))
