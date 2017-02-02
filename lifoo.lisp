@@ -27,9 +27,7 @@
 (defvar *lifoo* nil)
 (defvar *lifoo-env* nil)
 
-(defmacro define-lisp-word (name
-                            (&key (env? nil) exec)
-                            &body body)
+(defmacro define-lisp-word (name (&key env? exec) &body body)
   "Defines new word with NAME in EXEC from Lisp forms in BODY"
   `(with-lifoo (:exec (or ,exec *lifoo*))
      (lifoo-define ',name
@@ -38,18 +36,19 @@
                                     :source ',body
                                     :fn (lambda () ,@body)))))
 
-(defmacro define-binary-words ((&key exec) &rest forms)
+(defmacro define-binary-words ((&key env? exec) &rest forms)
   "Defines new words in EXEC for FORMS"
   (with-symbols (_lhs _rhs)
     `(with-lifoo (:exec (or ,exec *lifoo*))
        ,@(mapcar (lambda (op)
-                   `(define-lisp-word ,(keyword! op) (:env? nil)
+                   `(define-lisp-word ,(keyword! op)
+                        (:env? ,env? :exec ,exec)
                       (let ((,_lhs (lifoo-pop))
                             (,_rhs (lifoo-pop)))
                         (lifoo-push (,op ,_lhs ,_rhs)))))
                  forms))))
 
-(defmacro define-word (name (&key (env? t) exec) &body body)
+(defmacro define-word (name (&key env? exec) &body body)
   "Defines new word with NAME in EXEC from BODY"
   `(with-lifoo (:exec (or ,exec *lifoo*))
      (lifoo-define ',name
@@ -82,7 +81,7 @@
 
 (defstruct (lifoo-word (:conc-name))
   id
-  (env? t) trace?
+  env? trace?
   source fn)
 
 (define-condition lifoo-error (simple-error)
@@ -191,7 +190,7 @@
     (setf (aref stack (1- fp)) val)))
 
 (defun lifoo-env? (word)
-  "Returns T if WORD has separate environment, otherwise NIL"
+  "Returns T if WORD requires separate environment, otherwise NIL"
   (trace? word))
 
 (defun (setf lifoo-env?) (on? word)
@@ -278,12 +277,12 @@
           (lhs (lifoo-pop)))
       (lifoo-push (compare lhs rhs))))
   
-  (define-word :eq? (:env? nil) cmp 0 =)
-  (define-word :neq? (:env? nil) cmp 0 /=)
-  (define-word :lt? (:env? nil) cmp -1 =)
-  (define-word :gt? (:env? nil) cmp 1 =)
-  (define-word :lte? (:env? nil) cmp 1 <)
-  (define-word :gte? (:env? nil) cmp -1 >))
+  (define-word :eq? () cmp 0 =)
+  (define-word :neq? () cmp 0 /=)
+  (define-word :lt? () cmp -1 =)
+  (define-word :gt? () cmp 1 =)
+  (define-word :lte? () cmp 1 <)
+  (define-word :gte? () cmp -1 >))
 
 (define-lifoo-init init-env
   ;; Pushes copy of env as alist
@@ -321,7 +320,7 @@
 
   ;; Pops $cnd and $res;
   ;; and pushes $res unless $cnd, otherwise NIL
-  (define-word :unless (:env? nil) eval nil? when)
+  (define-word :unless () eval nil? when)
 
   ;; Pops $reps and $body;
   ;; and repeats $body $reps times,
