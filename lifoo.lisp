@@ -89,7 +89,7 @@
 
 (defstruct (lifoo-word (:conc-name))
   id
-  env? trace?
+  (env? t) trace?
   source parsed compiled)
 
 (define-condition lifoo-error (simple-error)
