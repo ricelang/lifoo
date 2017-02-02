@@ -2,4 +2,5 @@
 * add cond word
 :failed :ok (1 2 >) cond
 - :ok
-* add length word strings/lists/arrays
+* add length word
+** support strings/lists/arrays
