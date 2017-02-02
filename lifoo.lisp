@@ -362,6 +362,29 @@
     (terpri)))
 
 (define-lifoo-init init-seqs
+  ;; Pops $idx and pushes item from seq
+  (define-lisp-word :nth ()
+    (let* ((idx (lifoo-pop))
+           (seq (lifoo-peek))
+           (it (cond
+                 ((arrayp seq)
+                  (aref seq idx))
+                 (t
+                  (nth idx seq)))))
+      (lifoo-push it)))
+
+  ;; Pops $idx and $it,
+  ;; and updates item in $1
+  (define-lisp-word :set-nth ()
+    (let ((it (lifoo-pop))
+          (idx (lifoo-pop))
+          (seq (lifoo-peek)))
+      (cond
+        ((arrayp seq)
+         (setf (aref seq idx) it))
+        (t
+         (setf (nth idx seq) it)))))
+  
   ;; Pops item from seq in $1 and pushes it
   (define-lisp-word :pop ()
     (let* ((seq (lifoo-peek))

@@ -93,6 +93,12 @@
 (define-test (:lifoo :seqs)
   (with-lifoo ()
     (lifoo-asseq 2
+      #(1 2 3) 1 nth)
+
+    (lifoo-asseq #(1 4 3)
+      #(1 2 3) 1 4 set-nth)
+
+    (lifoo-asseq 2
       (1 2 3) pop drop pop)
     
     (lifoo-asseq '(1 2 3)
