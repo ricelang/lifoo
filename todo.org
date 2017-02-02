@@ -1,2 +1,1 @@
 * lifoo TODO
-* add each word to loop lists/arrays
