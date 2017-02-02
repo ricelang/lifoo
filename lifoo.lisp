@@ -443,7 +443,7 @@
   (define-lisp-word :untrace ()
     (let ((expr (lifoo-pop)))
       (if (eq t expr)
-          (do-hash-table ((words *lifoo*) _ w)
+          (do-hash-table (_ w (words *lifoo*))
             (setf (trace? w) nil))
           (setf (trace? (lifoo-word expr)) nil))))
 
