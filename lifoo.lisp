@@ -386,9 +386,15 @@
         (t
          (setf (nth idx seq) it)))))
 
-  ;; Pushes length of seq in $1
+  ;; Pushes length of $1
   (define-lisp-word :length ()
-    (lifoo-push (length (lifoo-pop))))
+    (let ((val (lifoo-pop)))
+      (lifoo-push
+       (cond
+         ((chan? val)
+          (chan-length val))
+         (t
+          (length val))))))
   
   ;; Pops item from seq in $1 and pushes it
   (define-lisp-word :pop ()
