@@ -8,3 +8,6 @@
 ** support strings/lists/arrays
 * add length word
 ** support strings/lists/arrays
+* add each word to loop lists/arrays
+* add type word
+** return :string / :number / :list / :array / :chan / :symbol
