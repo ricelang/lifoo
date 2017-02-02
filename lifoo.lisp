@@ -1,10 +1,10 @@
 (defpackage lifoo
   (:export define-lifoo-init define-binary-words define-lisp-word
            define-word do-lifoo
-           lifoo-asseq lifoo-call lifoo-compile-word lifoo-define
+           lifoo-asseq lifoo-call lifoo-define
            lifoo-dump-log
            lifoo-env? lifoo-error lifoo-eval
-           lifoo-get
+           lifoo-fn lifoo-get
            lifoo-init lifoo-init-comparisons lifoo-init-env
            lifoo-init-flow lifoo-init-io lifoo-init-lists
            lifoo-init-meta lifoo-init-numbers
@@ -36,9 +36,7 @@
                    (make-lifoo-word :id ,(keyword! name)
                                     :env? ,env?
                                     :source ',body
-                                    :parsed ',(cons 'progn body)
-                                    :compiled (lambda ()
-                                                ,@body)))))
+                                    :fn (lambda () ,@body)))))
 
 (defmacro define-binary-words ((&key exec) &rest ops)
   "Defines new words in EXEC for OPS"
@@ -90,16 +88,14 @@
 (defstruct (lifoo-word (:conc-name))
   id
   (env? t) trace?
-  source parsed compiled)
+  source fn)
 
 (define-condition lifoo-error (simple-error)
   ((message :initarg :message :reader lifoo-error)))
 
-(defparameter *eof* (gensym))
-
 (defun lifoo-read (&key (in *standard-input*))
-  (let ((more?) (expr))
-    (do-while ((not (eq (setf more? (read in nil *eof*)) *eof*)))
+  (let ((eof? (gensym)) (more?) (expr))
+    (do-while ((not (eq (setf more? (read in nil eof?)) eof?)))
       (push more? expr))
     (nreverse expr)))
 
@@ -139,21 +135,17 @@
   (with-lifoo (:exec exec)
     (eval `(progn ,@(lifoo-parse expr)))))
 
-(defun lifoo-parse-word (word &key (exec *lifoo*))
-  (or (parsed word)
-      (setf (parsed word)
-            (cons 'progn
-                  (lifoo-parse (source word) :exec exec)))))
-
-(defun lifoo-compile-word (word &key (exec *lifoo*))
-  (or (compiled word)
-      (setf (compiled word)
+(defun lifoo-fn (word &key (exec *lifoo*))
+  "Returns compiled function for WORD"
+  (or (fn word)
+      (setf (fn word)
             (eval `(lambda ()
-                     ,(lifoo-parse-word word :exec exec))))))
+                     ,@(lifoo-parse (source word) :exec exec))))))
 
 (defun lifoo-call (word &key (exec *lifoo*))
+  "Calls WORD in EXEC"
   (with-lifoo (:exec exec)
-    (let ((fn (lifoo-compile-word word)))
+    (let ((fn (lifoo-fn word)))
       (when (trace? word)
         (push (list :enter (id word) (clone (stack exec)))
               (logs exec)))
@@ -440,8 +432,7 @@
     (let ((expr (lifoo-pop)))
       (lifoo-push (make-lifoo-word
                    :source expr
-                   :parsed expr
-                   :compiled (eval `(lambda () ,expr))))))
+                   :fn (eval `(lambda () ,expr))))))
   
   ;; Pops $expr and pushes result of evaluating
   (define-lisp-word :eval ()
