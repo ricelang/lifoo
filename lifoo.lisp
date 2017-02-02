@@ -139,17 +139,16 @@
 
 (defun lifoo-call (word &key (exec *lifoo*))
   "Calls WORD in EXEC"
-  (with-lifoo (:exec exec :env (env? word))
-    (let ((fn (lifoo-fn word)))
-      (when (trace? word)
-        (push (list :enter (id word) (clone (stack exec)))
-              (logs exec)))
+  (when (trace? word)
+    (push (list :enter (id word) (clone (stack exec)))
+          (logs exec)))
 
-      (funcall fn)
-      
-      (when (trace? word)
-        (push (list :exit (id word) (clone (stack exec)))
-              (logs exec))))))
+  (with-lifoo (:exec exec :env (env? word))
+    (funcall (lifoo-fn word)))
+
+  (when (trace? word)
+    (push (list :exit (id word) (clone (stack exec)))
+          (logs exec))))
 
 (defun lifoo-define (id word &key (exec *lifoo*))
   "Defines ID as WORD in EXEC"  
