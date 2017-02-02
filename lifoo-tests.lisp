@@ -86,6 +86,9 @@
   (with-lifoo ()
     (lifoo-asseq 3
       "abc" length)
+
+    (lifoo-asseq "bcdbr"
+      "abacadabra" (#\a eq?) filter)
     
     (lifoo-asseq "123ABC"
       (1 2 3 abc) string)

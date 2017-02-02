@@ -427,7 +427,17 @@
                             (lifoo-push it)
                             ,@(lifoo-parse expr)
                             (lifoo-pop)))
-                   seq)))))
+                   seq))))
+
+  ;; Pops $pred and filters $1 by it
+  (define-lisp-word :filter (:env? t)
+    (let ((pred (lifoo-parse (lifoo-pop))))
+      (setf (lifoo-peek)
+            (remove-if (eval `(lambda (it)
+                                (lifoo-push it)
+                                ,@pred
+                                (lifoo-pop)))
+                       (lifoo-peek))))))
 
 (define-lifoo-init init-lists
   (define-binary-words () cons)
