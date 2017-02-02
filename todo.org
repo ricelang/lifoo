@@ -1,9 +1,4 @@
 * lifoo TODO
-* add inlining
-** change parse to pull in parsed rep from words
-*** inline down to lisp code
-*** use lifoo-inline
-
 * add backup word
 ** push copy-sequence to exec.backups
 * add restore word
