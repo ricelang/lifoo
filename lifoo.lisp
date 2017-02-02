@@ -81,7 +81,8 @@
 
 (defstruct (lifoo-exec (:conc-name)
                        (:constructor make-lifoo))
-  stack logs
+  (stack (make-array 3 :adjustable t :fill-pointer 0))
+  logs
   (words (make-hash-table :test 'eq)))
 
 (defstruct (lifoo-word (:conc-name))
@@ -170,16 +171,30 @@
   "Returns word named ID from EXEC or NIL if missing"  
   (gethash (keyword! id) (words exec)))
 
-(defun lifoo-push (expr &key (exec *lifoo*))
-  "Pushes EXPR onto EXEC's stack"  
-  (push expr (stack exec))
-  expr)
+(defun lifoo-push (val &key (exec *lifoo*))
+  "Pushes VAL onto EXEC stack"  
+  (vector-push-extend val (stack exec))
+  val)
 
 (defun lifoo-pop (&key (exec *lifoo*))
-  "Pops EXPR from EXEC's stack"
-  (when (stack exec)
-    (let ((val (pop (stack exec))))
+  "Pops and returns value from EXEC stack"
+  (unless (zerop (fill-pointer (stack exec)))
+    (let ((val (vector-pop (stack exec))))
       val)))
+
+(defun lifoo-peek (&key (exec *lifoo*))
+  "Returns top of EXEC stack"
+  (let* ((stack (stack exec))
+         (fp (fill-pointer stack)))
+    (unless (zerop fp)
+        (aref stack (1- fp)))))
+
+(defun (setf lifoo-peek) (val &key (exec *lifoo*))
+  "Replaces top of EXEC stack with VAL"
+  (let* ((stack (stack exec))
+         (fp (fill-pointer stack)))
+    (assert (not (zerop fp)))
+    (setf (aref stack (1- fp)) val)))
 
 (defun lifoo-env? (word)
   "Returns T if WORD runs in fresh environment, otherwise NIL"
@@ -328,7 +343,7 @@
     (let ((body (lifoo-parse (lifoo-pop))) (res))
       (do-while ((progn
                    (eval `(progn ,@body))
-                   (setf res (first (lifoo-stack))))
+                   (setf res (lifoo-peek)))
                  res)
         (lifoo-pop)))))
 
@@ -344,11 +359,11 @@
 (define-lifoo-init init-lists
   (define-lisp-ops () cons)
 
-  ;; Clears stack and pushes previous contents as list
+  ;; Pushes stack as list and clears stack
   (define-lisp-word :list ()
-    (let ((lst (stack *lifoo*)))
-      (setf (stack *lifoo*) nil)
-      (lifoo-push (nreverse lst))))
+    (let ((lst (map 'list #'identity (stack *lifoo*))))
+      (setf (fill-pointer (stack *lifoo*)) 0)
+      (lifoo-push lst))) 
 
   ;; Pops $list and pushes first element
   (define-lisp-word :first ()
@@ -360,13 +375,13 @@
 
   ;; Pops item from list in $1 and pushes it
   (define-lisp-word :pop ()
-    (let ((it (pop (first (stack *lifoo*)))))
+    (let ((it (pop (lifoo-peek))))
       (lifoo-push it)))
 
   ;; Pops $it and pushes it on list in $1
   (define-lisp-word :push ()
     (let ((it (lifoo-pop)))
-      (push it (first (stack *lifoo*)))))
+      (push it (lifoo-peek))))
 
   ;; Pops $list and pushes reversed list
   (define-lisp-word :reverse ()
@@ -449,7 +464,10 @@
   (define-lisp-ops () + - * / = /= < > cons)
 
   (define-lisp-word :inc ()
-    (incf (first (stack *lifoo*)))))
+    (incf (lifoo-peek)))
+
+  (define-lisp-word :dec ()
+    (decf (lifoo-peek))))
 
 (define-lifoo-init init-stack
   ;; Pushes stack on stack as list
@@ -462,11 +480,13 @@
 
   ;; Swaps $1 and $2
   (define-lisp-word :swap ()
-    (push (lifoo-pop) (rest (stack *lifoo*))))
+    (let ((x (lifoo-pop)) (y (lifoo-pop)))
+      (lifoo-push x)
+      (lifoo-push y)))  
   
   ;; Pushes $1 on stack
   (define-lisp-word :dup ()
-    (lifoo-push (first (stack *lifoo*)))))
+    (lifoo-push (lifoo-peek))))
 
 (define-lifoo-init init-strings
   ;; Pops $val and pushes string representation
@@ -515,11 +535,11 @@
   ;; Pops $msg and puts on channel in $1
   (define-lisp-word :chan-put ()
     (let ((msg (lifoo-pop)))
-      (chan-put (first (stack *lifoo*)) msg)))
+      (chan-put (lifoo-peek) msg)))
 
   ;; Gets and pushes message from channel in $1
   (define-lisp-word :chan-get ()
-    (let ((msg (chan-get (first (stack *lifoo*)))))
+    (let ((msg (chan-get (lifoo-peek))))
       (lifoo-push msg))))
 
 (define-lifoo-init init

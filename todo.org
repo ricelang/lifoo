@@ -1,17 +1,9 @@
 * lifoo TODO
-* change stack to array
-** update push/pop
-** remove copy-list in :stack
-** use (make-array stack-size :adjustable :fill-pointer 0)
-** use vector-push-extend and vector-pop
-
-* make push/pop work on lists/arrays
-* add length for strings/lists/arrays
-
 * add inlining
 ** change parse pull in parsed rep from words
 *** inline down to lisp code
 *** use lifoo-inline
+
 * add backup word
 ** push copy-sequence to exec.backups
 * add restore word
@@ -22,6 +14,8 @@
 :failed :ok (1 2 >) cond
 - :ok
 * change arg order in :map?
+* make push/pop work on lists/arrays
+* add length for strings/lists/arrays
 * add type check words
 ** t?
 ** string? number? list? cons? word? symbol? chan? thread?

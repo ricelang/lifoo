@@ -1,5 +1,5 @@
 (defpackage lifoo-tests
-  (:use cl cl4l-test lifoo))
+  (:use cl cl4l-compare cl4l-test lifoo))
 
 (in-package lifoo-tests)
 
@@ -42,11 +42,11 @@
 
 (define-test (:lifoo :stack)
   (with-lifoo ()
-    (lifoo-asseq '(3 2 1)
+    (lifoo-asseq #(1 2 3)
       1 2 3 stack)
 
     ;; Make sure that stack is left intact
-    (assert (equal '(3 2 1) (lifoo-stack)))
+    (assert (zerop (compare #(1 2 3) (lifoo-stack))))
     
     (lifoo-asseq 1
       1 dup drop)
