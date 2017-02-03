@@ -180,7 +180,13 @@
 
     ;; Pops $cnd and $res;
     ;; and pushes $res unless $cnd, otherwise NIL
-    (define-word :unless () eval nil? when)
+    (define-lisp-word :unless ()
+      (let ((cnd (lifoo-pop))
+            (res (lifoo-pop)))
+        (lifoo-eval cnd)
+        (if (lifoo-pop)
+            (lifoo-push nil)
+            (lifoo-eval res))))
 
     ;; Pops $reps and $body;
     ;; and repeats $body $reps times,
