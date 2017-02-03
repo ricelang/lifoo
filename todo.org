@@ -10,5 +10,3 @@ Lifoo
 * add init word
 ** call lifoo-init with protocols 
 (:strings) init
-* switch param order in do-index and do-table
-* rename table-clone to table-copy
