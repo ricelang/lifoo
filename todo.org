@@ -1,1 +1,2 @@
 * lifoo TODO
+** replace word.env? with (lifoo-)begin/end

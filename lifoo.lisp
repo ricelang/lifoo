@@ -67,11 +67,9 @@
   "Runs body with *LIFOO* bound to EXEC or new; environment
    is bound to ENV if not NIL, or copy of current if T"
   `(let ((*lifoo* (or ,exec (lifoo-init :exec (make-lifoo)))))
-     (when ,env
-       (push (if (eq t ,env) (copy-list (lifoo-env)) ,env)
-             (envs *lifoo*)))
+     (when ,env (lifoo-begin :env ,env))
      (unwind-protect (progn ,@body)
-       (when ,env (pop (envs *lifoo*))))))
+       (when ,env (lifoo-end)))))
 
 (defstruct (lifoo-exec (:conc-name)
                        (:constructor make-lifoo))
@@ -234,6 +232,13 @@
   "Returns current stack for EXEC"
   (stack exec))
 
+(defun lifoo-begin (&key (env t) (exec *lifoo*))
+  (push (if (eq t env) (copy-list (lifoo-env)) env)
+        (envs exec)))
+
+(defun lifoo-end (&key (exec *lifoo*))
+  (pop (envs exec)))
+
 (defun lifoo-env (&key (exec *lifoo*))
   "Returns current environment"
   (first (envs exec)))
@@ -325,11 +330,22 @@
       (setf (lifoo-get var) val)
       (lifoo-push val)))
 
+  ;; Pops $var;
+  ;; deletes it from current environment,
+  ;; and pushes value
   (define-lisp-word :del ()
     (let* ((var (lifoo-pop))
            (val (lifoo-get var)))
       (lifoo-del var)
-      (lifoo-push val))))
+      (lifoo-push val)))
+
+  ;; Opens new environment
+  (define-lisp-word :begin ()
+    (lifoo-begin))
+
+  ;; Closes current environment
+  (define-lisp-word :end ()
+    (lifoo-end)))
 
 (define-lifoo-init init-flow
   ;; Pops $cnd, $true and $false;

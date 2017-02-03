@@ -186,7 +186,7 @@
       :foo dup 42 set drop dup del swap get cons)
 
     (lifoo-asseq 42
-      :foo 42 set (:foo 43 set) eval :foo get)))
+      :foo 42 set begin :foo 43 set end :foo get)))
 
 (define-test (:lifoo :io)
   (assert (string= (format nil "hello lifoo!~%")
