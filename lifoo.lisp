@@ -530,7 +530,8 @@
   (define-lisp-word :eval (:env? t)
     (lifoo-eval (lifoo-pop)))
 
-  ;; Pops $id and $body, and defines and pushes word
+  ;; Pops $id and $body,
+  ;; and defines and pushes word
   (define-lisp-word :define ()
     (let* ((id (keyword! (lifoo-pop)))
            (body (lifoo-pop))
@@ -550,7 +551,7 @@
     (setf (trace? (lifoo-word (lifoo-pop))) t))
 
   ;; Pops $word and disabled tracing,
-  ;; disables all if T
+  ;; T disables all
   (define-lisp-word :untrace ()
     (let ((expr (lifoo-pop)))
       (if (eq t expr)
