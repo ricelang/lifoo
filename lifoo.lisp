@@ -17,16 +17,14 @@
            lifoo-stack
            lifoo-trace?
            lifoo-undefine
-           lifoo-word make-lifoo
-           with-lifoo
-           *lifoo* *lifoo-env*)
+           lifoo-word make-lifoo with-lifoo
+           *lifoo*)
   (:use bordeaux-threads cl cl4l-chan cl4l-clone cl4l-compare
         cl4l-test cl4l-utils))
 
 (in-package lifoo)
 
 (defvar *lifoo* nil)
-(defvar *lifoo-env* nil)
 
 (defmacro define-lisp-word (name (&key env? exec) &body body)
   "Defines new word with NAME in EXEC from Lisp forms in BODY"
@@ -71,14 +69,14 @@
   `(let ((*lifoo* (or ,exec (lifoo-init :exec (make-lifoo)))))
      (when ,env
        (push (if (eq t ,env) (copy-list (lifoo-env)) ,env)
-             *lifoo-env*))
+             (envs *lifoo*)))
      (unwind-protect (progn ,@body)
-       (when ,env (pop *lifoo-env*)))))
+       (when ,env (pop (envs *lifoo*))))))
 
 (defstruct (lifoo-exec (:conc-name)
                        (:constructor make-lifoo))
   (stack (make-array 3 :adjustable t :fill-pointer 0))
-  logs
+  envs logs
   (words (make-hash-table :test 'eq)))
 
 (defstruct (lifoo-word (:conc-name))
@@ -231,13 +229,13 @@
   "Returns current stack for EXEC"
   (stack exec))
 
-(defun lifoo-env ()
+(defun lifoo-env (&key (exec *lifoo*))
   "Returns current environment"
-  (first *lifoo-env*))
+  (first (envs exec)))
 
-(defun (setf lifoo-env) (env)
+(defun (setf lifoo-env) (env &key (exec *lifoo*))
   "Replaces current environment"
-  (rplaca *lifoo-env* env))
+  (rplaca (envs exec) env))
 
 (defun lifoo-get (var)
   "Returns value of VAR in EXEC"
