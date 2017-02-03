@@ -211,8 +211,8 @@
           (lifoo-pop))))
 
     ;; Breaks out from word
-    (define-lisp-word :break ()
-      (lifoo-break)))
+    (define-macro-word :break ()
+      (cons `(lifoo-break) forms)))
   
   (with-protocols (:string)
     ;; Pops $val and pushes string representation

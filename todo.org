@@ -1,24 +1,10 @@
 Lifoo
-* add break word
-** add lifoo-break condition
-** add lifoo-break fn to signal
-** handle in lifoo-call
-
 * add exec.inits
 ** change define-init to register ((protos) . lambda) in inits
 ** change lifoo-init do scan inits and run all matches for exec
 *** use set-difference to match all registered tags
 
 
-* add macro support
-** revert parse to acc again
-** add define-macro-word
-** call with acc
-** return (values result new-acc)
-
 * rename error to throw & add catch?
 ** add lifoo-throw condition with arg
 ** add lifoo-throw fn with arg
-
-(lifoo-asseq nil
-      nil (break push) 3 times)

@@ -122,7 +122,10 @@
       0 (inc dup 3 >) while drop)
     
     (lifoo-asseq '(2 1 0)
-      nil (push) 3 times)))
+      nil (push) 3 times)
+
+    (lifoo-asseq 1
+      0 (inc break inc) eval)))
 
 (define-test (:lifoo :string)
   (with-lifoo ()
