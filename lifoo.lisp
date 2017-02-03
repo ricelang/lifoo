@@ -1,11 +1,13 @@
 (defpackage lifoo
   (:export define-init define-binary-words define-lisp-word
            define-word do-lifoo
-           lifoo-call lifoo-define
-           lifoo-del lifoo-dump-log
+           lifoo-compile
+           lifoo-break
+           lifoo-call
+           lifoo-define lifoo-define-macro lifoo-del lifoo-dump-log
            lifoo-env lifoo-error lifoo-eval
-           lifoo-fn lifoo-get
-           lifoo-init lifoo-log
+           lifoo-get
+           lifoo-init lifoo-log lifoo-macro-word
            lifoo-parse lifoo-parse-word lifoo-pop lifoo-print-log
            lifoo-push
            lifoo-read lifoo-repl
@@ -21,6 +23,20 @@
 (in-package lifoo)
 
 (defvar *lifoo* nil)
+(defvar *lifoo-init* (make-hash-table :test 'equal))
+
+(defmacro define-init (tags &body body)
+  "Defines init for TAGS around BODY"
+  `(setf (gethash ',tags *lifoo-init*)
+         (lambda (exec)
+           (with-lifoo (:exec exec)
+             ,@body))))
+
+(defmacro define-macro-word (name (&key exec) &body body)
+  "Defines new macro word NAME in EXEC from Lisp forms in BODY"
+  `(lifoo-define-macro (keyword! ',name)
+                       (lambda (forms) ,@body)
+                       :exec (or ,exec *lifoo*)))
 
 (defmacro define-lisp-word (name (&key exec) &body body)
   "Defines new word with NAME in EXEC from Lisp forms in BODY"
@@ -31,11 +47,12 @@
                                     :fn (lambda () ,@body))
                    :exec (or ,exec *lifoo*))))
 
-(defmacro define-macro-word (name (&key exec) &body body)
-  "Defines new macro word NAME in EXEC from Lisp forms in BODY"
-  `(lifoo-define-macro (keyword! ',name)
-                       (lambda (forms) ,@body)
-                       :exec (or ,exec *lifoo*)))
+(defmacro define-word (name (&key exec) &body body)
+  "Defines new word with NAME in EXEC from BODY"
+  `(lifoo-define ',name
+                 (make-lifoo-word :id ,(keyword! name)
+                                  :source ',body)
+                 :exec (or ,exec *lifoo*)))
 
 (defmacro define-binary-words ((&key exec) &rest forms)
   "Defines new words in EXEC for FORMS"
@@ -47,13 +64,6 @@
                             (,_rhs (lifoo-pop)))
                         (lifoo-push (,op ,_lhs ,_rhs)))))
                  forms))))
-
-(defmacro define-word (name (&key exec) &body body)
-  "Defines new word with NAME in EXEC from BODY"
-  `(lifoo-define ',name
-                 (make-lifoo-word :id ,(keyword! name)
-                                  :source ',body)
-                 :exec (or ,exec *lifoo*)))
 
 (defmacro do-lifoo ((&key (env t) exec) &body body)
   "Runs BODY in EXEC"
@@ -90,6 +100,16 @@
 
 (defun lifoo-error (fmt &rest args)
   (error 'lifoo-error :format-control fmt :format-arguments args))
+
+(defun lifoo-init (tags &key (exec *lifoo*))
+  (let ((cnt 0))
+    (do-hash-table (ts fn *lifoo-init*)
+      (when (or (eq t tags)
+                (null (set-difference ts tags)))
+        (funcall fn exec)
+        (incf cnt)))
+    (assert (not (zerop cnt))))
+  exec)
 
 (defun lifoo-read (&key (in *standard-input*))
   "Reads Lifoo code from IN until end of file"
@@ -139,7 +159,7 @@
   (with-lifoo (:exec exec)
     (eval `(progn ,@(lifoo-parse expr)))))
 
-(defun lifoo-fn (word &key (exec *lifoo*))
+(defun lifoo-compile (word &key (exec *lifoo*))
   "Returns compiled function for WORD"
   (or (fn word)
       (setf (fn word)
@@ -161,7 +181,7 @@
   (with-lifoo (:exec exec)
     (handler-case
         (progn 
-          (funcall (lifoo-fn word))
+          (funcall (lifoo-compile word))
 
           (when (trace? word)
             (push (list :exit (id word) (clone (stack exec)))

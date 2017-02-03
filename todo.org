@@ -1,9 +1,8 @@
 Lifoo
 * add exec.inits
 ** change define-init to register ((protos) . lambda) in inits
-** change lifoo-init do scan inits and run all matches for exec
+** change lifoo-init to scan inits and run all matches for exec
 *** use set-difference to match all registered tags
-
 
 * rename error to throw & add catch?
 ** add lifoo-throw condition with arg
