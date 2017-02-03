@@ -24,16 +24,16 @@
 
 (defmacro define-lisp-word (name (&key exec) &body body)
   "Defines new word with NAME in EXEC from Lisp forms in BODY"
-  `(with-lifoo (:exec (or ,exec *lifoo*))
-     (lifoo-define ',name
-                   (make-lifoo-word :id ,(keyword! name)
-                                    :source ',body
-                                    :fn (lambda () ,@body)))))
+  `(lifoo-define ',name
+                 (make-lifoo-word :id ,(keyword! name)
+                                  :source ',body
+                                  :fn (lambda () ,@body))
+                 :exec (or ,exec *lifoo*)))
 
 (defmacro define-binary-words ((&key exec) &rest forms)
   "Defines new words in EXEC for FORMS"
   (with-symbols (_lhs _rhs)
-    `(with-lifoo (:exec (or ,exec *lifoo*))
+    `(progn
        ,@(mapcar (lambda (op)
                    `(define-lisp-word ,(keyword! op) (:exec ,exec)
                       (let ((,_lhs (lifoo-pop))
