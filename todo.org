@@ -1,2 +1,2 @@
 Lifoo
-*
+* change parse to use mapcar

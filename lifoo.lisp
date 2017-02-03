@@ -43,10 +43,10 @@
 
 (defmacro define-word (name (&key exec) &body body)
   "Defines new word with NAME in EXEC from BODY"
-  `(with-lifoo (:exec (or ,exec *lifoo*))
-     (lifoo-define ',name
-                   (make-lifoo-word :id ,(keyword! name)
-                                    :source ',body))))
+  `(lifoo-define ',name
+                 (make-lifoo-word :id ,(keyword! name)
+                                  :source ',body)
+                 :exec (or ,exec *lifoo*)))
 
 (defmacro do-lifoo ((&key (env t) exec) &body body)
   "Runs BODY in EXEC"
