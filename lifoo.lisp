@@ -104,10 +104,9 @@
                  ((keywordp e)
                   (rec (rest ex) (cons `(lifoo-push ,e) acc)))
                  ((symbolp e)
-                  (let ((word (or (lifoo-word e)
-                                  (error "missing word: ~a" e))))
-                    (rec (rest ex)
-                         (cons `(lifoo-call ,word) acc))))
+                  (rec (rest ex)
+                       (cons `(lifoo-call ',e)
+                             acc)))
                  ((lifoo-word-p e)
                   (rec (rest ex)
                        (cons `(lifoo-call ,e) acc)))
@@ -131,6 +130,10 @@
 
 (defun lifoo-call (word &key (exec *lifoo*))
   "Calls WORD in EXEC"
+  (unless (lifoo-word-p word)
+    (unless (setf word (lifoo-word word))
+      (error "missing word: ~a" word))) 
+  
   (when (trace? word)
     (push (list :enter (id word) (clone (stack exec)))
           (logs exec)))

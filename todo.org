@@ -1,7 +1,2 @@
 Lifoo
-* add init word
-** separate protocol (:init :meta)
-** support cons or kw param
-** call lifoo-init 
-(:strings) init
 * switch back to hash-table?

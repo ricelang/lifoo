@@ -65,20 +65,17 @@
       (lifoo-eval (lifoo-pop)))
 
     ;; Pops $id and $body,
-    ;; and defines and pushes word
+    ;; and defines word
     (define-lisp-word :define ()
       (let* ((id (keyword! (lifoo-pop)))
              (body (lifoo-pop))
              (word (make-lifoo-word :id id :source body)))
-        (lifoo-define id word)
-        (lifoo-push word)))
+        (lifoo-define id word)))
 
-    ;; Pops $id;
-    ;; and undefines and pushes T,
-    ;; or NIL if not found
+    ;; Pops $id and undefines word
     (define-lisp-word :undefine ()
       (let ((id (keyword! (lifoo-pop))))
-        (lifoo-push (lifoo-undefine id)))))
+        (lifoo-undefine id))))
 
   (with-protocols (:log)
     ;; Pops $word and enables tracing
