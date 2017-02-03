@@ -5,4 +5,5 @@
   :depends-on (:bordeaux-threads :cl4l)
   :serial t
   :components ((:file "lifoo")
-               (:file "lifoo-tests")))
+               (:file "init")
+               (:file "tests")))

@@ -1,12 +1,5 @@
 Lifoo
-* add init protocols
-** lifoo-init takes list of protocols
-** add with-protocols macrolet to define-init
-*** push protos to list
-*** only execute if match
-*** seqs: (with-protocols (:seqs :lists :strings :arrays)
-** return number of definitions
-** error if no match
 * add init word
 ** call lifoo-init with protocols 
 (:strings) init
+* switch back to hash-table?

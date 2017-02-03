@@ -10,6 +10,8 @@
 
 (define-test (:lifoo :basics)
   (with-lifoo ()
+    (lifoo-init '(:sequence :stack))
+
     (lifoo-asseq t
       nil nil?)
 
@@ -18,6 +20,8 @@
 
 (define-test (:lifoo :meta)
   (with-lifoo ()
+    (lifoo-init '(:list :meta :stack))
+    
     (lifoo-asseq t
       nil nil?)
 
@@ -26,9 +30,6 @@
 
     (lifoo-asseq 3
       1 2 "+" word eval)
-
-    (lifoo-asseq '(1 2 +)
-      (1 2 +))
 
     (lifoo-asseq 3
       (1 2 +) eval)
@@ -41,12 +42,16 @@
       1 2 :+ word eval)
     
     (lifoo-asseq '(:log (:any :message))
-      (:any :message) log dump-log first)
+      (:any :message) log dump-log first)))
 
+(define-test (:lifoo :meta)
+  (with-lifoo ()
+    (lifoo-init '(:error))
+    
     (assert (eq
              :ok
              (handler-case (do-lifoo ()
-                              "message" error)    
+                             "message" error)    
                (lifoo-error () :ok))))
 
     (assert (eq
@@ -63,6 +68,8 @@
 
 (define-test (:lifoo :stack)
   (with-lifoo ()
+    (lifoo-init '(:sequence :stack))
+
     (lifoo-asseq #(1 2 3)
       1 2 3 stack)
 
@@ -83,6 +90,8 @@
 
 (define-test (:lifoo :flow)
   (with-lifoo ()
+    (lifoo-init '(:flow :meta :sequence :stack))
+    
     (lifoo-asseq :true
       :false :true (1 1 =) cond)
     
@@ -98,8 +107,10 @@
     (lifoo-asseq '(2 1 0)
       nil (push) 3 times)))
 
-(define-test (:lifoo :strings)
+(define-test (:lifoo :string)
   (with-lifoo ()
+    (lifoo-init '(:compare :sequence :stack :string))
+
     (lifoo-asseq 3
       "abc" length)
 
@@ -112,8 +123,10 @@
     (lifoo-asseq "1+2=3"
       "~a+~a=~a" (1 2 3) format)))
 
-(define-test (:lifoo :lists)
+(define-test (:lifoo :list)
   (with-lifoo ()
+    (lifoo-init '(:list :sequence :stack))
+
     (lifoo-asseq '(2 . 1)
       1 2 cons)
     
@@ -132,8 +145,10 @@
     (lifoo-asseq '(1 2 3)
       nil 1 push 2 push 3 push reverse)))
 
-(define-test (:lifoo :arrays)
+(define-test (:lifoo :array)
   (with-lifoo ()
+    (lifoo-init '(:array :error :sequence :stack))
+    
     (lifoo-asseq 2
       #(1 2 3) 1 nth)
 
@@ -156,8 +171,10 @@
       #(1 2 3) (+) reduce
       stack length 2 asseq drop)))
 
-(define-test (:lifoo :comparisons)
+(define-test (:lifoo :compare)
   (with-lifoo ()
+    (lifoo-init '(:compare :stack))
+
     (lifoo-asseq t
       "abc" "abc" eq?)
     
@@ -173,8 +190,11 @@
     (lifoo-asseq nil
       "abc" "def" gt?)))
 
+
 (define-test (:lifoo :env)
   (with-lifoo ()
+    (lifoo-init '(:env :list :stack))
+
     (lifoo-asseq 42
       :foo 42 set drop :foo get)
     
@@ -188,14 +208,19 @@
       :foo 42 set begin :foo 43 set end :foo get)))
 
 (define-test (:lifoo :io)
-  (assert (string= (format nil "hello lifoo!~%")
-                   (with-output-to-string (out)
-                     (let ((*standard-output* out))
-                       (do-lifoo ()
-                         "hello lifoo!" print ln))))))
-
-(define-test (:lifoo :threads)
   (with-lifoo ()
+    (lifoo-init '(:io))
+    
+    (assert (string= (format nil "hello lifoo!~%")
+                     (with-output-to-string (out)
+                       (let ((*standard-output* out))
+                         (do-lifoo ()
+                           "hello lifoo!" print ln)))))))
+
+(define-test (:lifoo :thread)
+  (with-lifoo ()
+    (lifoo-init '(:list :stack :thread))
+
     (lifoo-asseq 42
       1 chan 42 chan-put chan-get)
     
