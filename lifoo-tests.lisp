@@ -11,11 +11,10 @@
 (define-test (:lifoo :basics)
   (with-lifoo ()
     (lifoo-asseq t
-      nil nil?))
+      nil nil?)
 
-  (with-lifoo ()
     (lifoo-asseq #(1 2 3)
-      (1 2 3) array clone pop drop drop)))
+      #(1 2 3) clone pop drop drop)))
 
 (define-test (:lifoo :meta)
   (with-lifoo ()
