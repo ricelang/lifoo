@@ -71,8 +71,9 @@
     ;; or NIL if not found
     (define-lisp-word :undefine ()
       (let ((id (keyword! (lifoo-pop))))
-        (lifoo-push (lifoo-undefine id))))
+        (lifoo-push (lifoo-undefine id)))))
 
+  (with-protos (:log)
     ;; Pops $word and enables tracing
     (define-lisp-word :trace ()
       (setf (trace? (lifoo-word (lifoo-pop))) t))
