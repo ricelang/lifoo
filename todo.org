@@ -1,6 +1,4 @@
 Lifoo
-* switch unless to native imp
-** remove meta from :flow test
 * add init word
 ** separate protocol (:init :meta)
 ** support cons or kw param

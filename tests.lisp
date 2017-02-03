@@ -20,11 +20,8 @@
 
 (define-test (:lifoo :meta)
   (with-lifoo ()
-    (lifoo-init '(:list :meta :stack))
+    (lifoo-init '(:meta :stack))
     
-    (lifoo-asseq t
-      nil nil?)
-
     (lifoo-asseq :lifoo
       "lifoo" symbol)
 
@@ -39,12 +36,16 @@
 
     (lifoo-asseq 42
       (drop drop 42) :+ define drop
-      1 2 :+ word eval)
-    
-    (lifoo-asseq '(:log (:any :message))
-      (:any :message) log dump-log first)))
+      1 2 :+ word eval)))
 
-(define-test (:lifoo :meta)
+(define-test (:lifoo :log)
+  (with-lifoo ()
+    (lifoo-init '(:log :stack))
+    
+    (lifoo-asseq '((:log (:any :message)))
+      (:any :message) log dump-log)))
+
+(define-test (:lifoo :error)
   (with-lifoo ()
     (lifoo-init '(:error))
     
