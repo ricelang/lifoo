@@ -208,7 +208,11 @@
                      (eval (cons 'progn body))
                      (setf res (lifoo-peek)))
                    res)
-          (lifoo-pop)))))
+          (lifoo-pop))))
+
+    ;; Breaks out from word
+    (define-lisp-word :break ()
+      (lifoo-break)))
   
   (with-protocols (:string)
     ;; Pops $val and pushes string representation

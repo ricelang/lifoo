@@ -1,6 +1,4 @@
 Lifoo
-* eval result arg from cond
-
 * add break word
 ** add lifoo-break condition
 ** add lifoo-break fn to signal
@@ -21,3 +19,6 @@ Lifoo
 * rename error to throw & add catch?
 ** add lifoo-throw condition with arg
 ** add lifoo-throw fn with arg
+
+(lifoo-asseq nil
+      nil (break push) 3 times)

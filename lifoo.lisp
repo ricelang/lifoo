@@ -74,7 +74,11 @@
   (stack (make-array 3 :adjustable t :fill-pointer 0))
   (words (make-hash-table :test 'eq)))
 
+(define-condition lifoo-break (condition) ()) 
 (define-condition lifoo-error (simple-error) ()) 
+
+(defun lifoo-break ()
+  (signal 'lifoo-break))
 
 (defun lifoo-error (fmt &rest args)
   (error 'lifoo-error :format-control fmt :format-arguments args))
@@ -131,11 +135,17 @@
           (logs exec)))
 
   (with-lifoo (:exec exec)
-    (funcall (lifoo-fn word)))
+    (handler-case
+        (progn 
+          (funcall (lifoo-fn word))
 
-  (when (trace? word)
-    (push (list :exit (id word) (clone (stack exec)))
-          (logs exec))))
+          (when (trace? word)
+            (push (list :exit (id word) (clone (stack exec)))
+                  (logs exec))))
+      (lifoo-break ()
+        (when (trace? word)
+          (push (list :break (id word) (clone (stack exec)))
+                (logs exec)))))))
 
 (defun lifoo-define (id word &key (exec *lifoo*))
   "Defines ID as WORD in EXEC"
@@ -201,6 +211,7 @@
   (dolist (e log)
     (apply #'format out
            (ecase (first e)
+             (:break "BREAK ~a ~a~%")
              (:enter "ENTER ~a ~a~%")
              (:exit  "EXIT  ~a ~a~%")
              (:log   "LOG   ~a~%"))
