@@ -8,27 +8,31 @@
    that compares equal to RES"
   `(asseq ,res (do-lifoo () reset ,@body)))
 
-(define-test (:lifoo :stack)
+(define-test (:lifoo :array)
   (with-lifoo ()
-    (lifoo-init '(t :sequence :stack))
-
-    (lifoo-asseq #(1 2 3)
-      1 2 3 stack)
-
-    ;; Make sure that stack is left intact
-    (assert (zerop (compare #(1 2 3) (lifoo-stack))))
-
-    (lifoo-asseq 42
-      stack 42 push)
-    
-    (lifoo-asseq 1
-      1 dup drop)
+    (lifoo-init '(t :array :error :sequence :stack))
     
     (lifoo-asseq 2
-      1 2 swap drop)
+      #(1 2 3) 1 nth)
 
-    (lifoo-asseq #(1 2)
-      1 2 backup 3 4 restore stack)))
+    (lifoo-asseq #(1 4 3)
+      #(1 2 3) 1 4 set-nth)
+
+    (lifoo-asseq 3
+      #(1 2 3) length)
+
+    (lifoo-asseq 2
+      (1 2 3) array pop drop pop)
+    
+    (lifoo-asseq #(1 2 3)
+      nil array 1 push 2 push 3 push)
+    
+    (lifoo-asseq #(2 4 6)
+      #(1 2 3) (2 *) map)
+
+    (lifoo-asseq 6
+      #(1 2 3) (+) reduce
+      stack length 2 asseq drop)))
 
 (define-test (:lifoo :basic)
   (with-lifoo ()
@@ -49,39 +53,41 @@
     (lifoo-asseq 3
       (1 2 +) eval)))
 
-(define-test (:lifoo :meta)
+(define-test (:lifoo :compare)
   (with-lifoo ()
-    (lifoo-init '(t :meta :stack))
+    (lifoo-init '(t :compare :stack))
 
-    (lifoo-asseq "LIFOO"
-      :string init "lifoo" upper)
-
-    (lifoo-asseq '(1 . 2)
-      (:list) init 2 1 cons)
+    (lifoo-asseq t
+      "abc" "abc" eq?)
     
-    (lifoo-asseq 43
-      42 (lifoo-push (1+ (lifoo-pop))) lisp eval)))
+    (lifoo-asseq nil
+      "abc" "abcd" eq?)
+    
+    (lifoo-asseq t
+      "abc" "abcd" neq?)
+    
+    (lifoo-asseq t
+      "abc" "def" lt?)
+    
+    (lifoo-asseq nil
+      "abc" "def" gt?)))
 
-(define-test (:lifoo :word)
+
+(define-test (:lifoo :env)
   (with-lifoo ()
-    (lifoo-init '(t :meta :stack :word))
-    
-    (lifoo-asseq 3
-      1 2 "+" word eval)
-
-    (lifoo-asseq '(42)
-      (42) :foo define :foo word source)
+    (lifoo-init '(t :env :list :stack))
 
     (lifoo-asseq 42
-      (drop drop 42) :+ define
-      1 2 +)))
-
-(define-test (:lifoo :log)
-  (with-lifoo ()
-    (lifoo-init '(t :log :stack))
+      :foo 42 set drop :foo get)
     
-    (lifoo-asseq '((:log (:any :message)))
-      (:any :message) log dump-log)))
+    (lifoo-asseq '((:foo . 42))
+      :foo 42 set env)
+    
+    (lifoo-asseq '(nil . 42)
+      :foo dup 42 set drop dup del swap get cons)
+
+    (lifoo-asseq 42
+      :foo 42 set begin :foo 43 set end :foo get)))
 
 (define-test (:lifoo :error)
   (with-lifoo ()
@@ -127,21 +133,15 @@
     (lifoo-asseq 1
       0 (inc break inc) eval)))
 
-(define-test (:lifoo :string)
+(define-test (:lifoo :io)
   (with-lifoo ()
-    (lifoo-init '(t :compare :sequence :stack :string))
-
-    (lifoo-asseq 3
-      "abc" length)
-
-    (lifoo-asseq "bcdbr"
-      "abacadabra" (#\a eq?) filter)
+    (lifoo-init '(t :io))
     
-    (lifoo-asseq "123ABC"
-      (1 2 3 abc) string)
-    
-    (lifoo-asseq "1+2=3"
-      "~a+~a=~a" (1 2 3) format)))
+    (assert (string= (format nil "hello lifoo!~%")
+                     (with-output-to-string (out)
+                       (let ((*standard-output* out))
+                         (do-lifoo ()
+                           "hello lifoo!" print ln)))))))
 
 (define-test (:lifoo :list)
   (with-lifoo ()
@@ -165,77 +165,63 @@
     (lifoo-asseq '(1 2 3)
       nil 1 push 2 push 3 push reverse)))
 
-(define-test (:lifoo :array)
+(define-test (:lifoo :log)
   (with-lifoo ()
-    (lifoo-init '(t :array :error :sequence :stack))
+    (lifoo-init '(t :log :stack))
+    
+    (lifoo-asseq '((:log (:any :message)))
+      (:any :message) log dump-log)))
+
+(define-test (:lifoo :meta)
+  (with-lifoo ()
+    (lifoo-init '(t :meta :stack))
+
+    (lifoo-asseq "LIFOO"
+      :string init "lifoo" upper)
+
+    (lifoo-asseq '(1 . 2)
+      (:list) init 2 1 cons)
+    
+    (lifoo-asseq 43
+      42 (lifoo-push (1+ (lifoo-pop))) lisp eval)))
+
+(define-test (:lifoo :stack)
+  (with-lifoo ()
+    (lifoo-init '(t :sequence :stack))
+
+    (lifoo-asseq #(1 2 3)
+      1 2 3 stack)
+
+    ;; Make sure that stack is left intact
+    (assert (zerop (compare #(1 2 3) (lifoo-stack))))
+
+    (lifoo-asseq 42
+      stack 42 push)
+    
+    (lifoo-asseq 1
+      1 dup drop)
     
     (lifoo-asseq 2
-      #(1 2 3) 1 nth)
+      1 2 swap drop)
 
-    (lifoo-asseq #(1 4 3)
-      #(1 2 3) 1 4 set-nth)
+    (lifoo-asseq #(1 2)
+      1 2 backup 3 4 restore stack)))
+
+(define-test (:lifoo :string)
+  (with-lifoo ()
+    (lifoo-init '(t :compare :sequence :stack :string))
 
     (lifoo-asseq 3
-      #(1 2 3) length)
+      "abc" length)
 
-    (lifoo-asseq 2
-      (1 2 3) array pop drop pop)
+    (lifoo-asseq "bcdbr"
+      "abacadabra" (#\a eq?) filter)
     
-    (lifoo-asseq #(1 2 3)
-      nil array 1 push 2 push 3 push)
+    (lifoo-asseq "123ABC"
+      (1 2 3 abc) string)
     
-    (lifoo-asseq #(2 4 6)
-      #(1 2 3) (2 *) map)
-
-    (lifoo-asseq 6
-      #(1 2 3) (+) reduce
-      stack length 2 asseq drop)))
-
-(define-test (:lifoo :compare)
-  (with-lifoo ()
-    (lifoo-init '(t :compare :stack))
-
-    (lifoo-asseq t
-      "abc" "abc" eq?)
-    
-    (lifoo-asseq nil
-      "abc" "abcd" eq?)
-    
-    (lifoo-asseq t
-      "abc" "abcd" neq?)
-    
-    (lifoo-asseq t
-      "abc" "def" lt?)
-    
-    (lifoo-asseq nil
-      "abc" "def" gt?)))
-
-
-(define-test (:lifoo :env)
-  (with-lifoo ()
-    (lifoo-init '(t :env :list :stack))
-
-    (lifoo-asseq 42
-      :foo 42 set drop :foo get)
-    
-    (lifoo-asseq '((:foo . 42))
-      :foo 42 set env)
-    
-    (lifoo-asseq '(nil . 42)
-      :foo dup 42 set drop dup del swap get cons)
-
-    (lifoo-asseq 42
-      :foo 42 set begin :foo 43 set end :foo get)))
-
-(define-test (:lifoo :io)
-  (with-lifoo ()
-    (lifoo-init '(t :io))
-    
-    (assert (string= (format nil "hello lifoo!~%")
-                     (with-output-to-string (out)
-                       (let ((*standard-output* out))
-                         (do-lifoo ()
-                           "hello lifoo!" print ln)))))))
+    (lifoo-asseq "1+2=3"
+      "~a+~a=~a" (1 2 3) format)))
 
 (define-test (:lifoo :thread)
   (with-lifoo ()
@@ -248,3 +234,17 @@
       0 chan (1 2 + chan-put :done) thread swap 
       chan-get swap drop swap 
       join-thread cons)))
+
+(define-test (:lifoo :word)
+  (with-lifoo ()
+    (lifoo-init '(t :meta :stack :word))
+    
+    (lifoo-asseq 3
+      1 2 "+" word eval)
+
+    (lifoo-asseq '(42)
+      (42) :foo define :foo word source)
+
+    (lifoo-asseq 42
+      (drop drop 42) :+ define
+      1 2 +)))
