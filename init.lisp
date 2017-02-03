@@ -1,15 +1,17 @@
 (in-package lifoo)
 
 (defmacro define-lifoo-init (name &body body)
-  "Defines NAME-init around BODY with exec"
-  `(defun ,(symbol! 'lifoo- name) (protos &key (exec *lifoo*))
-     (with-lifoo (:exec exec)
-       (macrolet ((with-protos (ps &body pbody)
-                    `(when (or (eq t protos)
-                               (intersection ',ps protos))
-                       ,@pbody)))
-         ,@body))
-     exec))
+  "Defines NAME-init around BODY with protocol support"
+  (with-symbols (_exec _protos)
+    `(defun ,(symbol! 'lifoo- name) (,_protos
+                                     &key (,_exec *lifoo*))
+       (with-lifoo (:exec ,_exec)
+         (macrolet ((with-protos (ps &body pbody)
+                      `(when (or (eq t ,',_protos)
+                                 (intersection ',ps ,',_protos))
+                         ,@pbody)))
+           ,@body))
+       ,_exec)))
 
 (define-lifoo-init init
   ;; Pops $val and pushes T if NIL,
