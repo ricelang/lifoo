@@ -16,7 +16,7 @@
            with-lifoo
            *lifoo*)
   (:use bordeaux-threads cl cl4l-chan cl4l-clone cl4l-compare
-        cl4l-index cl4l-test cl4l-utils))
+        cl4l-test cl4l-utils))
 
 (in-package lifoo)
 
@@ -70,9 +70,9 @@
 
 (defstruct (lifoo-exec (:conc-name)
                        (:constructor make-lifoo))
-  (stack (make-array 3 :adjustable t :fill-pointer 0))
   envs logs
-  (words (index #'id)))
+  (stack (make-array 3 :adjustable t :fill-pointer 0))
+  (words (make-hash-table :test 'eq)))
 
 (define-condition lifoo-error (simple-error) ()) 
 
@@ -146,22 +146,19 @@
 
 (defun lifoo-define (id word &key (exec *lifoo*))
   "Defines ID as WORD in EXEC"
-  (let ((idx (words exec))
-        (key (keyword! id)))
-    (index-remove idx key)
-    (index-add idx word :key key)))
+  (setf (gethash (keyword! id) (words exec)) word))
 
 (defun lifoo-undefine (word &key (exec *lifoo*))
   "Undefines word for ID in EXEC"
-  (index-remove (words exec) (if (lifoo-word-p word)
-                                 (id word)
-                                 (keyword! word))))
+  (remhash (words exec) (if (lifoo-word-p word)
+                            (id word)
+                            (keyword! word))))
 
 (defun lifoo-word (word &key (exec *lifoo*))
   "Returns WORD from EXEC, or NIL if missing"
   (if (lifoo-word-p word)
       word
-      (index-find (words exec) (keyword! word))))
+      (gethash (keyword! word) (words exec))))
 
 (defun lifoo-push (val &key (exec *lifoo*))
   "Pushes VAL onto EXEC stack"  

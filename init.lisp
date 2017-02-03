@@ -87,7 +87,7 @@
     (define-lisp-word :untrace ()
       (let ((expr (lifoo-pop)))
         (if (eq t expr)
-            (do-index (_ w (words *lifoo*))
+            (do-hash-table (_ w (words *lifoo*))
               (setf (trace? w) nil))
             (setf (trace? (lifoo-word expr)) nil))))
 
