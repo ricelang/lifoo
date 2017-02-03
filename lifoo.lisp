@@ -5,7 +5,7 @@
            lifoo-del lifoo-dump-log
            lifoo-env lifoo-env? lifoo-error lifoo-eval
            lifoo-fn lifoo-get
-           lifoo-init lifoo-init-arrays
+           lifoo-init lifoo-init-arrays lifoo-init-basics
            lifoo-init-comparisons lifoo-init-env
            lifoo-init-flow lifoo-init-io lifoo-init-lists
            lifoo-init-meta lifoo-init-numbers lifoo-init-seqs
@@ -283,12 +283,17 @@
      (with-lifoo (:exec exec) ,@body)
      exec))
 
-(define-lifoo-init init-comparisons
+(define-lifoo-init init-basics
   ;; Pops $val and pushes T if NIL,
   ;; otherwise NIL
   (define-lisp-word :nil? ()
     (lifoo-push (null (lifoo-pop))))
-  
+
+  ;; Pushes clone of $1
+  (define-lisp-word :clone ()
+    (lifoo-push (clone (lifoo-peek)))))
+
+(define-lifoo-init init-comparisons  
   ;; Pops $rhs and $lhs,
   ;; and pushes result of comparing $lhs to $rhs
   (define-lisp-word :cmp ()
@@ -670,6 +675,7 @@
       (lifoo-push msg))))
 
 (define-lifoo-init init
+  (lifoo-init-basics)
   (lifoo-init-meta)
   (lifoo-init-stack)
   (lifoo-init-flow)
