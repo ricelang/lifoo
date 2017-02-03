@@ -156,13 +156,18 @@
   "Defines ID as WORD in EXEC"  
   (setf (gethash (keyword! id) (words exec)) word))
 
-(defun lifoo-undefine (id &key (exec *lifoo*))
+(defun lifoo-undefine (word &key (exec *lifoo*))
   "Undefines word for ID in EXEC"  
-  (remhash (keyword! id) (words exec)))
+  (remhash (if (lifoo-word-p word)
+               (id word)
+               (keyword! word))
+           (words exec)))
 
-(defun lifoo-word (id &key (exec *lifoo*))
-  "Returns word for ID from EXEC, or NIL if missing"  
-  (gethash (keyword! id) (words exec)))
+(defun lifoo-word (word &key (exec *lifoo*))
+  "Returns WORD from EXEC, or NIL if missing"
+  (if (lifoo-word-p word)
+      word
+      (gethash (keyword! word) (words exec))))
 
 (defun lifoo-push (val &key (exec *lifoo*))
   "Pushes VAL onto EXEC stack"  
@@ -279,6 +284,11 @@
      exec))
 
 (define-lifoo-init init-comparisons
+  ;; Pops $val and pushes T if NIL,
+  ;; otherwise NIL
+  (define-lisp-word :nil? ()
+    (lifoo-push (null (lifoo-pop))))
+  
   ;; Pops $rhs and $lhs,
   ;; and pushes result of comparing $lhs to $rhs
   (define-lisp-word :cmp ()
@@ -499,11 +509,11 @@
     (let ((word (lifoo-word (lifoo-pop))))
       (lifoo-push word)))
 
-  ;; Pops $val and pushes T if NIL,
-  ;; otherwise NIL
-  (define-lisp-word :nil? ()
-    (lifoo-push (null (lifoo-pop))))
-
+  ;; Pops word and pushes source
+  (define-lisp-word :source ()
+    (let ((word (lifoo-word (lifoo-pop))))
+      (lifoo-push (source word))))
+  
   ;; Pops $expr and pushes function that evaluates $expr as Lisp
   (define-lisp-word :lisp ()
     (let ((expr (lifoo-pop)))
