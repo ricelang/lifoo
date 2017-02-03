@@ -169,7 +169,7 @@
             (true (lifoo-pop))
             (false (lifoo-pop)))
         (lifoo-eval cnd)
-        (lifoo-push (if (lifoo-pop) true false))))
+        (lifoo-eval (if (lifoo-pop) true false))))
     
     ;; Pops $cnd and $res;
     ;; and pushes $res if $cnd, otherwise NIL
