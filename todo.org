@@ -1,5 +1,4 @@
 Lifoo
-* replace env? with (lifoo-)begin/end in definitions
 * switch to index for words
 ** compare perf 
 * add tags to words and allow importing by tags

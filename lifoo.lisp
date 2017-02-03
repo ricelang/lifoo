@@ -3,7 +3,7 @@
            define-word do-lifoo
            lifoo-call lifoo-define
            lifoo-del lifoo-dump-log
-           lifoo-env lifoo-env? lifoo-error lifoo-eval
+           lifoo-env lifoo-error lifoo-eval
            lifoo-fn lifoo-get
            lifoo-init lifoo-init-arrays lifoo-init-basics
            lifoo-init-comparisons lifoo-init-env
@@ -17,7 +17,8 @@
            lifoo-stack
            lifoo-trace?
            lifoo-undefine
-           lifoo-word make-lifoo with-lifoo
+           lifoo-word make-lifoo
+           with-lifoo
            *lifoo*)
   (:use bordeaux-threads cl cl4l-chan cl4l-clone cl4l-compare
         cl4l-test cl4l-utils))
@@ -26,33 +27,30 @@
 
 (defvar *lifoo* nil)
 
-(defmacro define-lisp-word (name (&key env? exec) &body body)
+(defmacro define-lisp-word (name (&key exec) &body body)
   "Defines new word with NAME in EXEC from Lisp forms in BODY"
   `(with-lifoo (:exec (or ,exec *lifoo*))
      (lifoo-define ',name
                    (make-lifoo-word :id ,(keyword! name)
-                                    :env? ,env?
                                     :source ',body
                                     :fn (lambda () ,@body)))))
 
-(defmacro define-binary-words ((&key env? exec) &rest forms)
+(defmacro define-binary-words ((&key exec) &rest forms)
   "Defines new words in EXEC for FORMS"
   (with-symbols (_lhs _rhs)
     `(with-lifoo (:exec (or ,exec *lifoo*))
        ,@(mapcar (lambda (op)
-                   `(define-lisp-word ,(keyword! op)
-                        (:env? ,env? :exec ,exec)
+                   `(define-lisp-word ,(keyword! op) (:exec ,exec)
                       (let ((,_lhs (lifoo-pop))
                             (,_rhs (lifoo-pop)))
                         (lifoo-push (,op ,_lhs ,_rhs)))))
                  forms))))
 
-(defmacro define-word (name (&key env? exec) &body body)
+(defmacro define-word (name (&key exec) &body body)
   "Defines new word with NAME in EXEC from BODY"
   `(with-lifoo (:exec (or ,exec *lifoo*))
      (lifoo-define ',name
                    (make-lifoo-word :id ,(keyword! name)
-                                    :env? ,env?
                                     :source ',body))))
 
 (defmacro do-lifoo ((&key (env t) exec) &body body)
@@ -79,7 +77,7 @@
 
 (defstruct (lifoo-word (:conc-name))
   id
-  env? trace?
+  trace?
   source fn)
 
 (define-condition lifoo-error (simple-error) ()) 
@@ -143,7 +141,7 @@
     (push (list :enter (id word) (clone (stack exec)))
           (logs exec)))
 
-  (with-lifoo (:exec exec :env (env? word))
+  (with-lifoo (:exec exec)
     (funcall (lifoo-fn word)))
 
   (when (trace? word)
@@ -191,14 +189,6 @@
          (fp (fill-pointer stack)))
     (assert (not (zerop fp)))
     (setf (aref stack (1- fp)) val)))
-
-(defun lifoo-env? (word)
-  "Returns T if WORD requires separate environment, otherwise NIL"
-  (env? word))
-
-(defun (setf lifoo-env?) (on? word)
-  "Enables/disables separate environment for WORD"
-  (setf (env? word) on?))
 
 (defun lifoo-trace? (word)
   "Returns T if WORD is traced, otherwise NIL"
@@ -352,7 +342,7 @@
 (define-lifoo-init init-flow
   ;; Pops $cnd, $true and $false;
   ;; and pushes $true if $cnd, otherwise $false
-  (define-lisp-word :cond (:env? t)
+  (define-lisp-word :cond ()
     (let ((cnd (lifoo-pop))
           (true (lifoo-pop))
           (false (lifoo-pop)))
@@ -361,7 +351,7 @@
   
   ;; Pops $cnd and $res;
   ;; and pushes $res if $cnd, otherwise NIL
-  (define-lisp-word :when (:env? t)
+  (define-lisp-word :when ()
     (let ((cnd (lifoo-pop))
           (res (lifoo-pop)))
       (lifoo-eval cnd)
@@ -376,7 +366,7 @@
   ;; Pops $reps and $body;
   ;; and repeats $body $reps times,
   ;; pushing indexes before evaluating body
-  (define-lisp-word :times (:env? t)
+  (define-lisp-word :times ()
     (let ((reps (lifoo-pop))
           (body (lifoo-parse (lifoo-pop))))
       (dotimes (i reps)
@@ -384,7 +374,7 @@
         (eval (cons 'progn body)))))
 
   ;; Pops $body and loops until $body pushes nil 
-  (define-lisp-word :while (:env? t)
+  (define-lisp-word :while ()
     (let ((body (lifoo-parse (lifoo-pop))) (res))
       (do-while ((progn
                    (eval (cons 'progn body))
@@ -461,7 +451,7 @@
 
   ;; Pops $fn and $seq,
   ;; and pushes result of mapping $fn over $seq
-  (define-lisp-word :map (:env? t)
+  (define-lisp-word :map ()
     (let ((expr (lifoo-pop)) (seq (lifoo-pop)))
       (lifoo-push (map
                    (cond
@@ -475,7 +465,7 @@
                    seq))))
 
   ;; Pops $pred and filters $1 by it
-  (define-lisp-word :filter (:env? t)
+  (define-lisp-word :filter ()
     (let ((pred (lifoo-parse (lifoo-pop))))
       (setf (lifoo-peek)
             (remove-if (eval `(lambda (it)
@@ -485,7 +475,7 @@
                        (lifoo-peek)))))
 
   ;; Pops $fn and replaces $1 with reduction by $fn
-  (define-lisp-word :reduce (:env? t)
+  (define-lisp-word :reduce ()
     (let ((fn (lifoo-parse (lifoo-pop))))
       (setf (lifoo-peek)
             (reduce (eval `(lambda (x y)
@@ -545,7 +535,7 @@
                    :fn (eval `(lambda () ,expr))))))
   
   ;; Pops $expr and pushes result of evaluating
-  (define-lisp-word :eval (:env? t)
+  (define-lisp-word :eval ()
     (lifoo-eval (lifoo-pop)))
 
   ;; Pops $id and $body,
