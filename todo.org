@@ -3,5 +3,13 @@ Lifoo
 * switch to index for words
 ** compare perf 
 * add tags to words and allow importing by tags
-** lifoo-init takes tags and skip
-** add with-proto macrolet to define-init
+** lifoo-init takes list of protocols
+** add with-protocols macrolet to define-init
+*** push protos to list
+*** only execute if match
+*** seqs: (with-protocols (:seqs :lists :strings :arrays)
+** return number of definitions
+** error if no match
+* add init word
+** call lifoo-init with protocols 
+(:strings) init
