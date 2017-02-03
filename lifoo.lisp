@@ -233,10 +233,12 @@
   (stack exec))
 
 (defun lifoo-begin (&key (env t) (exec *lifoo*))
+  "Opens ENV or new environment if T in EXEC"
   (push (if (eq t env) (copy-list (lifoo-env)) env)
         (envs exec)))
 
 (defun lifoo-end (&key (exec *lifoo*))
+  "Closes current environment in EXEC"
   (pop (envs exec)))
 
 (defun lifoo-env (&key (exec *lifoo*))
