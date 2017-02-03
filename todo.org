@@ -1,10 +1,1 @@
 * lifoo TODO
-* add clone word
-* add source word
-** push source on stack
-* change word to return word if wordp
-* add define word
-** call word on arg
-(dup +) :double define
- * add undefine word
-:double undefine

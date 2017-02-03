@@ -529,7 +529,22 @@
   ;; Pops $expr and pushes result of evaluating
   (define-lisp-word :eval (:env? t)
     (lifoo-eval (lifoo-pop)))
-  
+
+  ;; Pops $id and $body, and defines and pushes word
+  (define-lisp-word :define ()
+    (let* ((id (keyword! (lifoo-pop)))
+           (body (lifoo-pop))
+           (word (make-lifoo-word :id id :source body)))
+      (lifoo-define id word)
+      (lifoo-push word)))
+
+  ;; Pops $id;
+  ;; and undefines and pushes T,
+  ;; or NIL if not found
+  (define-lisp-word :undefine ()
+    (let ((id (keyword! (lifoo-pop))))
+      (lifoo-push (lifoo-undefine id))))
+
   ;; Pops $word and enables tracing
   (define-lisp-word :trace ()
     (setf (trace? (lifoo-word (lifoo-pop))) t))
