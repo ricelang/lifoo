@@ -1,7 +1,5 @@
 Lifoo
-* switch to index for words
-** compare perf 
-* add tags to words and allow importing by tags
+* add init protocols
 ** lifoo-init takes list of protocols
 ** add with-protocols macrolet to define-init
 *** push protos to list
@@ -12,3 +10,5 @@ Lifoo
 * add init word
 ** call lifoo-init with protocols 
 (:strings) init
+* switch param order in do-index and do-table
+* rename table-clone to table-copy

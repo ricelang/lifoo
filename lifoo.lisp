@@ -21,7 +21,7 @@
            with-lifoo
            *lifoo*)
   (:use bordeaux-threads cl cl4l-chan cl4l-clone cl4l-compare
-        cl4l-test cl4l-utils))
+        cl4l-index cl4l-test cl4l-utils))
 
 (in-package lifoo)
 
@@ -69,16 +69,16 @@
      (unwind-protect (progn ,@body)
        (when ,env (lifoo-end)))))
 
-(defstruct (lifoo-exec (:conc-name)
-                       (:constructor make-lifoo))
-  (stack (make-array 3 :adjustable t :fill-pointer 0))
-  envs logs
-  (words (make-hash-table :test 'eq)))
-
 (defstruct (lifoo-word (:conc-name))
   id
   trace?
   source fn)
+
+(defstruct (lifoo-exec (:conc-name)
+                       (:constructor make-lifoo))
+  (stack (make-array 3 :adjustable t :fill-pointer 0))
+  envs logs
+  (words (index #'id)))
 
 (define-condition lifoo-error (simple-error) ()) 
 
@@ -149,21 +149,23 @@
           (logs exec))))
 
 (defun lifoo-define (id word &key (exec *lifoo*))
-  "Defines ID as WORD in EXEC"  
-  (setf (gethash (keyword! id) (words exec)) word))
+  "Defines ID as WORD in EXEC"
+  (let ((idx (words exec))
+        (key (keyword! id)))
+    (index-remove idx key)
+    (index-add idx word :key key)))
 
 (defun lifoo-undefine (word &key (exec *lifoo*))
-  "Undefines word for ID in EXEC"  
-  (remhash (if (lifoo-word-p word)
-               (id word)
-               (keyword! word))
-           (words exec)))
+  "Undefines word for ID in EXEC"
+  (index-remove (words exec) (if (lifoo-word-p word)
+                                 (id word)
+                                 (keyword! word))))
 
 (defun lifoo-word (word &key (exec *lifoo*))
   "Returns WORD from EXEC, or NIL if missing"
   (if (lifoo-word-p word)
       word
-      (gethash (keyword! word) (words exec))))
+      (index-find (words exec) (keyword! word))))
 
 (defun lifoo-push (val &key (exec *lifoo*))
   "Pushes VAL onto EXEC stack"  
@@ -563,7 +565,7 @@
   (define-lisp-word :untrace ()
     (let ((expr (lifoo-pop)))
       (if (eq t expr)
-          (do-hash-table (_ w (words *lifoo*))
+          (do-index ((words *lifoo*) _ w)
             (setf (trace? w) nil))
           (setf (trace? (lifoo-word expr)) nil))))
 
