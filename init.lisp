@@ -51,8 +51,19 @@
       (let ((expr (lifoo-pop)))
         (lifoo-push (make-lifoo-word
                      :source expr
-                     :fn (eval `(lambda () ,expr))))))
-    
+                     :fn (eval `(lambda () ,expr)))))))
+
+  (with-protocols (:word)
+    ;; Pops $val and pushes the word it represents
+    (define-lisp-word :word ()
+      (let ((word (lifoo-word (lifoo-pop))))
+        (lifoo-push word)))
+
+    ;; Pops word and pushes source
+    (define-lisp-word :source ()
+      (let ((word (lifoo-word (lifoo-pop))))
+        (lifoo-push (source word))))
+
     ;; Pops $id and $body,
     ;; and defines word
     (define-lisp-word :define ()
@@ -65,17 +76,6 @@
     (define-lisp-word :undefine ()
       (let ((id (keyword! (lifoo-pop))))
         (lifoo-undefine id))))
-
-  (with-protocols (:word)
-    ;; Pops $val and pushes the word it represents
-    (define-lisp-word :word ()
-      (let ((word (lifoo-word (lifoo-pop))))
-        (lifoo-push word)))
-
-    ;; Pops word and pushes source
-    (define-lisp-word :source ()
-      (let ((word (lifoo-word (lifoo-pop))))
-        (lifoo-push (source word)))))
   
   (with-protocols (:log)
     ;; Pops $word and enables tracing

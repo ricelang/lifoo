@@ -49,36 +49,32 @@
     (lifoo-asseq 3
       (1 2 +) eval)))
 
-(define-test (:lifoo :init)
+(define-test (:lifoo :meta)
   (with-lifoo ()
-    (lifoo-init '(:init :meta :stack))
+    (lifoo-init '(:meta :stack))
 
     (lifoo-asseq "LIFOO"
       :string init "lifoo" upper)
 
     (lifoo-asseq '(1 . 2)
-      (:list) init 2 1 cons)))
-
-(define-test (:lifoo :meta)
-  (with-lifoo ()
-    (lifoo-init '(:meta :stack))
+      (:list) init 2 1 cons)
     
     (lifoo-asseq 43
-      42 (lifoo-push (1+ (lifoo-pop))) lisp eval)
-
-    (lifoo-asseq 42
-      (drop drop 42) :+ define
-      1 2 +)))
+      42 (lifoo-push (1+ (lifoo-pop))) lisp eval)))
 
 (define-test (:lifoo :word)
   (with-lifoo ()
-    (lifoo-init '(:meta :word :stack))
+    (lifoo-init '(:meta :stack :word))
     
     (lifoo-asseq 3
       1 2 "+" word eval)
 
     (lifoo-asseq '(42)
-      (42) :foo define :foo word source)))
+      (42) :foo define :foo word source)
+
+    (lifoo-asseq 42
+      (drop drop 42) :+ define
+      1 2 +)))
 
 (define-test (:lifoo :log)
   (with-lifoo ()
