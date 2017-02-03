@@ -41,7 +41,13 @@
       1 2 =)
 
     (lifoo-asseq #(1 2 3)
-      #(1 2 3) clone pop drop drop)))
+      #(1 2 3) clone pop drop drop)
+
+    (lifoo-asseq :lifoo
+      "lifoo" symbol)
+
+    (lifoo-asseq 3
+      (1 2 +) eval)))
 
 (define-test (:lifoo :init)
   (with-lifoo ()
@@ -57,21 +63,22 @@
   (with-lifoo ()
     (lifoo-init '(:meta :stack))
     
-    (lifoo-asseq :lifoo
-      "lifoo" symbol)
-
-    (lifoo-asseq 3
-      1 2 "+" word eval)
-
-    (lifoo-asseq 3
-      (1 2 +) eval)
-
     (lifoo-asseq 43
       42 (lifoo-push (1+ (lifoo-pop))) lisp eval)
 
     (lifoo-asseq 42
       (drop drop 42) :+ define
       1 2 +)))
+
+(define-test (:lifoo :word)
+  (with-lifoo ()
+    (lifoo-init '(:meta :word :stack))
+    
+    (lifoo-asseq 3
+      1 2 "+" word eval)
+
+    (lifoo-asseq '(42)
+      (42) :foo define :foo word source)))
 
 (define-test (:lifoo :log)
   (with-lifoo ()

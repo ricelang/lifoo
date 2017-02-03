@@ -36,22 +36,15 @@
   (define-lisp-word :dec ()
     (decf (lifoo-peek)))
 
-  (with-protocols (:init :meta)
+  ;; Pops $expr and pushes result of evaluating
+  (define-lisp-word :eval ()
+    (lifoo-eval (lifoo-pop)))
+
+  (with-protocols (:meta)    
     ;; Pops $protos and initialises protocols
     (define-lisp-word :init ()
       (let ((protos (lifoo-pop)))
-        (lifoo-init (if (consp protos) protos (list protos))))))
-  
-  (with-protocols (:meta)
-    ;; Pops $val and pushes the word it represents
-    (define-lisp-word :word ()
-      (let ((word (lifoo-word (lifoo-pop))))
-        (lifoo-push word)))
-
-    ;; Pops word and pushes source
-    (define-lisp-word :source ()
-      (let ((word (lifoo-word (lifoo-pop))))
-        (lifoo-push (source word))))
+        (lifoo-init (if (consp protos) protos (list protos)))))
     
     ;; Pops $expr and pushes function that evaluates $expr as Lisp
     (define-lisp-word :lisp ()
@@ -60,10 +53,6 @@
                      :source expr
                      :fn (eval `(lambda () ,expr))))))
     
-    ;; Pops $expr and pushes result of evaluating
-    (define-lisp-word :eval ()
-      (lifoo-eval (lifoo-pop)))
-
     ;; Pops $id and $body,
     ;; and defines word
     (define-lisp-word :define ()
@@ -77,6 +66,17 @@
       (let ((id (keyword! (lifoo-pop))))
         (lifoo-undefine id))))
 
+  (with-protocols (:word)
+    ;; Pops $val and pushes the word it represents
+    (define-lisp-word :word ()
+      (let ((word (lifoo-word (lifoo-pop))))
+        (lifoo-push word)))
+
+    ;; Pops word and pushes source
+    (define-lisp-word :source ()
+      (let ((word (lifoo-word (lifoo-pop))))
+        (lifoo-push (source word)))))
+  
   (with-protocols (:log)
     ;; Pops $word and enables tracing
     (define-lisp-word :trace ()
