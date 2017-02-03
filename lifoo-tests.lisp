@@ -37,6 +37,10 @@
     (lifoo-asseq 43
       42 (lifoo-push (1+ (lifoo-pop))) lisp eval)
 
+    (lifoo-asseq 42
+      (drop drop 42) :+ define drop
+      1 2 :+ word eval)
+    
     (lifoo-asseq '(:log (:any :message))
       (:any :message) log dump-log first)
 
