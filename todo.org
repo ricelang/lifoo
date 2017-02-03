@@ -1,4 +1,6 @@
 Lifoo
+* switch unless to native imp
+** remove meta from :flow test
 * add init word
 ** call lifoo-init with protocols 
 (:strings) init
