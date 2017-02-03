@@ -92,25 +92,34 @@
 
 (defun lifoo-parse (expr &key (exec *lifoo*))
   "Parses EXPR and returns code compiled for EXEC"
-  (flet ((parse (f)
-           (cond
-             ((or (arrayp f) (characterp f) (keywordp f)
-                  (numberp f) (stringp f))
-              `(lifoo-push ,f))
-             ((consp f)
-              `(lifoo-push ',f))
-             ((null f)
-              `(lifoo-push nil))
-             ((eq f t)
-              `(lifoo-push t))
-             ((symbolp f)
-              `(lifoo-call ',f))
-             ((lifoo-word-p f)
-              `(lifoo-call ,f))
-             (t
-              (error "invalid form: ~a" f)))))
+  (labels ((parse (fs acc)
+             (if fs
+                 (let ((f (first fs)))
+                   (cond
+                     ((or (arrayp f) (characterp f) (keywordp f)
+                          (numberp f) (stringp f))
+                      (parse (rest fs)
+                             (cons `(lifoo-push ,f) acc)))
+                     ((consp f)
+                      (parse (rest fs)
+                             (cons `(lifoo-push ',f) acc)))
+                     ((null f)
+                      (parse (rest fs)
+                             (cons `(lifoo-push nil) acc)))
+                     ((eq f t)
+                      (parse (rest fs)
+                             (cons `(lifoo-push t) acc)))
+                     ((symbolp f)
+                      (parse (rest fs)
+                             (cons `(lifoo-call ',f) acc)))
+                     ((lifoo-word-p f)
+                      (parse (rest fs)
+                             (cons `(lifoo-call ,f) acc)))
+                     (t
+                      (error "invalid form: ~a" f))))
+                 (nreverse acc))))
     (with-lifoo (:exec exec)
-      (mapcar #'parse (list! expr)))))
+      (parse (list! expr) nil))))
 
 (defun lifoo-eval (expr &key (exec *lifoo*))
   "Returns result of parsing and evaluating EXPR in EXEC"
