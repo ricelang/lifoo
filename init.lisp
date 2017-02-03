@@ -2,15 +2,15 @@
 
 (defmacro define-init (name &body body)
   "Defines NAME around BODY with protocol support"
-  (with-symbols (_exec _protos)
-    `(defun ,name (,_protos &key (,_exec *lifoo*))
-       (with-lifoo (:exec ,_exec)
+  (with-symbols (_protos)
+    `(defun ,name (,_protos &key (exec *lifoo*))
+       (with-lifoo (:exec exec)
          (macrolet ((with-protos (ps &body pbody)
                       `(when (or (eq t ,',_protos)
                                  (intersection ',ps ,',_protos))
                          ,@pbody)))
            ,@body))
-       ,_exec)))
+       exec)))
 
 (define-init lifoo-init
   ;; Pops $val and pushes T if NIL,

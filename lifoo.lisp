@@ -249,7 +249,7 @@
   (setf (lifoo-env)
         (delete var (lifoo-env) :key #'first :test #'eq))) 
 
-(defun lifoo-repl (&key (exec (make-lifoo))
+(defun lifoo-repl (&key (exec (lifoo-init t :exec (make-lifoo)))
                         (in *standard-input*)
                         (prompt "Lifoo>")
                         (out *standard-output*))

@@ -2,6 +2,7 @@ Lifoo
 * switch unless to native imp
 ** remove meta from :flow test
 * add init word
-** call lifoo-init with protocols 
+** support cons or kw param
+** call lifoo-init 
 (:strings) init
 * switch back to hash-table?
