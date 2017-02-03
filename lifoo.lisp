@@ -16,7 +16,7 @@
            lifoo-undefine
            lifoo-word make-lifoo
            with-lifoo
-           *lifoo*)
+           *lifoo* *lifoo-init*)
   (:use bordeaux-threads cl cl4l-chan cl4l-clone cl4l-compare
         cl4l-test cl4l-utils))
 
