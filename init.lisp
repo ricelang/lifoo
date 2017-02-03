@@ -13,6 +13,8 @@
        exec)))
 
 (define-init lifoo-init
+  (define-binary-words () + - * / = /= < > cons)
+
   ;; Pops $val and pushes T if NIL,
   ;; otherwise NIL
   (define-lisp-word :nil? ()
@@ -22,7 +24,9 @@
   (define-lisp-word :clone ()
     (lifoo-push (clone (lifoo-peek))))
 
-  (define-binary-words () + - * / = /= < > cons)
+  ;; Pops $val and pushes its symbolic representation
+  (define-lisp-word :symbol ()
+    (lifoo-push (keyword! (lifoo-pop))))
 
   ;; Increases $1
   (define-lisp-word :inc ()
@@ -31,12 +35,14 @@
   ;; Decreases $1
   (define-lisp-word :dec ()
     (decf (lifoo-peek)))
+
+  (with-protocols (:init :meta)
+    ;; Pops $protos and initialises protocols
+    (define-lisp-word :init ()
+      (let ((protos (lifoo-pop)))
+        (lifoo-init (if (consp protos) protos (list protos))))))
   
   (with-protocols (:meta)
-    ;; Pops $val and pushes its symbolic representation
-    (define-lisp-word :symbol ()
-      (lifoo-push (keyword! (lifoo-pop))))
-
     ;; Pops $val and pushes the word it represents
     (define-lisp-word :word ()
       (let ((word (lifoo-word (lifoo-pop))))
@@ -214,6 +220,14 @@
         (lifoo-push (if (listp val)
                         (apply #'string! val)
                         (string! val)))))
+
+    ;; Pops $str and pushes uppercase
+    (define-lisp-word :upper ()
+      (lifoo-push (string-upcase (lifoo-pop))))
+
+    ;; Pops $str and pushes lowercase
+    (define-lisp-word :lower ()
+      (lifoo-push (string-downcase (lifoo-pop))))
 
     ;; Pops $args and $fmt,
     ;; and pushes formatted output

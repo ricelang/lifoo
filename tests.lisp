@@ -8,6 +8,28 @@
    that compares equal to RES"
   `(asseq ,res (do-lifoo () reset ,@body)))
 
+(define-test (:lifoo :stack)
+  (with-lifoo ()
+    (lifoo-init '(:sequence :stack))
+
+    (lifoo-asseq #(1 2 3)
+      1 2 3 stack)
+
+    ;; Make sure that stack is left intact
+    (assert (zerop (compare #(1 2 3) (lifoo-stack))))
+
+    (lifoo-asseq 42
+      stack 42 push)
+    
+    (lifoo-asseq 1
+      1 dup drop)
+    
+    (lifoo-asseq 2
+      1 2 swap drop)
+
+    (lifoo-asseq #(1 2)
+      1 2 backup 3 4 restore stack)))
+
 (define-test (:lifoo :basic)
   (with-lifoo ()
     (lifoo-init '(:sequence :stack))
@@ -15,8 +37,25 @@
     (lifoo-asseq t
       nil nil?)
 
+    (lifoo-asseq nil
+      1 2 =)
+
     (lifoo-asseq #(1 2 3)
       #(1 2 3) clone pop drop drop)))
+
+(define-test (:lifoo :init)
+  (with-lifoo ()
+    (lifoo-init '(:init :meta :stack))
+
+    (do-lifoo () :string init)
+
+    (lifoo-asseq "LIFOO"
+      "lifoo" upper)
+
+    (do-lifoo () (:list) init)
+
+    (lifoo-asseq '(1 . 2)
+      2 1 cons)))
 
 (define-test (:lifoo :meta)
   (with-lifoo ()
@@ -66,28 +105,6 @@
              (handler-case (do-lifoo ()
                              1 2 asseq)    
                (lifoo-error () :ok))))))
-
-(define-test (:lifoo :stack)
-  (with-lifoo ()
-    (lifoo-init '(:sequence :stack))
-
-    (lifoo-asseq #(1 2 3)
-      1 2 3 stack)
-
-    ;; Make sure that stack is left intact
-    (assert (zerop (compare #(1 2 3) (lifoo-stack))))
-
-    (lifoo-asseq 42
-      stack 42 push)
-    
-    (lifoo-asseq 1
-      1 dup drop)
-    
-    (lifoo-asseq 2
-      1 2 swap drop)
-
-    (lifoo-asseq #(1 2)
-      1 2 backup 3 4 restore stack)))
 
 (define-test (:lifoo :flow)
   (with-lifoo ()
