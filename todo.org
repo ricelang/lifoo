@@ -1,5 +1,4 @@
 Lifoo
-* change parse to use mapcar
 * add exec.inits
 ** change define-init to register ((protos) . lambda) in inits
 ** change lifoo-init do scan inits and run all matches for exec
