@@ -91,12 +91,12 @@
 
 (define-test (:lifoo :error)
   (with-lifoo ()
-    (lifoo-init '(t :error))
+    (lifoo-init '(t :error :flow))
     
     (assert (eq
              :ok
              (handler-case (do-lifoo ()
-                             "message" error)    
+                             "message" throw)    
                (lifoo-error () :ok))))
 
     (assert (eq
@@ -130,6 +130,9 @@
     (lifoo-asseq '(2 1 0)
       nil (push) 3 times)
 
+    (lifoo-asseq '(:caught . :frisbee)
+      :frisbee throw (:caught cons) catch)
+    
     (lifoo-asseq 1
       0 (inc break inc) eval)))
 

@@ -1,14 +1,5 @@
 Lifoo
 
-* rename error to throw & add catch?
-** add lifoo-throw condition with arg
-** add lifoo-throw fn with arg
-** add catch macro
-*** wrap forms in handle-case for lifoo-throw
-** handle lifoo-throw in lifoo-eval
-*** use lifoo-error to forward
-:ball throw (:caught cons) catch
-
 * add fsm
 ** add fsm init
 ** implement using tagbody

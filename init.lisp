@@ -88,10 +88,6 @@
     (lifoo-end)))
 
 (define-init (:error)
-  ;; Pops $msg and signals error
-  (define-lisp-word :error ()
-    (lifoo-error (lifoo-pop)))
-
   ;; Pops $cnd and signals error if NIL
   (define-lisp-word :assert ()
     (let* ((cnd (lifoo-pop))
@@ -157,6 +153,17 @@
                  res)
         (lifoo-pop))))
 
+  ;; Pops $value and throws it 
+  (define-lisp-word :throw ()
+    (lifoo-throw (lifoo-pop)))
+
+  ;; Wraps code in handler-case
+  (define-macro-word :catch ()
+    `((handler-case (progn ,@(reverse (rest forms)))
+         (lifoo-throw (c)
+           (lifoo-push (value c))
+           (lifoo-eval ',(second (second (first forms))))))))
+  
   ;; Breaks out from word
   (define-macro-word :break ()
     (cons `(lifoo-break) forms)))

@@ -94,14 +94,23 @@
 
 (define-condition lifoo-break (condition) ()) 
 (define-condition lifoo-error (simple-error) ()) 
+(define-condition lifoo-throw (condition)
+  ((value :initarg :value :reader value)))
 
 (defun lifoo-break ()
+"Signals break"
   (signal 'lifoo-break))
 
 (defun lifoo-error (fmt &rest args)
+  "Signals error with message from FMT and ARGS"
   (error 'lifoo-error :format-control fmt :format-arguments args))
 
+(defun lifoo-throw (val)
+  "Throws VAL"
+  (signal 'lifoo-throw :value val))
+
 (defun lifoo-init (tags &key (exec *lifoo*))
+  "Runs all inits matching tags in EXEC"
   (let ((cnt 0))
     (do-hash-table (ts fn *lifoo-init*)
       (when (or (eq t tags)
@@ -157,7 +166,10 @@
 (defun lifoo-eval (expr &key (exec *lifoo*))
   "Returns result of parsing and evaluating EXPR in EXEC"
   (with-lifoo (:exec exec)
-    (eval `(progn ,@(lifoo-parse expr)))))
+    (handler-case
+        (eval `(progn ,@(lifoo-parse expr)))
+      (lifoo-throw (c)
+        (lifoo-error "thrown value not caught: ~a" (value c))))))
 
 (defun lifoo-compile (word &key (exec *lifoo*))
   "Returns compiled function for WORD"
@@ -231,7 +243,7 @@
   (let* ((stack (stack exec))
          (fp (fill-pointer stack)))
     (unless (zerop fp)
-        (aref stack (1- fp)))))
+      (aref stack (1- fp)))))
 
 (defun (setf lifoo-peek) (val &key (exec *lifoo*))
   "Replaces top of EXEC stack with VAL"
@@ -312,15 +324,15 @@
    using PROMPT"
   (with-lifoo (:exec exec :env t)
     (tagbody
-       start
-         (format out "~%~a " prompt)
-         (when-let (line (read-line in nil))
-           (unless (string= "" line)
-             (with-input-from-string (in line)
-               (restart-case
-                   (progn
-                     (lifoo-eval (lifoo-read :in in))
-                     (format out "~a~%" (lifoo-pop)))
-                 (ignore ()
-                   :report "Ignore error and continue.")))
-             (go start))))))
+     start
+       (format out "~%~a " prompt)
+       (when-let (line (read-line in nil))
+         (unless (string= "" line)
+           (with-input-from-string (in line)
+             (restart-case
+                 (progn
+                   (lifoo-eval (lifoo-read :in in))
+                   (format out "~a~%" (lifoo-pop)))
+               (ignore ()
+                 :report "Ignore error and continue.")))
+           (go start))))))
