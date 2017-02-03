@@ -1,12 +1,11 @@
 (defpackage lifoo
-  (:export define-lifoo-init define-binary-words define-lisp-word
+  (:export define-init define-binary-words define-lisp-word
            define-word do-lifoo
            lifoo-call lifoo-define
            lifoo-del lifoo-dump-log
            lifoo-env lifoo-error lifoo-eval
            lifoo-fn lifoo-get
-           lifoo-init
-           lifoo-log
+           lifoo-init lifoo-log
            lifoo-parse lifoo-parse-word lifoo-pop lifoo-print-log
            lifoo-push
            lifoo-read lifoo-repl
