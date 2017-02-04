@@ -264,12 +264,12 @@
                   (aref seq idx))
                  (t
                   (nth idx seq)))))
-        (lifoo-push it :set (lambda (val)
-                              (cond
-                                ((arrayp seq)
-                                 (setf (aref seq idx) val))
-                                (t
-                                 (setf (nth idx seq) val)))))))
+      (lifoo-push it :set (lambda (val)
+                            (cond
+                              ((arrayp seq)
+                               (setf (aref seq idx) val))
+                              (t
+                               (setf (nth idx seq) val)))))))
 
   
   ;; Pushes length of $1
@@ -334,7 +334,7 @@
   ;; Pops $fn and replaces $1 with reduction by $fn
   (define-lisp-word :reduce ()
     (let ((fn (lifoo-parse (lifoo-pop))))
-       (setf (lifoo-peek)
+      (setf (lifoo-peek)
             (reduce (eval `(lambda (x y)
                              (lifoo-push x)
                              (lifoo-push y)
