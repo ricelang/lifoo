@@ -150,11 +150,7 @@
                                        :fill-pointer len
                                        :initial-contents f)))
                            acc)))
-                  ((or (arrayp f)
-                       (characterp f)
-                       (keywordp f)
-                       (numberp f)
-                       (stringp f))
+                  ((keywordp f)
                    (cons (cons f `(lifoo-push ,f)) acc))
                   ((consp f)
                    (if (consp (rest f))
@@ -177,7 +173,7 @@
                   ((lifoo-word-p f)
                    (cons (cons f `(lifoo-call ,f)) acc))
                   (t
-                   (error "invalid form: ~a" f)))))
+                   (cons (cons f `(lifoo-push ,f)) acc)))))
              (mapcar #'rest (nreverse acc)))))
     (with-lifoo (:exec exec)
       (parse (list! expr) nil))))
