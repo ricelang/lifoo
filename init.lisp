@@ -70,8 +70,7 @@
   (define-lisp-word :set ()
     (let ((val (lifoo-pop))
           (var (lifoo-pop)))
-      (setf (lifoo-get var) val)
-      (lifoo-push val)))
+      (setf (lifoo-get var) val)))
 
   ;; Pops $var;
   ;; deletes it from current environment,

@@ -79,13 +79,13 @@
     (lifoo-init '(t :env :list :stack))
 
     (lifoo-asseq 42
-      :foo 42 set drop :foo get)
+      :foo 42 set :foo get)
     
     (lifoo-asseq '((:foo . 42))
       :foo 42 set env)
     
     (lifoo-asseq '(nil . 42)
-      :foo dup 42 set drop dup del swap get cons)
+      :foo dup 42 set dup del swap get cons)
 
     ;; Sets variable named :foo to 42;
     ;; opens new environment and sets :foo to 43,
