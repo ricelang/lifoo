@@ -8,8 +8,8 @@
            lifoo-env lifoo-error lifoo-eval
            lifoo-get
            lifoo-init lifoo-log lifoo-macro-word
-           lifoo-parse lifoo-parse-word lifoo-pop lifoo-print-log
-           lifoo-push
+           lifoo-parse lifoo-parse-word lifoo-peek lifoo-peek-set
+           lifoo-pop lifoo-print-log lifoo-push
            lifoo-read lifoo-repl
            lifoo-stack
            lifoo-trace?
@@ -91,6 +91,7 @@
                        (:constructor make-lifoo))
   envs logs
   (stack (make-array 3 :adjustable t :fill-pointer 0))
+  (set-stack (make-array 3 :adjustable t :fill-pointer 0))
   (macro-words (make-hash-table :test 'eq))
   (words (make-hash-table :test 'eq)))
 
@@ -230,20 +231,28 @@
       id
       (gethash (keyword! id) (words exec))))
 
-(defun lifoo-push (val &key (exec *lifoo*))
+(defun lifoo-push (val &key (exec *lifoo*) set)
   "Pushes VAL onto EXEC stack"  
   (vector-push-extend val (stack exec))
+  (vector-push-extend set (set-stack exec))
   val)
 
 (defun lifoo-pop (&key (exec *lifoo*))
   "Pops and returns value from EXEC stack"
   (unless (zerop (fill-pointer (stack exec)))
-    (let ((val (vector-pop (stack exec))))
-      val)))
+    (vector-pop (set-stack exec))
+    (vector-pop (stack exec))))
 
 (defun lifoo-peek (&key (exec *lifoo*))
   "Returns top of EXEC stack"
   (let* ((stack (stack exec))
+         (fp (fill-pointer stack)))
+    (unless (zerop fp)
+      (aref stack (1- fp)))))
+
+(defun lifoo-peek-set (&key (exec *lifoo*))
+  "Returns top of EXEC set-stack"
+  (let* ((stack (set-stack exec))
          (fp (fill-pointer stack)))
     (unless (zerop fp)
       (aref stack (1- fp)))))

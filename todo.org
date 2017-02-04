@@ -1,16 +1,10 @@
 Lifoo
 
-*** change set to not push value and update tests
-
-* add setf support
-** add exec.set_stack with lambdas
-*** update in parallel with stack
-*** all stack commands including backup / restore
-** add :set param to lifoo-push
+* finish setf support
 ** add lifoo-push-set macro that creates lambda from expr
-** change set to use set-stack
-** rename env to var
-*** eval var expr
+*** use in :var
+** replace set-nth with set support in nth
+** add set support to first / rest
 
 * add fsm
 ** add fsm init
@@ -24,3 +18,15 @@ Lifoo
 :start jump 
 :end label 
 fsm
+
+    (lifoo-asseq '(nil . 42)
+      :foo var 42 set drop :foo del :foo var cons)
+
+    ;; Sets variable named :foo to 42;
+    ;; opens new environment and sets :foo to 43,
+    ;; and closes environment and returns value of :foo
+
+    (lifoo-asseq 42
+      :foo var 42 set
+      begin :foo var 43 set end
+      :foo var)

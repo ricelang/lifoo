@@ -24,6 +24,15 @@
   (define-lisp-word :dec ()
     (decf (lifoo-peek)))
 
+  ;; Pops $val and $var,
+  ;; sets $var's value to $val and pushes $val
+  (define-lisp-word :set ()
+    (let ((val (lifoo-pop))
+          (set (lifoo-peek-set)))
+      (unless set
+        (error "missing set fn: ~a" val))
+      (funcall set val)))
+
   ;; Pops $expr and pushes result of evaluating
   (define-lisp-word :eval ()
     (lifoo-eval (lifoo-pop))))
@@ -62,15 +71,12 @@
     (lifoo-push (lifoo-env)))
 
   ;; Pops $var and returns value
-  (define-lisp-word :get ()
-    (lifoo-push (lifoo-get (lifoo-pop))))
-
-  ;; Pops $val and $var,
-  ;; sets $var's value to $val and pushes $val
-  (define-lisp-word :set ()
-    (let ((val (lifoo-pop))
-          (var (lifoo-pop)))
-      (setf (lifoo-get var) val)))
+  (define-lisp-word :var ()
+    (lifoo-eval (lifoo-pop))
+    (let ((var (lifoo-pop)))
+      (lifoo-push (lifoo-get var)
+                  :set (lambda (val)
+                         (setf (lifoo-get var) val)))))
 
   ;; Pops $var;
   ;; deletes it from current environment,
@@ -191,6 +197,7 @@
   (define-lisp-word :list ()
     (let ((lst (map 'list #'identity (stack *lifoo*))))
       (setf (fill-pointer (stack *lifoo*)) 0)
+      (setf (fill-pointer (set-stack *lifoo*)) 0)
       (lifoo-push lst))) 
 
   ;; Pops $list and pushes rest
@@ -335,41 +342,51 @@
                     (lifoo-peek))))))
 
 (define-init (:stack)
-  ;; Pushes stack on stack as list
+  ;; Pushes stack on stack
   (define-lisp-word :stack ()
     (lifoo-push (stack *lifoo*)))
-  
+
   ;; Pops stack
   (define-lisp-word :drop ()
     (lifoo-pop))
 
   ;; Swaps $1 and $2
   (define-lisp-word :swap ()
-    (let ((x (lifoo-pop)) (y (lifoo-pop)))
-      (lifoo-push x)
-      (lifoo-push y)))  
+    (let ((xs (lifoo-peek-set))
+          (x (lifoo-pop))
+          (ys (lifoo-peek-set))
+          (y (lifoo-pop)))
+      (lifoo-push x :set xs)
+      (lifoo-push y :set ys)))  
   
   ;; Pushes $1 on stack
   (define-lisp-word :dup ()
-    (lifoo-push (lifoo-peek)))
+    (lifoo-push (lifoo-peek) :set (lifoo-peek-set)))
 
   ;; Clears stack
   (define-lisp-word :reset ()
-    (setf (fill-pointer (stack *lifoo*)) 0))
+    (setf (fill-pointer (stack *lifoo*)) 0)
+    (setf (fill-pointer (set-stack *lifoo*)) 0))
 
-  (let ((var (gensym)))
+  (let ((var (gensym))
+        (set-var (gensym)))
     ;; Pushes backup of stack to environment
     (define-lisp-word :backup ()
-      (push (copy-seq (stack *lifoo*)) (lifoo-get var)))
+      (push (copy-seq (stack *lifoo*)) (lifoo-get var))
+      (push (copy-seq (set-stack *lifoo*)) (lifoo-get set-var)))
 
     ;; Pops and restores backup from environment
     (define-lisp-word :restore ()
       (let* ((prev (pop (lifoo-get var)))
+             (prev-set (pop (lifoo-get set-var)))
              (curr (stack *lifoo*))
+             (curr-set (set-stack *lifoo*))
              (len (length prev)))
         (setf (fill-pointer curr) len)
+        (setf (fill-pointer curr-set) len)
         (dotimes (i len)
-          (setf (aref curr i) (aref prev i)))))))
+          (setf (aref curr i) (aref prev i))
+          (setf (aref curr-set i) (aref prev-set i)))))))
 
 (define-init (:string)
   ;; Pops $val and pushes string representation
