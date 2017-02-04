@@ -10,23 +10,11 @@ Lifoo
 ** add fsm init
 ** implement using tagbody
 ** fsm macro wraps forms in tagbody
-** label macro outputs label
-** jump macro pushes (go (first forms))
+** @ macro outputs label
+** go macro pushes (go (first forms))
 0 
-:start label 
-(:end jump) (inc dup 3 >) when
-:start jump 
-:end label 
+:start @ 
+(:end go) (inc dup 3 >) when
+:start go 
+:end @
 fsm
-
-    (lifoo-asseq '(nil . 42)
-      :foo var 42 set drop :foo del :foo var cons)
-
-    ;; Sets variable named :foo to 42;
-    ;; opens new environment and sets :foo to 43,
-    ;; and closes environment and returns value of :foo
-
-    (lifoo-asseq 42
-      :foo var 42 set
-      begin :foo var 43 set end
-      :foo var)
