@@ -141,6 +141,15 @@
                (parse
                 (rest fs)
                 (cond
+                  ((simple-vector-p f)
+                   (let ((len (length f)))
+                     (cons (cons f `(lifoo-push
+                                     ,(make-array
+                                       len
+                                       :adjustable t
+                                       :fill-pointer len
+                                       :initial-contents f)))
+                           acc)))
                   ((or (arrayp f)
                        (characterp f)
                        (keywordp f)
@@ -148,7 +157,13 @@
                        (stringp f))
                    (cons (cons f `(lifoo-push ,f)) acc))
                   ((consp f)
-                   (cons (cons f `(lifoo-push ',f)) acc))
+                   (if (consp (rest f))
+                       (cons (cons f `(lifoo-push ',(copy-list f)))
+                             acc)
+                       (cons (cons f `(lifoo-push
+                                       ',(cons (first f)
+                                               (rest f))))
+                             acc)))
                   ((null f)
                    (cons (cons f `(lifoo-push nil)) acc))
                   ((eq f t)

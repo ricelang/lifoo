@@ -23,7 +23,7 @@
 
     (lifoo-asseq #(1 2 3)
       nil array 1 push 2 push 3 push)
-    
+
     ;; Maps lambda over sequence
     (lifoo-asseq #(2 4 6)
       #(1 2 3) (2 *) map)
@@ -157,7 +157,7 @@
 
 (define-test (:lifoo :list)
   (with-lifoo ()
-    (lifoo-init '(t :list :sequence :stack))
+    (lifoo-init '(t :io :list :sequence :stack))
 
     (lifoo-asseq '(2 . 1)
       1 2 cons)
@@ -174,6 +174,12 @@
     (lifoo-asseq 2
       (1 2 3) rest first)
 
+    (lifoo-asseq '(1)
+      (1 2 3) rest nil set)
+
+    (lifoo-asseq '(4 2 3)
+      (1 2 3) first 4 set)
+    
     (lifoo-asseq '(1 2 3)
       nil 1 push 2 push 3 push reverse)))
 

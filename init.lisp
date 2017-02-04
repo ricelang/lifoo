@@ -200,11 +200,20 @@
 
   ;; Pops $list and pushes rest
   (define-lisp-word :rest ()
-    (lifoo-push (rest (lifoo-pop))))
+    (let ((lst (lifoo-pop)))
+      (lifoo-push (rest lst)
+                  :set (lambda (val)
+                         (lifoo-pop)
+                         (setf (rest lst) val)
+                         (lifoo-push lst)))))
 
   ;; Pops $list and pushes first element
   (define-lisp-word :first ()
-    (lifoo-push (first (lifoo-pop)))))
+    (let ((lst (lifoo-pop)))
+      (lifoo-push (first lst)
+                  :set (lambda (val)
+                         (lifoo-pop)
+                         (lifoo-push (rplaca lst val)))))))
 
 (define-init (:log)
   ;; Pops $word and enables tracing
@@ -325,7 +334,7 @@
   ;; Pops $fn and replaces $1 with reduction by $fn
   (define-lisp-word :reduce ()
     (let ((fn (lifoo-parse (lifoo-pop))))
-      (setf (lifoo-peek)
+       (setf (lifoo-peek)
             (reduce (eval `(lambda (x y)
                              (lifoo-push x)
                              (lifoo-push y)
