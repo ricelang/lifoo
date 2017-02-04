@@ -1,5 +1,9 @@
 Lifoo
 
+* extract lifoo-reset
+** call from :reset
+** call before eval in repl
+
 * add fsm
 ** add fsm init
 ** implement using tagbody
