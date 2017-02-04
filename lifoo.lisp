@@ -95,12 +95,14 @@
   (words (make-hash-table :test 'eq)))
 
 (define-condition lifoo-break (condition) ()) 
+
 (define-condition lifoo-error (simple-error) ()) 
+
 (define-condition lifoo-throw (condition)
   ((value :initarg :value :reader value)))
 
 (defun lifoo-break ()
-"Signals break"
+  "Signals break"
   (signal 'lifoo-break))
 
 (defun lifoo-error (fmt &rest args)
@@ -272,7 +274,7 @@
     log))
 
 (defun lifoo-print-log (log &key (out *standard-output*))
-  "Prints log to OUT for EXEC"
+  "Prints log to OUT"
   (dolist (e log)
     (apply #'format out
            (ecase (first e)
@@ -283,7 +285,7 @@
            (rest e))))
 
 (defun lifoo-stack (&key (exec *lifoo*))
-  "Returns current stack for EXEC"
+  "Returns stack for EXEC"
   (stack exec))
 
 (defun lifoo-begin (&key (env t) (exec *lifoo*))

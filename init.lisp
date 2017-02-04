@@ -161,7 +161,8 @@
   (define-lisp-word :throw ()
     (lifoo-throw (lifoo-pop)))
 
-  ;; Wraps code in handler-case
+  ;; Wraps parsed forms in handler-case with previous
+  ;; form as handler
   (define-macro-word :catch (f fs)
     (list
      (cons f `(handler-case
