@@ -10,7 +10,7 @@
            lifoo-init lifoo-log lifoo-macro-word
            lifoo-parse lifoo-parse-word lifoo-peek lifoo-peek-set
            lifoo-pop lifoo-print-log lifoo-push
-           lifoo-read lifoo-repl
+           lifoo-read lifoo-repl lifoo-reset
            lifoo-stack
            lifoo-trace?
            lifoo-undefine
@@ -285,6 +285,11 @@
     (assert (not (zerop fp)))
     (setf (aref stack (1- fp)) val)))
 
+(defun lifoo-reset (&key (exec *lifoo*))
+  "Resets EXEC stack"
+  (setf (fill-pointer (stack exec)) 0)
+  (setf (fill-pointer (set-stack exec)) 0))
+
 (defun lifoo-trace? (word)
   "Returns T if WORD is traced, otherwise NIL"
   (trace? word))
@@ -364,6 +369,7 @@
            (with-input-from-string (in line)
              (restart-case
                  (progn
+                   (lifoo-reset)
                    (lifoo-eval (lifoo-read :in in))
                    (format out "~a~%" (lifoo-pop)))
                (ignore ()

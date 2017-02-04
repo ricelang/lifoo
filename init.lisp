@@ -362,10 +362,9 @@
   (define-lisp-word :dup ()
     (lifoo-push (lifoo-peek) :set (lifoo-peek-set)))
 
-  ;; Clears stack
+  ;; Resets stack
   (define-lisp-word :reset ()
-    (setf (fill-pointer (stack *lifoo*)) 0)
-    (setf (fill-pointer (set-stack *lifoo*)) 0))
+    (lifoo-reset))
 
   (let ((var (gensym))
         (set-var (gensym)))

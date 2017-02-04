@@ -1,11 +1,10 @@
 Lifoo
 
-* change :list word to work like :array
-** change test call (stack list) instead
+* add local-time support
+** now / today for current time
+** date / time constructing from lists
+** add type support in lifoo-parse
 
-* extract lifoo-reset
-** call from :reset
-** call before eval in repl
 * add fsm
 ** add fsm init
 ** implement using tagbody
