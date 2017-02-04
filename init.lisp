@@ -163,18 +163,18 @@
 
   ;; Wraps parsed forms in handler-case with previous
   ;; form as handler
-  (define-macro-word :catch (f fs)
+  (define-macro-word :catch (in)
     (list
-     (cons f `(handler-case
-                  (progn
-                    ,@(reverse (mapcar #'rest (rest fs))))
-                (lifoo-throw (c)
-                  (lifoo-push (value c))
-                  (lifoo-eval ',(first (first fs))))))))
+     (cons :catch `(handler-case
+                       (progn
+                         ,@(reverse (mapcar #'rest (rest in))))
+                     (lifoo-throw (c)
+                       (lifoo-push (value c))
+                       (lifoo-eval ',(first (first in))))))))
   
   ;; Breaks out from word
-  (define-macro-word :break (f fs)
-    (cons (cons f `(lifoo-break)) fs)))
+  (define-macro-word :break (in)
+    (cons (cons :break `(lifoo-break)) in)))
 
 (define-init (:io)
   ;; Pops $val and prints it

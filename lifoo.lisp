@@ -32,11 +32,11 @@
            (with-lifoo (:exec exec)
              ,@body))))
 
-(defmacro define-macro-word (name (f-arg fs-arg &key exec)
+(defmacro define-macro-word (name (in &key exec)
                              &body body)
   "Defines new macro word NAME in EXEC from Lisp forms in BODY"
   `(lifoo-define-macro (keyword! ',name)
-                       (lambda (,f-arg ,fs-arg)
+                       (lambda (,in)
                          ,@body)
                        :exec (or ,exec *lifoo*)))
 
@@ -156,7 +156,7 @@
                    (let* ((id (keyword! f))
                           (mw (lifoo-macro-word id)))
                      (if mw
-                         (funcall mw f acc)
+                         (funcall mw acc)
                          (cons (cons f `(lifoo-call ,id)) acc))))
                   ((lifoo-word-p f)
                    (cons (cons f `(lifoo-call ,f)) acc))

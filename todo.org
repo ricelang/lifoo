@@ -1,7 +1,4 @@
 Lifoo
-* remove first macro param
-** use name instead
-
 * reimplement get & set as macros
 ** use setf
 ** rename get to var
