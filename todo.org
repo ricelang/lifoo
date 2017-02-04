@@ -3,6 +3,7 @@ Lifoo
 * cons original to generated code in parse acc
 ** handle in macros
 ** map first on return
+** add catch macro to blog post
 
 * add fsm
 ** add fsm init

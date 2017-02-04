@@ -32,10 +32,12 @@
            (with-lifoo (:exec exec)
              ,@body))))
 
-(defmacro define-macro-word (name (&key exec) &body body)
+(defmacro define-macro-word (name (f-arg fs-arg &key exec)
+                             &body body)
   "Defines new macro word NAME in EXEC from Lisp forms in BODY"
   `(lifoo-define-macro (keyword! ',name)
-                       (lambda (forms) ,@body)
+                       (lambda (,f-arg ,fs-arg)
+                         ,@body)
                        :exec (or ,exec *lifoo*)))
 
 (defmacro define-lisp-word (name (&key exec) &body body)
@@ -129,37 +131,36 @@
 
 (defun lifoo-parse (expr &key (exec *lifoo*))
   "Parses EXPR and returns code compiled for EXEC"
-  (labels ((parse (fs acc)
-             (if fs
-                 (let ((f (first fs)))
-                   (cond
-                     ((or (arrayp f) (characterp f) (keywordp f)
-                          (numberp f) (stringp f))
-                      (parse (rest fs)
-                             (cons `(lifoo-push ,f) acc)))
-                     ((consp f)
-                      (parse (rest fs)
-                             (cons `(lifoo-push ',f) acc)))
-                     ((null f)
-                      (parse (rest fs)
-                             (cons `(lifoo-push nil) acc)))
-                     ((eq f t)
-                      (parse (rest fs)
-                             (cons `(lifoo-push t) acc)))
-                     ((symbolp f)
-                      (let* ((id (keyword! f))
-                             (mw (lifoo-macro-word id)))
-                        (if mw
-                            (parse (rest fs)
-                                   (funcall mw acc))
-                            (parse (rest fs)
-                                   (cons `(lifoo-call ,id) acc)))))
-                     ((lifoo-word-p f)
-                      (parse (rest fs)
-                             (cons `(lifoo-call ,f) acc)))
-                     (t
-                      (error "invalid form: ~a" f))))
-                 (nreverse acc))))
+  (labels
+      ((parse (fs acc)
+         (if fs
+             (let ((f (first fs)))
+               (parse
+                (rest fs)
+                (cond
+                  ((or (arrayp f)
+                       (characterp f)
+                       (keywordp f)
+                       (numberp f)
+                       (stringp f))
+                   (cons (cons f `(lifoo-push ,f)) acc))
+                  ((consp f)
+                   (cons (cons f `(lifoo-push ',f)) acc))
+                  ((null f)
+                   (cons (cons f `(lifoo-push nil)) acc))
+                  ((eq f t)
+                   (cons (cons f `(lifoo-push t)) acc))
+                  ((symbolp f)
+                   (let* ((id (keyword! f))
+                          (mw (lifoo-macro-word id)))
+                     (if mw
+                         (funcall mw f acc)
+                         (cons (cons f `(lifoo-call ,id)) acc))))
+                  ((lifoo-word-p f)
+                   (cons (cons f `(lifoo-call ,f)) acc))
+                  (t
+                   (error "invalid form: ~a" f)))))
+             (mapcar #'rest (nreverse acc)))))
     (with-lifoo (:exec exec)
       (parse (list! expr) nil))))
 

@@ -162,15 +162,18 @@
     (lifoo-throw (lifoo-pop)))
 
   ;; Wraps code in handler-case
-  (define-macro-word :catch ()
-    `((handler-case (progn ,@(reverse (rest forms)))
-         (lifoo-throw (c)
-           (lifoo-push (value c))
-           (lifoo-eval ',(second (second (first forms))))))))
+  (define-macro-word :catch (f fs)
+    (list
+     (cons f `(handler-case
+                  (progn
+                    ,@(reverse (mapcar #'rest (rest fs))))
+                (lifoo-throw (c)
+                  (lifoo-push (value c))
+                  (lifoo-eval ',(first (first fs))))))))
   
   ;; Breaks out from word
-  (define-macro-word :break ()
-    (cons `(lifoo-break) forms)))
+  (define-macro-word :break (f fs)
+    (cons (cons f `(lifoo-break)) fs)))
 
 (define-init (:io)
   ;; Pops $val and prints it
