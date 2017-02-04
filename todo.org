@@ -4,11 +4,11 @@ Lifoo
 ** add fsm init
 ** implement using tagbody
 ** fsm macro wraps forms in tagbody
-** @ macro outputs label
+** state macro outputs label
 ** go macro pushes (go (first forms))
 0 
-:start @ 
+:start state
 (:end go) (inc dup 3 >) when
 :start go 
-:end @
+:end state
 fsm
