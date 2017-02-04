@@ -3,3 +3,7 @@ Lifoo
 ** now / today for current time
 ** date / time constructing from lists
 ** add type forward in lifoo-parse
+* add exec.types (index)
+** add lifoo-define-type name lambda
+** add define-type macro
+** scan exec.types for unknown parsed forms
