@@ -237,6 +237,12 @@
   (vector-push-extend set (set-stack exec))
   val)
 
+(defmacro lifoo-push-set (expr &key exec)
+  `(lifoo-push ,expr
+               :set (lambda (val)
+                      (setf ,expr val))
+               :exec (or ,exec *lifoo*)))
+
 (defun lifoo-pop (&key (exec *lifoo*))
   "Pops and returns value from EXEC stack"
   (unless (zerop (fill-pointer (stack exec)))
