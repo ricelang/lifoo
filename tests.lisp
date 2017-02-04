@@ -16,7 +16,7 @@
       #(1 2 3) 1 nth)
 
     (lifoo-asseq #(1 4 3)
-      #(1 2 3) 1 4 set-nth)
+      #(1 2 3) 1 nth 4 set drop)
 
     (lifoo-asseq 3
       #(1 2 3) length)

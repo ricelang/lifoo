@@ -255,30 +255,13 @@
                   (aref seq idx))
                  (t
                   (nth idx seq)))))
-      (lifoo-push it)))
+        (lifoo-push it :set (lambda (val)
+                              (cond
+                                ((arrayp seq)
+                                 (setf (aref seq idx) val))
+                                (t
+                                 (setf (nth idx seq) val)))))))
 
-  ;; Pops $idx and $it,
-  ;; and updates seq in $1
-  (define-lisp-word :set-nth ()
-    (let ((it (lifoo-pop))
-          (idx (lifoo-pop))
-          (seq (lifoo-peek)))
-      (cond
-        ((arrayp seq)
-         (setf (aref seq idx) it))
-        (t
-         (setf (nth idx seq) it)))))
-
-  ;; Pushes length of $1
-  (define-lisp-word :length ()
-    (let ((val (lifoo-peek)))
-      (lifoo-push
-       (cond
-         ((chan? val)
-          (chan-length val))
-         (t
-          (length val))))))
-  
   ;; Pops item from seq in $1 and pushes it
   (define-lisp-word :pop ()
     (let* ((seq (lifoo-peek))
