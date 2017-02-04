@@ -33,6 +33,20 @@
         (error "missing set fn: ~a" val))
       (funcall set val)))
 
+  (define-lisp-word :struct ()
+    (let ((fields (lifoo-pop))
+          (name (lifoo-pop))
+          (lisp-name (gensym)))
+      (eval `(defstruct (,lisp-name)
+               ,@fields))
+      (macrolet ((defn (lifoo lisp)
+                   `(define-lisp-word ,lifoo ()
+                      (funcall (symbol-function ,lisp)))))
+        (defn (keyword! 'make- name) (symbol! 'make- lisp-name))
+        (defn (keyword! name '?) (symbol! lisp-name '-p))
+        (dolist (f fields)
+          (defn (keyword! name '- f) (symbol! lisp-name '- f))))))
+  
   ;; Pops $expr and pushes result of evaluating
   (define-lisp-word :eval ()
     (lifoo-eval (lifoo-pop))))

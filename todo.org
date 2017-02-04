@@ -1,4 +1,7 @@
 Lifoo
+* finish struct word
+** add setters to fields
+** keyword param to defn
 * add local-time support
 ** now / today for current time
 ** date / time constructing from lists

@@ -40,14 +40,13 @@
                          ,@body)
                        :exec (or ,exec *lifoo*)))
 
-(defmacro define-lisp-word (name (&key exec) &body body)
+(defmacro define-lisp-word (id (&key exec) &body body)
   "Defines new word with NAME in EXEC from Lisp forms in BODY"
-  (let ((id (keyword! name)))
-    `(lifoo-define ,id
-                   (make-lifoo-word :id ,id
-                                    :source ',body
-                                    :fn (lambda () ,@body))
-                   :exec (or ,exec *lifoo*))))
+  `(lifoo-define ,id
+                 (make-lifoo-word :id ,id
+                                  :source ',body
+                                  :fn (lambda () ,@body))
+                 :exec (or ,exec *lifoo*)))
 
 (defmacro define-word (name (&key exec) &body body)
   "Defines new word with NAME in EXEC from BODY"

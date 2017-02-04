@@ -8,6 +8,28 @@
    that compares equal to RES"
   `(asseq ,res (do-lifoo () reset ,@body)))
 
+(define-test (:lifoo)
+  (with-lifoo ()
+    (lifoo-init '(t :sequence :stack))
+
+    (lifoo-asseq t
+      nil nil?)
+
+    (lifoo-asseq nil
+      1 2 =)
+
+    (lifoo-asseq #(1 2 3)
+      #(1 2 3) clone pop drop drop)
+
+    (lifoo-asseq :lifoo
+      "lifoo" symbol)
+
+    (lifoo-asseq t
+        :foo (x y z) struct make-foo foo?)
+    
+    (lifoo-asseq 3
+      (1 2 +) eval)))
+
 (define-test (:lifoo :array)
   (with-lifoo ()
     (lifoo-init '(t :array :error :sequence :stack))
@@ -33,25 +55,6 @@
 
     (lifoo-asseq 6
       #(1 2 3) (+) reduce)))
-
-(define-test (:lifoo :basic)
-  (with-lifoo ()
-    (lifoo-init '(t :sequence :stack))
-
-    (lifoo-asseq t
-      nil nil?)
-
-    (lifoo-asseq nil
-      1 2 =)
-
-    (lifoo-asseq #(1 2 3)
-      #(1 2 3) clone pop drop drop)
-
-    (lifoo-asseq :lifoo
-      "lifoo" symbol)
-
-    (lifoo-asseq 3
-      (1 2 +) eval)))
 
 (define-test (:lifoo :compare)
   (with-lifoo ()
