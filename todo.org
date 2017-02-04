@@ -1,7 +1,5 @@
 Lifoo
 
-* add array push / pop test
-
 * change :list word to work like :array
 ** change test call (stack list) instead
 

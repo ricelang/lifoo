@@ -193,10 +193,8 @@
 
   ;; Pushes stack as list and clears stack
   (define-lisp-word :list ()
-    (let ((lst (map 'list #'identity (stack *lifoo*))))
-      (setf (fill-pointer (stack *lifoo*)) 0)
-      (setf (fill-pointer (set-stack *lifoo*)) 0)
-      (lifoo-push lst))) 
+    (let ((lst (map 'list #'identity (lifoo-pop))))
+      (lifoo-push lst)))
 
   ;; Pops $list and pushes rest
   (define-lisp-word :rest ()

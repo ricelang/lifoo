@@ -172,8 +172,8 @@
       (1 2 3) length)
 
     (lifoo-asseq '(1 2 3)
-      1 2 3 list)
-    
+      1 2 3 stack list)
+
     (lifoo-asseq 2
       (1 2 3) rest first)
 
