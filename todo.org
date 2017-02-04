@@ -2,6 +2,10 @@ Lifoo
 * finish struct word
 ** add setters to fields
 ** keyword param to defn
+* add del stack like set-stack
+** add :del param to lifoo-push
+** replaces :del word in env
+** implement for nth in lists
 * add local-time support
 ** now / today for current time
 ** date / time constructing from lists
