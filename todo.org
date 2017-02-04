@@ -1,4 +1,15 @@
 Lifoo
+* change set to not push value
+** update tests
+
+* add setf support
+** add exec.set_stack with lambdas
+*** update in parallel with stack
+*** all stack commands including backup / restore
+** add :set param to lifoo-push
+** add lifoo-push-set macro that creates lambda from expr
+** change set to use set-stack
+** rename env to var
 
 * add fsm
 ** add fsm init
