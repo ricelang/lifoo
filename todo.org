@@ -1,7 +1,10 @@
 Lifoo
+* remove first macro param
+** use name instead
+
 * reimplement get & set as macros
 ** use setf
-** rename get to env
+** rename get to var
 ** update tests
 
 * reimplement nth as macro
@@ -13,6 +16,8 @@ Lifoo
 
 * add special handling for simple conses in lifoo-parse
 ** call lifoo-eval for first & rest, and cons results
+
+* ---
 
 * add fsm
 ** add fsm init
