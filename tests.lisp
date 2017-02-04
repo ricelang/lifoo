@@ -122,7 +122,6 @@
     (lifoo-init '(t :flow :sequence :stack))
     
     ;; Returns :true if 1 = 1, otherwise :false
-
     (lifoo-asseq :true
       :false :true (1 1 =) cond)
     
@@ -133,7 +132,6 @@
       :ok (1 2 =) unless)
     
     ;; Increases value while condition is true
-
     (lifoo-asseq 3
       0 (inc dup 3 >) while)
     

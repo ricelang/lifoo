@@ -1,19 +1,5 @@
 Lifoo
-
 * add local-time support
 ** now / today for current time
 ** date / time constructing from lists
 ** add type support in lifoo-parse
-
-* add fsm
-** add fsm init
-** implement using tagbody
-** fsm macro wraps forms in tagbody
-** state macro outputs label
-** go macro pushes (go (first forms))
-0 
-:start state
-(:end go) (inc dup 3 >) when
-:start go 
-:end state
-fsm
