@@ -1,7 +1,5 @@
 Lifoo
 
-* add set-tests for first/rest of cons
-
 * add array push / pop test
 
 * change :list word to work like :array

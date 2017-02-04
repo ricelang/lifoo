@@ -159,11 +159,11 @@
   (with-lifoo ()
     (lifoo-init '(t :io :list :sequence :stack))
 
-    (lifoo-asseq '(2 . 1)
-      1 2 cons)
+    (lifoo-asseq '(3 . 1)
+      1 2 cons first 3 set)
     
-    (lifoo-asseq '(1 . 2)
-      (1 . 2))
+    (lifoo-asseq '(1 . 3)
+      (1 . 2) rest 3 set)
 
     (lifoo-asseq 3
       (1 2 3) length)
