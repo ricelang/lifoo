@@ -262,6 +262,17 @@
                                 (t
                                  (setf (nth idx seq) val)))))))
 
+  
+  ;; Pushes length of $1
+  (define-lisp-word :length ()
+    (let ((val (lifoo-peek)))
+      (lifoo-push
+       (cond
+         ((chan? val)
+          (chan-length val))
+         (t
+          (length val))))))
+  
   ;; Pops item from seq in $1 and pushes it
   (define-lisp-word :pop ()
     (let* ((seq (lifoo-peek))
@@ -269,7 +280,7 @@
                  ((arrayp seq)
                   (vector-pop seq))
                  (t
-                  (pop (lifoo-peek))))))
+                  (pop seq)))))
       (lifoo-push it)))
 
   ;; Pops $it and pushes it on $1

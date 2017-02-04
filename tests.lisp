@@ -21,9 +21,6 @@
     (lifoo-asseq 3
       #(1 2 3) length)
 
-    (lifoo-asseq 2
-      (1 2 3) array pop drop pop)
-    
     (lifoo-asseq #(1 2 3)
       nil array 1 push 2 push 3 push)
     
@@ -32,8 +29,7 @@
       #(1 2 3) (2 *) map)
 
     (lifoo-asseq 6
-      #(1 2 3) (+) reduce
-      stack length 2 asseq drop)))
+      #(1 2 3) (+) reduce)))
 
 (define-test (:lifoo :basic)
   (with-lifoo ()
