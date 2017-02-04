@@ -150,8 +150,6 @@
                                        :fill-pointer len
                                        :initial-contents f)))
                            acc)))
-                  ((keywordp f)
-                   (cons (cons f `(lifoo-push ,f)) acc))
                   ((consp f)
                    (if (consp (rest f))
                        (cons (cons f `(lifoo-push ',(copy-list f)))
@@ -164,7 +162,7 @@
                    (cons (cons f `(lifoo-push nil)) acc))
                   ((eq f t)
                    (cons (cons f `(lifoo-push t)) acc))
-                  ((symbolp f)
+                  ((and (symbolp f) (not (keywordp f)))
                    (let* ((id (keyword! f))
                           (mw (lifoo-macro-word id)))
                      (if mw
