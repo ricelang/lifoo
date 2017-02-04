@@ -1,17 +1,11 @@
 Lifoo
 
-* cons original to generated code in parse acc
-** handle in macros
-** map first on return
-** add catch macro to blog post
-
 * add fsm
 ** add fsm init
 ** implement using tagbody
 ** fsm macro wraps forms in tagbody
 ** label macro outputs label
 ** jump macro pushes (go (first forms))
-
 0 
 :start label 
 (:end jump) (inc dup 3 >) when
