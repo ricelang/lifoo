@@ -1,5 +1,11 @@
 Lifoo
+* add hash-table support
+** add hash word to get key for val
+** add setf support
+** add support in sequence functions
+** add type forward in lifoo-parse
+hash-table :abc hash 1 set stack
 * add local-time support
 ** now / today for current time
 ** date / time constructing from lists
-** add type support in lifoo-parse
+** add type forward in lifoo-parse
