@@ -1,5 +1,9 @@
 Lifoo
 
+* cons original to generated code in parse acc
+** handle in macros
+** map first on return
+
 * add fsm
 ** add fsm init
 ** implement using tagbody

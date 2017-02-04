@@ -27,6 +27,7 @@
     (lifoo-asseq #(1 2 3)
       nil array 1 push 2 push 3 push)
     
+    ;; Maps lambda over sequence
     (lifoo-asseq #(2 4 6)
       #(1 2 3) (2 *) map)
 
@@ -86,8 +87,14 @@
     (lifoo-asseq '(nil . 42)
       :foo dup 42 set drop dup del swap get cons)
 
+    ;; Sets variable named :foo to 42;
+    ;; opens new environment and sets :foo to 43,
+    ;; and closes environment and returns value of :foo
+
     (lifoo-asseq 42
-      :foo 42 set begin :foo 43 set end :foo get)))
+      :foo 42 set
+      begin :foo 43 set end
+      :foo get)))
 
 (define-test (:lifoo :error)
   (with-lifoo ()
@@ -115,6 +122,8 @@
   (with-lifoo ()
     (lifoo-init '(t :flow :sequence :stack))
     
+    ;; Returns :true if 1 = 1, otherwise :false
+
     (lifoo-asseq :true
       :false :true (1 1 =) cond)
     
@@ -124,15 +133,19 @@
     (lifoo-asseq :ok
       :ok (1 2 =) unless)
     
+    ;; Increases value while condition is true
+
     (lifoo-asseq 3
-      0 (inc dup 3 >) while drop)
+      0 (inc dup 3 >) while)
     
     (lifoo-asseq '(2 1 0)
       nil (push) 3 times)
 
+    ;; Throws value, catches it and returns (:caught . value)
     (lifoo-asseq '(:caught . :frisbee)
       :frisbee throw (:caught cons) catch)
-    
+
+    ;; Increases value and breaks out of 
     (lifoo-asseq 1
       0 (inc break inc) eval)))
 
@@ -179,14 +192,20 @@
   (with-lifoo ()
     (lifoo-init '(t :meta :stack))
 
+    ;; Loads words from :string module,
+    ;; and returns uppercase string  
     (lifoo-asseq "LIFOO"
-      :string init "lifoo" upper)
+      :string init
+      "lifoo" upper)
 
     (lifoo-asseq '(1 . 2)
       (:list) init 2 1 cons)
-    
+
+    ;; Runs Lisp code inline that modifies the stack
     (lifoo-asseq 43
-      42 (lifoo-push (1+ (lifoo-pop))) lisp eval)))
+      42
+      (lifoo-push (1+ (lifoo-pop)))
+      lisp eval)))
 
 (define-test (:lifoo :stack)
   (with-lifoo ()
@@ -207,8 +226,11 @@
     (lifoo-asseq 2
       1 2 swap drop)
 
+    ;; Backs up and restores stack to/from current environment
     (lifoo-asseq #(1 2)
-      1 2 backup 3 4 restore stack)))
+      1 2 backup
+      3 4 restore
+      stack)))
 
 (define-test (:lifoo :string)
   (with-lifoo ()
@@ -233,6 +255,12 @@
     (lifoo-asseq 42
       1 chan 42 chan-put chan-get)
     
+    ;; Creates an unbuffered channel;
+    ;; starts a new thread that puts 3 in channel;
+    ;; gets value from channel in original thread;
+    ;; joins thread and returns result from thread
+    ;; consed to value from channel
+
     (lifoo-asseq '(:done . 3)
       0 chan (1 2 + chan-put :done) thread swap 
       chan-get swap drop swap 
@@ -240,14 +268,17 @@
 
 (define-test (:lifoo :word)
   (with-lifoo ()
-    (lifoo-init '(t :meta :stack :word))
+    (lifoo-init '(t :meta :list :stack :word))
     
     (lifoo-asseq 3
       1 2 "+" word eval)
 
-    (lifoo-asseq '(42)
-      (42) :foo define :foo word source)
+    ;; Defines word and returns first element from it's source
+    (lifoo-asseq '+
+      (+ 1 2) :foo define
+      :foo word source first)
 
+    ;; Redefines :+ to drop arguments and return 42
     (lifoo-asseq 42
       (drop drop 42) :+ define
       1 2 +)))

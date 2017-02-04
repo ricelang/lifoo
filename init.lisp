@@ -45,8 +45,11 @@
     (let ((rhs (lifoo-pop))
           (lhs (lifoo-pop)))
       (lifoo-push (compare lhs rhs))))
-  
+
+  ;; Pops $rhs and $lhs,
+  ;; and pushes T if they compare equal
   (define-word :eq? () cmp 0 =)
+  
   (define-word :neq? () cmp 0 /=)
   (define-word :lt? () cmp -1 =)
   (define-word :gt? () cmp 1 =)
@@ -151,7 +154,8 @@
                    (eval (cons 'progn body))
                    (setf res (lifoo-peek)))
                  res)
-        (lifoo-pop))))
+        (lifoo-pop))
+      (lifoo-pop)))
 
   ;; Pops $value and throws it 
   (define-lisp-word :throw ()
