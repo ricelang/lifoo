@@ -1,8 +1,10 @@
 Lifoo
 * finish struct word
-** change defn to bind symbol-function outside of define-lisp-word
 ** add setters to fields
 *** keyword param to defn
+*** use fdefinition to get function for funcall
+**** (funcall (fdefinition (list 'setf lisp)) val struct)
+***** get struct from (lifoo-peek) 
 * add delf support
 ** remove set-stack
 ** add :del param to lifoo-push
