@@ -65,7 +65,7 @@
                               :fill-pointer len)))))
 
 (define-init (:compare)
-  ;; Pops $rhs and $lhs,
+  ;; Pops $lhs and $rhs,
   ;; and pushes result of comparing $lhs to $rhs
   (define-lisp-word :cmp ()
     (let ((lhs (lifoo-pop))
