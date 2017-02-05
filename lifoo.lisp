@@ -81,6 +81,7 @@
        (when ,env (lifoo-end)))))
 
 (defmacro define-lifoo-struct (name fields)
+  "Defines struct NAME with FIELDS"
   `(progn
      (let ((lisp-name (gensym))
            (fs ,fields))
@@ -99,6 +100,7 @@
              (list (lifoo-peek)) :set? t))))))
 
 (defmacro define-lifoo-struct-fn (lifoo lisp args &key set?)
+  "Defines word LIFOO that calls LISP with ARGS"
   (with-symbols (_fn _sfn)
     `(let ((,_fn (symbol-function ,lisp))
            (,_sfn (and ,set? (fdefinition (list 'setf ,lisp)))))
@@ -387,17 +389,32 @@
                         (out *standard-output*))
   "Starts a REPL for EXEC with input from IN and output to OUT,
    using PROMPT"
+
+  (format out "Welcome to Lifoo,~%")
+  (format out "press enter on empty line to eval expr,~%")
+  (format out "exit ends session~%")
+  
   (with-lifoo (:exec exec :env t)
     (tagbody
      start
        (format out "~%~a " prompt)
-       (when-let (line (read-line in nil))
-         (unless (string= "" line)
-           (with-input-from-string (in line)
-             (restart-case
-                 (progn
-                   (lifoo-eval (lifoo-read :in in))
-                   (format out "~a~%" (lifoo-pop)))
-               (ignore ()
-                 :report "Ignore error and continue.")))
-           (go start))))))
+       (let ((expr (with-output-to-string (expr)
+                      (let ((line))
+                        (do-while
+                            ((not
+                              (string= "" (setf line
+                                                (read-line in
+                                                           nil)))))
+                          (when (string= "exit" line) (go end))
+                          (terpri expr)
+                          (princ line expr))))))
+         (with-input-from-string (in expr)
+           (restart-case
+               (progn
+                 (lifoo-reset)
+                 (lifoo-eval (lifoo-read :in in))
+                 (format out "~a~%" (lifoo-pop)))
+             (ignore ()
+               :report "Ignore error and continue.")))
+         (go start))
+     end)))

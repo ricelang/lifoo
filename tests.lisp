@@ -138,9 +138,17 @@
     (lifoo-asseq '(2 1 0)
       nil (push) 3 times)
 
+    (lifoo-asseq :always
+      :frisbee throw
+      "skipped" print ln
+      (:always) always
+      (drop) catch)
+    
     ;; Throws value, catches it and returns (:caught . value)
     (lifoo-asseq '(:caught . :frisbee)
-      :frisbee throw (:caught cons) catch)
+      :frisbee throw
+      "skipped" print ln
+      (:caught cons) catch)
 
     ;; Increases value and breaks out of 
     (lifoo-asseq 1
