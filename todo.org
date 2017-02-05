@@ -1,3 +1,4 @@
+Lifoo
 * add local-time support
 ** now / today for current time
 ** date / time constructing from lists

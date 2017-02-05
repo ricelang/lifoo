@@ -396,7 +396,6 @@
            (with-input-from-string (in line)
              (restart-case
                  (progn
-                   (lifoo-reset)
                    (lifoo-eval (lifoo-read :in in))
                    (format out "~a~%" (lifoo-pop)))
                (ignore ()

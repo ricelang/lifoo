@@ -8,7 +8,7 @@
    that compares equal to RES"
   `(asseq ,res (do-lifoo () reset ,@body)))
 
-(define-test (:lifoo :abc)
+(define-test (:lifoo)
   (with-lifoo ()
     (lifoo-init '(t :sequence :stack))
 
@@ -26,29 +26,6 @@
 
     (lifoo-asseq 3
       (1 2 +) eval)))
-
-(define-test (:lifoo :struct)
-  (with-lifoo ()
-    (lifoo-init '(t :stack :struct))
-
-    (lifoo-asseq t
-      :foo ((bar -1) baz) struct
-      nil make-foo foo?)
-
-    (lifoo-asseq '(nil . -1)
-      nil make-foo
-      foo-bar swap
-      foo-baz swap
-      drop cons)
-
-    (lifoo-asseq 42
-      (:bar 42) make-foo
-      foo-bar)
-
-    (lifoo-asseq 43
-      (:bar 42) make-foo
-      foo-bar 43 set
-      foo-bar)))
 
 (define-test (:lifoo :array)
   (with-lifoo ()
@@ -270,6 +247,29 @@
     
     (lifoo-asseq "1+2=3"
       "~a+~a=~a" (1 2 3) format)))
+
+(define-test (:lifoo :struct)
+  (with-lifoo ()
+    (lifoo-init '(t :stack :struct))
+
+    (lifoo-asseq t
+      :foo ((bar -1) baz) struct
+      nil make-foo foo?)
+
+    (lifoo-asseq '(nil . -1)
+      nil make-foo
+      foo-bar swap
+      foo-baz swap
+      drop cons)
+
+    (lifoo-asseq 42
+      (:bar 42) make-foo
+      foo-bar)
+
+    (lifoo-asseq 43
+      (:bar 42) make-foo
+      foo-bar 43 set
+      foo-bar)))
 
 (define-test (:lifoo :thread)
   (with-lifoo ()
