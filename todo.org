@@ -1,6 +1,7 @@
 Lifoo
 * add list argument to struct constructor
-** update test 
+* add stack clone depth to spawn
+** subseq
 (:bar 1 :baz 2) make-foo
 * finish struct word
 ** add setters to fields
