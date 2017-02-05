@@ -167,12 +167,12 @@
   ;; Pops $reps and $body;
   ;; and repeats $body $reps times,
   ;; pushing indexes before evaluating body
-  (define-lisp-word :times (nil)
+  (define-lisp-word :times ((nil t))
     (let ((reps (lifoo-pop))
-          (body (lifoo-parse (lifoo-pop))))
+          (body (lifoo-pop)))
       (dotimes (i reps)
         (lifoo-push i)
-        (eval (cons 'progn body)))))
+        (funcall body))))
 
   ;; Pops $body and loops until $body pushes nil 
   (define-lisp-word :while ((t))

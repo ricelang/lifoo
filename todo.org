@@ -1,8 +1,4 @@
 Lifoo
-* finish precompiling
-** add args param to all lisp words t/nil depending on code or not
-** add (t) args for times
-*** compare perf
 * convert while/times to macros?
 ** manual inlining
 * add local-time support

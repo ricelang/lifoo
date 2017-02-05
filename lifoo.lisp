@@ -166,11 +166,12 @@
     (nreverse expr)))
 
 (defun lifoo-compile-args (word in)
-  (declare (ignore word))
-  (let ((compiled
-          (lifoo-compile-expr
-           (first (first in)))))
-    (rplacd (first in) `(lifoo-push ',compiled))))
+  (let ((i 0))
+    (dolist (compile? (args word))
+      (when compile?
+        (let ((compiled (lifoo-compile-expr (first (elt in i)))))
+          (rplacd (elt in i) `(lifoo-push ',compiled))))
+      (incf i))))
 
 (defun lifoo-parse (expr &key (exec *lifoo*))
   "Parses EXPR and returns code for EXEC"
