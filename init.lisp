@@ -62,7 +62,7 @@
       (define-lifoo-struct name fields)))
   
   ;; Pops $expr and pushes result of evaluating
-  (define-lisp-word :eval (nil)
+  (define-lisp-word :eval ()
     (lifoo-eval (lifoo-pop))))
 
 (define-init (:array)
