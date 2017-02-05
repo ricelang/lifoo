@@ -1,5 +1,4 @@
 Lifoo
-* change define to take block
 * add preparsing of code blocks
 ** mark code blocks in words with list of stack indexes
 ** replace blocks with parse
