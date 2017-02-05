@@ -1,6 +1,6 @@
 (in-package lifoo)
 
-(define-init (t)
+(define-init (:abc)
   (define-binary-words () + - * / = /= < > cons)
 
   ;; Pops $val and pushes T if NIL,
