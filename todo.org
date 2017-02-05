@@ -1,9 +1,5 @@
 Lifoo
-* add doc parameter to word-defining functions
-** move word comments into doc
-** add doc word to get docs for id
 * rewrite filter & map as macros
 * add local-time support
 ** now / today for current time
 ** date / time constructing
- 

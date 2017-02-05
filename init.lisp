@@ -44,7 +44,7 @@
       (lifoo-push val)))
 
   ;; Pops $expr,
-  ;; measures the time it takes to evaluate;
+  ;; measures the time it takes to run;
   ;; and pushes cpu and real
   (define-lisp-word :time ((t))
     (let* ((fn (lifoo-pop))
@@ -119,9 +119,9 @@
 
 (define-init (:error)
   ;; Pops $cnd and signals error if NIL
-  (define-lisp-word :assert (nil)
+  (define-lisp-word :assert ((t))
     (let* ((cnd (lifoo-pop))
-           (ok? (progn (lifoo-eval cnd) (lifoo-pop))))
+           (ok? (progn (funcall cnd) (lifoo-pop))))
       (unless ok?
         (lifoo-error "assert failed: ~a" cnd))))
 
@@ -137,29 +137,29 @@
 (define-init (:flow)
   ;; Pops $cnd, $true and $false;
   ;; and pushes $true if $cnd, otherwise $false
-  (define-lisp-word :cond (nil)
+  (define-lisp-word :cond ((t))
     (let ((cnd (lifoo-pop))
           (true (lifoo-pop))
           (false (lifoo-pop)))
-      (lifoo-eval cnd)
+      (funcall cnd)
       (lifoo-eval (if (lifoo-pop) true false))))
   
   ;; Pops $cnd and $res;
   ;; and pushes $res if $cnd, otherwise NIL
-  (define-lisp-word :when (nil)
+  (define-lisp-word :when ((t))
     (let ((cnd (lifoo-pop))
           (res (lifoo-pop)))
-      (lifoo-eval cnd)
+      (funcall cnd)
       (if (lifoo-pop)
           (lifoo-eval res)
           (lifoo-push nil))))
 
   ;; Pops $cnd and $res;
   ;; and pushes $res unless $cnd, otherwise NIL
-  (define-lisp-word :unless (nil)
+  (define-lisp-word :unless ((t))
     (let ((cnd (lifoo-pop))
           (res (lifoo-pop)))
-      (lifoo-eval cnd)
+      (funcall cnd)
       (if (lifoo-pop)
           (lifoo-push nil)
           (lifoo-eval res))))
