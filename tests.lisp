@@ -24,6 +24,9 @@
     (lifoo-asseq :lifoo
       "lifoo" symbol)
 
+    (lifoo-asseq t
+      ((0.01 sleep) 10 times) time 0.01 <)
+    
     (lifoo-asseq 3
       (1 2 +) eval)))
 

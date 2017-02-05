@@ -43,6 +43,18 @@
       (funcall del)
       (lifoo-push val)))
 
+  ;; Pops $expr,
+  ;; measures the time it takes to evaluate;
+  ;; and pushes cpu and real
+  (define-lisp-word :time ()
+    (let* ((expr (lifoo-pop))
+           (fn (lifoo-compile-expr expr))
+           (real (get-internal-real-time))
+           (cpu (get-internal-run-time)))
+      (funcall fn)
+      (lifoo-push (- (get-internal-run-time) cpu))
+      (lifoo-push (- (get-internal-real-time) real))))
+  
   ;; Pops $fields and $name,
   ;; and defines struct
   (define-lisp-word :struct ()

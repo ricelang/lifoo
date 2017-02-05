@@ -1,12 +1,8 @@
 Lifoo
-* add time macro 
-** measure time for running code
-** return (cons clock cpi)
-(0.1 sleep) time first 0.01 <
-T
-* add precompiling of code blocks
+* add jit compiling of code blocks
 ** mark code blocks in words with list of stack indexes
-** replace block with compiled fn
+** replace blocks with anonymous words
+** increase loop reps in tests
 * add local-time support
 ** now / today for current time
 ** date / time constructing
