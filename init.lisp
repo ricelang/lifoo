@@ -47,8 +47,7 @@
   ;; measures the time it takes to evaluate;
   ;; and pushes cpu and real
   (define-lisp-word :time (:parse? '(0))
-    (let* ((expr (lifoo-pop))
-           (fn (eval `(lambda () ,@expr)))
+    (let* ((fn (lifoo-pop))
            (real (get-internal-real-time))
            (cpu (get-internal-run-time)))
       (funcall fn)

@@ -202,15 +202,16 @@
                           (mw (lifoo-macro-word id)))
                      (if mw
                          (funcall mw acc)
-                         (let ((forms))
+                         (progn
                            (when-let (w (lifoo-word id))
                              (when (parse? w)
-                               (push `(lifoo-push
-                                       (lifoo-parse (lifoo-pop)))
-                                     forms)))
-                           (push `(lifoo-call ,id) forms)
-                           (cons (cons f `(progn
-                                            ,@(nreverse forms)))
+                               (let ((compiled
+                                       (lifoo-compile-expr
+                                        (first (first acc)))))
+                                 (rplacd
+                                  (first acc)
+                                  `(lifoo-push ',compiled)))))
+                           (cons (cons f `(lifoo-call ,id))
                                  acc)))))
                   ((lifoo-word-p f)
                    (cons (cons f `(lifoo-call ,f)) acc))
