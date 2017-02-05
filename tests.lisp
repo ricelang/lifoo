@@ -255,7 +255,10 @@
     
     (lifoo-asseq "123ABC"
       (1 2 3 abc) string)
-    
+
+    (lifoo-asseq "ac"
+      "abc" 1 nth del drop)
+
     (lifoo-asseq "1+2=3"
       "~a+~a=~a" (1 2 3) format)))
 
@@ -264,7 +267,7 @@
     (lifoo-init '(t :stack :struct))
 
     (lifoo-asseq t
-      :foo ((bar -1) baz) struct
+      ((bar -1) baz) :foo struct
       nil make-foo foo?)
 
     (lifoo-asseq '(nil . -1)

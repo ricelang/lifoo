@@ -46,8 +46,8 @@
   ;; Pops $fields and $name,
   ;; and defines struct
   (define-lisp-word :struct ()
-    (let ((fields (lifoo-pop))
-          (name (lifoo-pop)))
+    (let ((name (lifoo-pop))
+          (fields (lifoo-pop)))
       (define-lifoo-struct name fields)))
   
   ;; Pops $expr and pushes result of evaluating

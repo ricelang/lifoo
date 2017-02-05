@@ -413,7 +413,7 @@
                (progn
                  (lifoo-reset)
                  (lifoo-eval (lifoo-read :in in))
-                 (format out "~a~%" (lifoo-pop)))
+                 (write (lifoo-pop) :stream out))
              (ignore ()
                :report "Ignore error and continue.")))
          (go start))
