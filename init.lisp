@@ -167,21 +167,26 @@
   ;; Pops $reps and $body;
   ;; and repeats $body $reps times,
   ;; pushing indexes before evaluating body
-  (define-lisp-word :times ((nil t))
-    (let ((reps (lifoo-pop))
-          (body (lifoo-pop)))
-      (dotimes (i reps)
-        (lifoo-push i)
-        (funcall body))))
+  (define-macro-word :times (in)
+    (cons
+     (cons :times
+           `(let ((reps (lifoo-pop)))
+              (dotimes (i reps)
+                (lifoo-push i)
+                ,@(lifoo-parse (first (second in))))))
+     (cons (first in) (rest (rest in)))))
 
   ;; Pops $body and loops until $body pushes nil 
-  (define-lisp-word :while ((t))
-    (let ((body (lifoo-pop)) (res))
-      (do-while ((progn
-                   (funcall body)
-                   (setf res (lifoo-peek))))
-        (lifoo-pop))
-      (lifoo-pop)))
+  (define-macro-word :while (in)
+    (cons
+     (cons :while
+           `(progn
+              (do-while ((progn
+                           ,@(lifoo-parse (first (first in)))
+                           (lifoo-peek)))
+                (lifoo-pop))
+              (lifoo-pop)))
+     (rest in)))
 
   ;; Pops $value and throws it 
   (define-lisp-word :throw (nil)

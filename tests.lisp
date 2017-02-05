@@ -131,8 +131,8 @@
     (lifoo-asseq 1000
       0 (inc dup 1000 >) while)
     
-    (lifoo-asseq 10000
-      0 (drop inc) 10000 times)
+    (lifoo-asseq 1000
+      0 (drop inc) 1000 times)
 
     (lifoo-asseq :always
       :frisbee throw

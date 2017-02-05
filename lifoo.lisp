@@ -3,7 +3,8 @@
            define-lifoo-struct-fn define-lisp-word define-word
            do-lifoo
            lifoo-break
-           lifoo-call lifoo-compile-expr lifoo-compile-word
+           lifoo-call lifoo-compile-args lifoo-compile-expr
+           lifoo-compile-word
            lifoo-del lifoo-define lifoo-define-macro lifoo-dump-log
            lifoo-env lifoo-error lifoo-eval
            lifoo-init lifoo-log lifoo-macro-word
@@ -173,6 +174,10 @@
           (rplacd (elt in i) `(lifoo-push ',compiled))))
       (incf i))))
 
+(defun lifoo-compile-expr (expr &key (exec *lifoo*))
+  (eval `(lambda ()
+           ,@(lifoo-parse expr :exec exec))))
+
 (defun lifoo-parse (expr &key (exec *lifoo*))
   "Parses EXPR and returns code for EXEC"
   (labels
@@ -228,10 +233,6 @@
         (eval `(progn ,@(lifoo-parse expr)))
       (lifoo-throw (c)
         (lifoo-error "thrown value not caught: ~a" (value c))))))
-
-(defun lifoo-compile-expr (expr &key (exec *lifoo*))
-  (eval `(lambda ()
-           ,@(lifoo-parse expr :exec exec))))
 
 (defun lifoo-compile-word (word &key (exec *lifoo*))
   "Returns compiled function for WORD"
