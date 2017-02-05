@@ -96,13 +96,20 @@
          (let ((fn (if (consp f) (first f) f)))
            (define-lifoo-struct-fn
                (keyword! ,name '- fn) (symbol! lisp-name '- fn)
-             (list (lifoo-peek))))))))
+             (list (lifoo-peek)) :set? t))))))
 
-(defmacro define-lifoo-struct-fn (lifoo lisp args)
-  (with-symbols (_fn)
-    `(let ((,_fn (symbol-function ,lisp)))
+(defmacro define-lifoo-struct-fn (lifoo lisp args &key set?)
+  (with-symbols (_fn _sfn)
+    `(let ((,_fn (symbol-function ,lisp))
+           (,_sfn (and ,set? (fdefinition (list 'setf ,lisp)))))
+       
        (define-lisp-word ,lifoo ()
-         (lifoo-push (apply ,_fn ,args))))))
+         (lifoo-push
+          (apply ,_fn ,args)
+          :set (when ,set?
+                 (lambda (val)
+                   (lifoo-pop)
+                   (funcall ,_sfn val (lifoo-peek)))))))))
 
 (defstruct (lifoo-word (:conc-name))
   id

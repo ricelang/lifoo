@@ -43,6 +43,11 @@
 
     (lifoo-asseq 42
       (:bar 42) make-foo
+      foo-bar)
+
+    (lifoo-asseq 43
+      (:bar 42) make-foo
+      foo-bar 43 set
       foo-bar)))
 
 (define-test (:lifoo :array)

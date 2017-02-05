@@ -1,10 +1,3 @@
-Lifoo
-* finish struct word
-** add setters to fields
-*** keyword param to defn
-*** use fdefinition to get function for funcall
-**** (funcall (fdefinition (list 'setf lisp)) val struct)
-***** get struct from (lifoo-peek) 
 * add local-time support
 ** now / today for current time
 ** date / time constructing from lists
