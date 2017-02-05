@@ -1,5 +1,4 @@
 Lifoo
-* use elt to simplify nth
 * add local-time support
 ** now / today for current time
 ** date / time constructing
