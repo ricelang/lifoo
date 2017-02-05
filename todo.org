@@ -4,6 +4,7 @@ Lifoo
 ** reinit existing word if found on define
 *** clear fn and set source
 ** send in ,(or word id) to lifoo-call
+* rewrite filter & map as macros
 * add local-time support
 ** now / today for current time
 ** date / time constructing
