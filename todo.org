@@ -1,4 +1,6 @@
 Lifoo
+* add compile arg to eval
+* rewrite cond, when & unless as macros
 * rewrite filter & map as macros
 * add local-time support
 ** now / today for current time
