@@ -1,4 +1,9 @@
 Lifoo
+* add time macro 
+** measure time for running code
+** return (cons clock cpi)
+(0.1 sleep) time first 0.01 <
+T
 * add local-time support
 ** now / today for current time
 ** date / time constructing
