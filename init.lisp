@@ -175,12 +175,11 @@
         (eval (cons 'progn body)))))
 
   ;; Pops $body and loops until $body pushes nil 
-  (define-lisp-word :while ()
-    (let ((body (lifoo-parse (lifoo-pop))) (res))
+  (define-lisp-word :while (:parse? '(0))
+    (let ((body (lifoo-pop)) (res))
       (do-while ((progn
-                   (eval (cons 'progn body))
-                   (setf res (lifoo-peek)))
-                 res)
+                   (funcall body)
+                   (setf res (lifoo-peek))))
         (lifoo-pop))
       (lifoo-pop)))
 

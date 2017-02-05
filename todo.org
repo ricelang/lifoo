@@ -2,7 +2,8 @@ Lifoo
 * add preparsing of code blocks
 ** finish preparsing
 *** use parse? list to replace values in stack
-** add :parse? params for code blocks in init
+** add :parse? params for times
+*** compare perf
 * add local-time support
 ** now / today for current time
 ** date / time constructing
