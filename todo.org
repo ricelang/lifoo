@@ -1,7 +1,4 @@
 Lifoo
-* add delf support
-** replace :del word in env
-** implement del for nth in lists
 * extract define-lifoo-struct macro
 * finish struct word
 ** add setters to fields

@@ -281,13 +281,20 @@
                   (aref seq idx))
                  (t
                   (nth idx seq)))))
-      (lifoo-push it :set (lambda (val)
-                            (cond
-                              ((arrayp seq)
-                               (setf (aref seq idx) val))
-                              (t
-                               (setf (nth idx seq) val)))))))
-
+      (lifoo-push
+       it
+       :set (lambda (val)
+              (cond
+                ((arrayp seq)
+                 (setf (aref seq idx) val))
+                (t
+                 (setf (nth idx seq) val))))
+       :del (lambda ()
+              (lifoo-pop)
+              (lifoo-push (remove-nth
+                           idx
+                           (lifoo-pop)))))))
+  
   
   ;; Pushes length of $1
   (define-lisp-word :length ()

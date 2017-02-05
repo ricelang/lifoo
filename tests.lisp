@@ -173,6 +173,12 @@
       (1 2 3) length)
 
     (lifoo-asseq 2
+      (1 2 3) 1 nth)
+
+    (lifoo-asseq '(1 3)
+      (1 2 3) 1 nth del drop)
+
+    (lifoo-asseq 2
       (1 2 3) rest first)
 
     (lifoo-asseq '(1)
