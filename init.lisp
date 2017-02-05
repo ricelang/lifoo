@@ -99,7 +99,7 @@
   (define-lisp-word :del ()
     (let* ((var (lifoo-pop))
            (val (lifoo-var var)))
-      (lifoo-del var)
+      (setf (lifoo-var var) nil)
       (lifoo-push val)))
 
   ;; Opens new environment

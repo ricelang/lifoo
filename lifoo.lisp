@@ -4,7 +4,7 @@
            lifoo-compile
            lifoo-break
            lifoo-call
-           lifoo-define lifoo-define-macro lifoo-del lifoo-dump-log
+           lifoo-define lifoo-define-macro lifoo-dump-log
            lifoo-env lifoo-error lifoo-eval
            lifoo-init lifoo-log lifoo-macro-word
            lifoo-parse lifoo-parse-word lifoo-peek lifoo-peek-set
@@ -340,11 +340,6 @@
   "Sets value of VAR in EXEC to VAL"
   (push (cons var val) (lifoo-env))
   val)
-
-(defun lifoo-del (var)
-  "Deletes VAR from EXEC and returns value"
-  (setf (lifoo-env)
-        (delete var (lifoo-env) :key #'first :test #'eq))) 
 
 (defun lifoo-repl (&key (exec (lifoo-init t :exec (make-lifoo)))
                         (in *standard-input*)

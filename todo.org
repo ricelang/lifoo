@@ -1,15 +1,19 @@
 Lifoo
+* add delf support
+** add back lifoo-cell
+** rename push/pop/peek to -cell
+** remove set-stack 
+** remove peek-set
+** change (setf peek) to update lifoo-val
+** add :del param to lifoo-push
+** replaces :del word in env
+** implement del for nth in lists
 * finish struct word
 ** add setters to fields
 *** keyword param to defn
 *** use fdefinition to get function for funcall
 **** (funcall (fdefinition (list 'setf lisp)) val struct)
 ***** get struct from (lifoo-peek) 
-* add delf support
-** remove set-stack 
-** add :del param to lifoo-push
-** replaces :del word in env
-** implement del for nth in lists
 * add local-time support
 ** now / today for current time
 ** date / time constructing from lists
