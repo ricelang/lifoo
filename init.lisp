@@ -62,7 +62,7 @@
       (define-lifoo-struct name fields)))
   
   ;; Pops $expr and pushes result of evaluating
-  (define-lisp-word :eval ()
+  (define-lisp-word :eval (nil)
     (lifoo-eval (lifoo-pop))))
 
 (define-init (:array)
@@ -137,12 +137,16 @@
 (define-init (:flow)
   ;; Pops $cnd, $true and $false;
   ;; and pushes $true if $cnd, otherwise $false
-  (define-lisp-word :cond ((t t t))
-    (let ((cnd (lifoo-pop))
-          (true (lifoo-pop))
-          (false (lifoo-pop)))
-      (funcall cnd)
-      (funcall (if (lifoo-pop) true false))))
+  (define-macro-word :cond (in)
+    (cons (cons :cond
+                `(progn
+                   ,@(lifoo-compile (first (first in)))
+                   (if (lifoo-pop)
+                       (progn ,@(lifoo-compile
+                                 (first (second in))))
+                       (progn ,@(lifoo-compile
+                                 (first (third in)))))))
+          (nthcdr 3 in)))
   
   ;; Pops $cnd and $res;
   ;; and pushes $res if $cnd, otherwise NIL
