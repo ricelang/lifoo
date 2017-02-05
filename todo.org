@@ -1,6 +1,8 @@
 Lifoo
-* use word-caching in parse
-** replace 
+* enable word caching in parse? 
+** reinit existing word if found on define
+*** clear fn and set source
+*** send in ,(or word id) to lifoo-call
 * add local-time support
 ** now / today for current time
 ** date / time constructing
