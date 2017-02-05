@@ -6,7 +6,6 @@
            lifoo-call
            lifoo-define lifoo-define-macro lifoo-del lifoo-dump-log
            lifoo-env lifoo-error lifoo-eval
-           lifoo-get
            lifoo-init lifoo-log lifoo-macro-word
            lifoo-parse lifoo-parse-word lifoo-peek lifoo-peek-set
            lifoo-pop lifoo-print-log lifoo-push
@@ -14,7 +13,7 @@
            lifoo-stack
            lifoo-trace?
            lifoo-undefine
-           lifoo-word make-lifoo
+           lifoo-var lifoo-word make-lifoo
            with-lifoo
            *lifoo* *lifoo-init*)
   (:use bordeaux-threads cl cl4l-chan cl4l-clone cl4l-compare
@@ -245,7 +244,7 @@
   (vector-push-extend set (set-stack exec))
   val)
 
-(defmacro lifoo-push-set (expr &key exec)
+(defmacro lifoo-push-expr (expr &key exec)
   `(lifoo-push ,expr
                :set (lambda (val)
                       (setf ,expr val))
@@ -333,11 +332,11 @@
   "Replaces current environment"
   (rplaca (envs exec) env))
 
-(defun lifoo-get (var)
+(defun lifoo-var (var)
   "Returns value of VAR in EXEC"
   (rest (assoc var (lifoo-env) :test #'eq))) 
 
-(defun (setf lifoo-get) (val var)
+(defun (setf lifoo-var) (val var)
   "Sets value of VAR in EXEC to VAL"
   (push (cons var val) (lifoo-env))
   val)

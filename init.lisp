@@ -39,14 +39,16 @@
           (lisp-name (gensym)))
       (eval `(defstruct (,lisp-name)
                ,@fields))
-      (macrolet ((defn (lifoo lisp)
+      (macrolet ((defn (lifoo lisp &rest args)
                    `(let ((fn (symbol-function ,lisp)))
                       (define-lisp-word ,lifoo ()
-                        (funcall fn)))))
+                        (lifoo-push (funcall fn ,@args))))))
         (defn (keyword! 'make- name) (symbol! 'make- lisp-name))
-        (defn (keyword! name '?) (symbol! lisp-name '-p))
+        (defn (keyword! name '?) (symbol! lisp-name '-p)
+          (lifoo-peek))
         (dolist (f fields)
-          (defn (keyword! name '- f) (symbol! lisp-name '- f))))))
+          (defn (keyword! name '- f) (symbol! lisp-name '- f)
+            (lifoo-peek))))))
   
   ;; Pops $expr and pushes result of evaluating
   (define-lisp-word :eval ()
@@ -89,14 +91,14 @@
   (define-lisp-word :var ()
     (lifoo-eval (lifoo-pop))
     (let ((var (lifoo-pop)))
-      (lifoo-push-set (lifoo-get var))))
+      (lifoo-push-expr (lifoo-var var))))
 
   ;; Pops $var;
   ;; deletes it from current environment,
   ;; and pushes value
   (define-lisp-word :del ()
     (let* ((var (lifoo-pop))
-           (val (lifoo-get var)))
+           (val (lifoo-var var)))
       (lifoo-del var)
       (lifoo-push val)))
 
@@ -385,13 +387,13 @@
         (set-var (gensym)))
     ;; Pushes backup of stack to environment
     (define-lisp-word :backup ()
-      (push (copy-seq (stack *lifoo*)) (lifoo-get var))
-      (push (copy-seq (set-stack *lifoo*)) (lifoo-get set-var)))
+      (push (copy-seq (stack *lifoo*)) (lifoo-var var))
+      (push (copy-seq (set-stack *lifoo*)) (lifoo-var set-var)))
 
     ;; Pops and restores backup from environment
     (define-lisp-word :restore ()
-      (let* ((prev (pop (lifoo-get var)))
-             (prev-set (pop (lifoo-get set-var)))
+      (let* ((prev (pop (lifoo-var var)))
+             (prev-set (pop (lifoo-var set-var)))
              (curr (stack *lifoo*))
              (curr-set (set-stack *lifoo*))
              (len (length prev)))

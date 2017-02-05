@@ -8,7 +8,7 @@
    that compares equal to RES"
   `(asseq ,res (do-lifoo () reset ,@body)))
 
-(define-test (:lifoo)
+(define-test (:lifoo :abc)
   (with-lifoo ()
     (lifoo-init '(t :sequence :stack))
 
@@ -26,7 +26,7 @@
 
     (lifoo-asseq t
         :foo (x y z) struct make-foo foo?)
-    
+
     (lifoo-asseq 3
       (1 2 +) eval)))
 

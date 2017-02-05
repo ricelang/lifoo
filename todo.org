@@ -6,9 +6,8 @@ Lifoo
 **** (funcall (fdefinition (list 'setf lisp)) val struct)
 ***** get struct from (lifoo-peek) 
 * add delf support
-** remove set-stack
+** remove set-stack 
 ** add :del param to lifoo-push
-*** store (cons val (cons set (cons del))) in stack
 ** replaces :del word in env
 ** implement del for nth in lists
 * add local-time support
