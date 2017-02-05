@@ -67,10 +67,10 @@
       "abc" "abcd" neq?)
     
     (lifoo-asseq t
-      "abc" "def" lt?)
+      "def" "abc" lt?)
     
     (lifoo-asseq nil
-      "abc" "def" gt?)))
+      "def" "abc" gt?)))
 
 
 (define-test (:lifoo :env)
@@ -80,8 +80,8 @@
     (lifoo-asseq 42
       :foo var 42 set :foo var)
     
-    (lifoo-asseq '((:foo . 42))
-      :foo var 42 set env)
+    (lifoo-asseq '((:bar . 42))
+      :bar var 42 set env)
     
     (lifoo-asseq '(nil . 42)
       :foo var 42 set drop :foo var del :foo var cons)
@@ -193,7 +193,10 @@
       (1 2 3) first 4 set)
     
     (lifoo-asseq '(1 2 3)
-      nil 1 push 2 push 3 push reverse)))
+      nil 1 push 2 push 3 push reverse)
+    
+    (lifoo-asseq '(3 7 11)
+      ((1 2 +) (3 4 +) (5 6 +)) (eval) map)))
 
 (define-test (:lifoo :log)
   (with-lifoo ()
@@ -305,9 +308,9 @@
       1 2 "+" word eval)
 
     ;; Defines word and returns first element from it's source
-    (lifoo-asseq '+
+    (lifoo-asseq '(+ 1 2)
       (+ 1 2) :foo define
-      :foo word source first)
+      :foo word source)
 
     ;; Redefines :+ to drop arguments and return 42
     (lifoo-asseq 42

@@ -1,4 +1,6 @@
 Lifoo
+* add support for arrays in nth/del
+** add to post/del
 * add local-time support
 ** now / today for current time
 ** date / time constructing from lists

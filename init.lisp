@@ -68,8 +68,8 @@
   ;; Pops $rhs and $lhs,
   ;; and pushes result of comparing $lhs to $rhs
   (define-lisp-word :cmp ()
-    (let ((rhs (lifoo-pop))
-          (lhs (lifoo-pop)))
+    (let ((lhs (lifoo-pop))
+          (rhs (lifoo-pop)))
       (lifoo-push (compare lhs rhs))))
 
   ;; Pops $rhs and $lhs,
@@ -100,7 +100,11 @@
 
   ;; Closes current environment
   (define-lisp-word :end ()
-    (lifoo-end)))
+    (lifoo-end))
+
+  ;; Clears current environment
+  (define-lisp-word :clear ()
+    (setf (lifoo-env) nil)))
 
 (define-init (:error)
   ;; Pops $cnd and signals error if NIL
