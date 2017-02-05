@@ -87,19 +87,20 @@
        (eval `(defstruct (,lisp-name)
                 ,@fs))
        (define-lifoo-struct-fn
-           (keyword! 'make- ,name) (symbol! 'make- lisp-name))
+           (keyword! 'make- ,name) (symbol! 'make- lisp-name)
+         (lifoo-pop))
        (define-lifoo-struct-fn
            (keyword! ,name '?) (symbol! lisp-name '-p)
-         (lifoo-peek))
+         (list (lifoo-peek)))
        (dolist (f fs)
          (define-lifoo-struct-fn
              (keyword! ,name '- f) (symbol! lisp-name '- f)
-           (lifoo-peek))))))
+           (list (lifoo-peek)))))))
 
-(defmacro define-lifoo-struct-fn (lifoo lisp &body args)
+(defmacro define-lifoo-struct-fn (lifoo lisp args)
   `(let ((fn (symbol-function ,lisp)))
      (define-lisp-word ,lifoo ()
-       (lifoo-push (funcall fn ,@args)))))
+       (lifoo-push (apply fn ,args)))))
 
 
 (defstruct (lifoo-word (:conc-name))

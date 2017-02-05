@@ -25,7 +25,10 @@
       "lifoo" symbol)
 
     (lifoo-asseq t
-        :foo (x y z) struct make-foo foo?)
+      :foo (bar baz) struct nil make-foo foo?)
+
+    (lifoo-asseq 42
+      (:bar 42) make-foo foo-bar)
 
     (lifoo-asseq 3
       (1 2 +) eval)))

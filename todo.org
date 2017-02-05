@@ -1,6 +1,4 @@
 Lifoo
-* add list argument to struct constructor
-(:bar 1 :baz 2) make-foo
 * finish struct word
 ** add setters to fields
 *** keyword param to defn
