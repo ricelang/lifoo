@@ -43,6 +43,7 @@
       (funcall del)
       (lifoo-push val)))
 
+  ;; Pops $fields and $name, and defines struct
   (define-lisp-word :struct ()
     (let ((fields (lifoo-pop))
           (name (lifoo-pop)))

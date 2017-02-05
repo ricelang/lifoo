@@ -93,15 +93,16 @@
            (keyword! ,name '?) (symbol! lisp-name '-p)
          (list (lifoo-peek)))
        (dolist (f fs)
-         (define-lifoo-struct-fn
-             (keyword! ,name '- f) (symbol! lisp-name '- f)
-           (list (lifoo-peek)))))))
+         (let ((fn (if (consp f) (first f) f)))
+           (define-lifoo-struct-fn
+               (keyword! ,name '- fn) (symbol! lisp-name '- fn)
+             (list (lifoo-peek))))))))
 
 (defmacro define-lifoo-struct-fn (lifoo lisp args)
-  `(let ((fn (symbol-function ,lisp)))
-     (define-lisp-word ,lifoo ()
-       (lifoo-push (apply fn ,args)))))
-
+  (with-symbols (_fn)
+    `(let ((,_fn (symbol-function ,lisp)))
+       (define-lisp-word ,lifoo ()
+         (lifoo-push (apply ,_fn ,args))))))
 
 (defstruct (lifoo-word (:conc-name))
   id

@@ -24,14 +24,26 @@
     (lifoo-asseq :lifoo
       "lifoo" symbol)
 
-    (lifoo-asseq t
-      :foo (bar baz) struct nil make-foo foo?)
-
-    (lifoo-asseq 42
-      (:bar 42) make-foo foo-bar)
-
     (lifoo-asseq 3
       (1 2 +) eval)))
+
+(define-test (:lifoo :struct)
+  (with-lifoo ()
+    (lifoo-init '(t :stack :struct))
+
+    (lifoo-asseq t
+      :foo ((bar -1) baz) struct
+      nil make-foo foo?)
+
+    (lifoo-asseq '(nil . -1)
+      nil make-foo
+      foo-bar swap
+      foo-baz swap
+      drop cons)
+
+    (lifoo-asseq 42
+      (:bar 42) make-foo
+      foo-bar)))
 
 (define-test (:lifoo :array)
   (with-lifoo ()
