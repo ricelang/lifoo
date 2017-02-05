@@ -1,5 +1,5 @@
 # lifoo
-#### a Lispy, embedded Forth
+#### a fresh take on Forth, in the spirit of Lisp
 
 ### tests
 Lifoo comes with a modest but grow set of tests in ```lifoo-tests.lisp```, evaluating ```(cl4l-test:run-suite nil)``` runs all tests.
