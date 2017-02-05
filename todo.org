@@ -8,6 +8,7 @@ Lifoo
 ** add :del param to lifoo-push
 ** replaces :del word in env
 ** implement del for nth in lists
+* extract define-lifoo-struct macro
 * finish struct word
 ** add setters to fields
 *** keyword param to defn
