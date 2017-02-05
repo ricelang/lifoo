@@ -1,8 +1,8 @@
 Lifoo
-* add jit compiling of code blocks
+* change define to take block
+* add preparsing of code blocks
 ** mark code blocks in words with list of stack indexes
-** replace blocks with anonymous words
-** increase loop reps in tests
+** replace blocks with parse
 * add local-time support
 ** now / today for current time
 ** date / time constructing
