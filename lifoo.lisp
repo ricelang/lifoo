@@ -1,16 +1,16 @@
 (defpackage lifoo
-  (:export define-init define-binary-words define-lisp-word
-           define-word do-lifoo
-           lifoo-compile
+  (:export define-init define-binary-words define-lifoo-struct
+           define-lifoo-struct-fn define-lisp-word define-word
+           do-lifoo
            lifoo-break
-           lifoo-call
-           lifoo-define lifoo-define-macro lifoo-dump-log
+           lifoo-call lifoo-compile
+           lifoo-del lifoo-define lifoo-define-macro lifoo-dump-log
            lifoo-env lifoo-error lifoo-eval
            lifoo-init lifoo-log lifoo-macro-word
            lifoo-parse lifoo-parse-word lifoo-peek lifoo-peek-set
            lifoo-pop lifoo-print-log lifoo-push
            lifoo-read lifoo-repl lifoo-reset
-           lifoo-stack
+           lifoo-set lifoo-stack
            lifoo-trace?
            lifoo-undefine
            lifoo-var lifoo-word make-lifoo
@@ -79,6 +79,28 @@
      (when ,env (lifoo-begin :env ,env))
      (unwind-protect (progn ,@body)
        (when ,env (lifoo-end)))))
+
+(defmacro define-lifoo-struct (name fields)
+  `(progn
+     (let ((lisp-name (gensym))
+           (fs ,fields))
+       (eval `(defstruct (,lisp-name)
+                ,@fs))
+       (define-lifoo-struct-fn
+           (keyword! 'make- ,name) (symbol! 'make- lisp-name))
+       (define-lifoo-struct-fn
+           (keyword! ,name '?) (symbol! lisp-name '-p)
+         (lifoo-peek))
+       (dolist (f fs)
+         (define-lifoo-struct-fn
+             (keyword! ,name '- f) (symbol! lisp-name '- f)
+           (lifoo-peek))))))
+
+(defmacro define-lifoo-struct-fn (lifoo lisp &body args)
+  `(let ((fn (symbol-function ,lisp)))
+     (define-lisp-word ,lifoo ()
+       (lifoo-push (funcall fn ,@args)))))
+
 
 (defstruct (lifoo-word (:conc-name))
   id

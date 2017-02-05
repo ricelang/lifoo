@@ -45,20 +45,8 @@
 
   (define-lisp-word :struct ()
     (let ((fields (lifoo-pop))
-          (name (lifoo-pop))
-          (lisp-name (gensym)))
-      (eval `(defstruct (,lisp-name)
-               ,@fields))
-      (macrolet ((defn (lifoo lisp &rest args)
-                   `(let ((fn (symbol-function ,lisp)))
-                      (define-lisp-word ,lifoo ()
-                        (lifoo-push (funcall fn ,@args))))))
-        (defn (keyword! 'make- name) (symbol! 'make- lisp-name))
-        (defn (keyword! name '?) (symbol! lisp-name '-p)
-          (lifoo-peek))
-        (dolist (f fields)
-          (defn (keyword! name '- f) (symbol! lisp-name '- f)
-            (lifoo-peek))))))
+          (name (lifoo-pop)))
+      (define-lifoo-struct name fields)))
   
   ;; Pops $expr and pushes result of evaluating
   (define-lisp-word :eval ()
