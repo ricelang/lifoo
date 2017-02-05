@@ -3,12 +3,12 @@
            define-lifoo-struct-fn define-lisp-word define-word
            do-lifoo
            lifoo-break
-           lifoo-call lifoo-compile-args lifoo-compile-expr
-           lifoo-compile-word
+           lifoo-call lifoo-compile lifoo-compile-args
+           lifoo-compile-fn lifoo-compile-word
            lifoo-del lifoo-define lifoo-define-macro lifoo-dump-log
            lifoo-env lifoo-error lifoo-eval
            lifoo-init lifoo-log lifoo-macro-word
-           lifoo-parse lifoo-parse-word lifoo-peek lifoo-peek-set
+           lifoo-peek lifoo-peek-set
            lifoo-pop lifoo-print-log lifoo-push
            lifoo-read lifoo-repl lifoo-reset
            lifoo-set lifoo-stack
@@ -166,19 +166,19 @@
       (push more? expr))
     (nreverse expr)))
 
+(defun lifoo-compile-fn (expr &key (exec *lifoo*))
+  (eval `(lambda ()
+           ,@(lifoo-compile expr :exec exec))))
+
 (defun lifoo-compile-args (word in)
   (let ((i 0))
     (dolist (compile? (args word))
       (when compile?
-        (let ((compiled (lifoo-compile-expr (first (elt in i)))))
+        (let ((compiled (lifoo-compile-fn (first (elt in i)))))
           (rplacd (elt in i) `(lifoo-push ',compiled))))
       (incf i))))
 
-(defun lifoo-compile-expr (expr &key (exec *lifoo*))
-  (eval `(lambda ()
-           ,@(lifoo-parse expr :exec exec))))
-
-(defun lifoo-parse (expr &key (exec *lifoo*))
+(defun lifoo-compile (expr &key (exec *lifoo*))
   "Parses EXPR and returns code for EXEC"
   (labels
       ((parse (fs acc)
@@ -230,7 +230,7 @@
   "Returns result of parsing and evaluating EXPR in EXEC"
   (with-lifoo (:exec exec)
     (handler-case
-        (eval `(progn ,@(lifoo-parse expr)))
+        (eval `(progn ,@(lifoo-compile expr)))
       (lifoo-throw (c)
         (lifoo-error "thrown value not caught: ~a" (value c))))))
 
@@ -239,7 +239,8 @@
   (or (fn word)
       (setf (fn word)
             (eval `(lambda ()
-                     ,@(lifoo-parse (source word) :exec exec))))))
+                     ,@(lifoo-compile (source word)
+                                      :exec exec))))))
 
 (defun lifoo-call (word &key (exec *lifoo*))
   "Calls WORD in EXEC"

@@ -1,4 +1,6 @@
 Lifoo
+* use word-caching in parse
+** replace 
 * add local-time support
 ** now / today for current time
 ** date / time constructing

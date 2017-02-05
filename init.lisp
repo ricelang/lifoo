@@ -173,7 +173,7 @@
            `(let ((reps (lifoo-pop)))
               (dotimes (i reps)
                 (lifoo-push i)
-                ,@(lifoo-parse (first (second in))))))
+                ,@(lifoo-compile (first (second in))))))
      (cons (first in) (rest (rest in)))))
 
   ;; Pops $body and loops until $body pushes nil 
@@ -182,7 +182,7 @@
      (cons :while
            `(progn
               (do-while ((progn
-                           ,@(lifoo-parse (first (first in)))
+                           ,@(lifoo-compile (first (first in)))
                            (lifoo-peek)))
                 (lifoo-pop))
               (lifoo-pop)))
@@ -350,13 +350,13 @@
                      (t 'list))
                    (eval `(lambda (it)
                             (lifoo-push it)
-                            ,@(lifoo-parse expr)
+                            ,@(lifoo-compile expr)
                             (lifoo-pop)))
                    seq))))
 
   ;; Pops $pred and filters $1 by it
   (define-lisp-word :filter (nil)
-    (let ((pred (lifoo-parse (lifoo-pop))))
+    (let ((pred (lifoo-compile (lifoo-pop))))
       (setf (lifoo-peek)
             (remove-if (eval `(lambda (it)
                                 (lifoo-push it)
@@ -366,7 +366,7 @@
 
   ;; Pops $fn and replaces $1 with reduction by $fn
   (define-lisp-word :reduce (nil)
-    (let ((fn (lifoo-parse (lifoo-pop))))
+    (let ((fn (lifoo-compile (lifoo-pop))))
       (setf (lifoo-peek)
             (reduce (eval `(lambda (x y)
                              (lifoo-push x)
