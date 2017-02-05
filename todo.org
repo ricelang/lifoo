@@ -3,5 +3,4 @@ Lifoo
 ** add to post/del
 * add local-time support
 ** now / today for current time
-** date / time constructing from lists
-** add type forward in lifoo-parse
+** date / time constructing
