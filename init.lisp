@@ -137,32 +137,32 @@
 (define-init (:flow)
   ;; Pops $cnd, $true and $false;
   ;; and pushes $true if $cnd, otherwise $false
-  (define-lisp-word :cond ((t))
+  (define-lisp-word :cond ((t t t))
     (let ((cnd (lifoo-pop))
           (true (lifoo-pop))
           (false (lifoo-pop)))
       (funcall cnd)
-      (lifoo-eval (if (lifoo-pop) true false))))
+      (funcall (if (lifoo-pop) true false))))
   
   ;; Pops $cnd and $res;
   ;; and pushes $res if $cnd, otherwise NIL
-  (define-lisp-word :when ((t))
+  (define-lisp-word :when ((t t))
     (let ((cnd (lifoo-pop))
           (res (lifoo-pop)))
       (funcall cnd)
       (if (lifoo-pop)
-          (lifoo-eval res)
+          (funcall res)
           (lifoo-push nil))))
 
   ;; Pops $cnd and $res;
   ;; and pushes $res unless $cnd, otherwise NIL
-  (define-lisp-word :unless ((t))
+  (define-lisp-word :unless ((t t))
     (let ((cnd (lifoo-pop))
           (res (lifoo-pop)))
       (funcall cnd)
       (if (lifoo-pop)
           (lifoo-push nil)
-          (lifoo-eval res))))
+          (funcall res))))
 
   ;; Pops $reps and $body;
   ;; and repeats $body $reps times,
@@ -396,7 +396,7 @@
   
   ;; Pushes $1 on stack
   (define-lisp-word :dup (nil)
-    (lifoo-push (lifoo-peek)))
+    (lifoo-push-cell (lifoo-peek-cell)))
 
   ;; Resets stack
   (define-lisp-word :reset (nil)
