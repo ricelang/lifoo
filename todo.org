@@ -1,9 +1,10 @@
 Lifoo
-* add preparsing of code blocks
-** finish preparsing
-*** use parse? list to replace values in stack
-** add :parse? params for times
+* finish precompiling
+** add args param to all lisp words t/nil depending on code or not
+** add (t) args for times
 *** compare perf
+* convert while/times to macros?
+** manual inlining
 * add local-time support
 ** now / today for current time
 ** date / time constructing

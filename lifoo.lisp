@@ -39,21 +39,20 @@
                          ,@body)
                        :exec (or ,exec *lifoo*)))
 
-(defmacro define-lisp-word (id (&key exec parse?) &body body)
+(defmacro define-lisp-word (id ((&rest args) &key exec) &body body)
   "Defines new word with NAME in EXEC from Lisp forms in BODY"
   `(lifoo-define ,id
                  (make-lifoo-word :id ,id
                                   :source ',body
                                   :fn (lambda () ,@body)
-                                  :parse? ,parse?)
+                                  :args ',args)
                  :exec (or ,exec *lifoo*)))
 
-(defmacro define-word (name (&key exec parse?) &body body)
+(defmacro define-word (name (&key exec) &body body)
   "Defines new word with NAME in EXEC from BODY"
   `(lifoo-define ',name
                  (make-lifoo-word :id ,(keyword! name)
-                                  :source ',body
-                                  :parse? ,parse?)
+                                  :source ',body)
                  :exec (or ,exec *lifoo*)))
 
 (defmacro define-binary-words ((&key exec) &rest forms)
@@ -61,7 +60,8 @@
   (with-symbols (_lhs _rhs)
     `(progn
        ,@(mapcar (lambda (op)
-                   `(define-lisp-word ,(keyword! op) (:exec ,exec)
+                   `(define-lisp-word ,(keyword! op)
+                        (nil :exec ,exec)
                       (let ((,_lhs (lifoo-pop))
                             (,_rhs (lifoo-pop)))
                         (lifoo-push (,op ,_lhs ,_rhs)))))
@@ -107,7 +107,7 @@
     `(let ((,_fn (symbol-function ,lisp))
            (,_sfn (and ,set? (fdefinition (list 'setf ,lisp)))))
        
-       (define-lisp-word ,lifoo ()
+       (define-lisp-word ,lifoo (nil)
          (lifoo-push
           (apply ,_fn ,args)
           :set (when ,set?
@@ -116,9 +116,7 @@
                    (funcall ,_sfn val (lifoo-peek)))))))))
 
 (defstruct (lifoo-word (:conc-name))
-  id
-  parse? trace?
-  source fn)
+  id trace? source fn args)
 
 (defstruct (lifoo-cell (:conc-name lifoo-))
   val set del)
@@ -167,6 +165,13 @@
       (push more? expr))
     (nreverse expr)))
 
+(defun lifoo-compile-args (word in)
+  (declare (ignore word))
+  (let ((compiled
+          (lifoo-compile-expr
+           (first (first in)))))
+    (rplacd (first in) `(lifoo-push ',compiled))))
+
 (defun lifoo-parse (expr &key (exec *lifoo*))
   "Parses EXPR and returns code for EXEC"
   (labels
@@ -202,15 +207,9 @@
                           (mw (lifoo-macro-word id)))
                      (if mw
                          (funcall mw acc)
-                         (progn
-                           (when-let (w (lifoo-word id))
-                             (when (parse? w)
-                               (let ((compiled
-                                       (lifoo-compile-expr
-                                        (first (first acc)))))
-                                 (rplacd
-                                  (first acc)
-                                  `(lifoo-push ',compiled)))))
+                         (let ((w (lifoo-word id)))
+                           (when (and w (args w))
+                             (lifoo-compile-args w acc))
                            (cons (cons f `(lifoo-call ,id))
                                  acc)))))
                   ((lifoo-word-p f)
