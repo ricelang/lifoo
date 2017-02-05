@@ -9,16 +9,3 @@ Lifoo
 ** now / today for current time
 ** date / time constructing from lists
 ** add type forward in lifoo-parse
-
-(eval `(defstruct (,lisp-name)
-               ,@fields))
-      (macrolet ((defn (lifoo lisp &rest args)
-                   `(let ((fn (symbol-function ,lisp)))
-                      (define-lisp-word ,lifoo ()
-                        (lifoo-push (funcall fn ,@args))))))
-        (defn (keyword! 'make- name) (symbol! 'make- lisp-name))
-        (defn (keyword! name '?) (symbol! lisp-name '-p)
-          (lifoo-peek))
-        (dolist (f fields)
-          (defn (keyword! name '- f) (symbol! lisp-name '- f)
-            (lifoo-peek))))
