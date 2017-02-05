@@ -166,7 +166,7 @@
     (nreverse expr)))
 
 (defun lifoo-parse (expr &key (exec *lifoo*))
-  "Parses EXPR and returns code compiled for EXEC"
+  "Parses EXPR and returns code for EXEC"
   (labels
       ((parse (fs acc)
          (if fs

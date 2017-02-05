@@ -46,7 +46,6 @@
     (lifoo-asseq 2
       #(1 2 3) pop drop pop)
     
-    ;; Maps lambda over sequence
     (lifoo-asseq #(2 4 6)
       #(1 2 3) (2 *) map)
 
@@ -86,10 +85,6 @@
     (lifoo-asseq '(nil . 42)
       :foo var 42 set drop :foo var del :foo var cons)
 
-    ;; Sets variable named :foo to 42;
-    ;; opens new environment and sets :foo to 43,
-    ;; and closes environment and returns value of :foo
-
     (lifoo-asseq 42
       :foo var 42 set
       begin :foo var 43 set end
@@ -121,7 +116,6 @@
   (with-lifoo ()
     (lifoo-init '(t :flow :sequence :stack))
     
-    ;; Returns :true if 1 = 1, otherwise :false
     (lifoo-asseq :true
       :false :true (1 1 =) cond)
     
@@ -131,7 +125,6 @@
     (lifoo-asseq :ok
       :ok (1 2 =) unless)
     
-    ;; Increases value while condition is true
     (lifoo-asseq 3
       0 (inc dup 3 >) while)
     
@@ -144,13 +137,11 @@
       (:always) always
       (drop) catch)
     
-    ;; Throws value, catches it and returns (:caught . value)
     (lifoo-asseq '(:caught . :frisbee)
       :frisbee throw
       "skipped" print ln
       (:caught cons) catch)
 
-    ;; Increases value and breaks out of 
     (lifoo-asseq 1
       0 (inc break inc) eval)))
 
@@ -209,8 +200,6 @@
   (with-lifoo ()
     (lifoo-init '(t :meta :stack))
 
-    ;; Loads words from :string module,
-    ;; and returns uppercase string  
     (lifoo-asseq "LIFOO"
       :string init
       "lifoo" upper)
@@ -218,7 +207,6 @@
     (lifoo-asseq '(1 . 2)
       (:list) init 2 1 cons)
 
-    ;; Runs Lisp code inline that modifies the stack
     (lifoo-asseq 43
       42
       (lifoo-push (1+ (lifoo-pop)))
@@ -237,7 +225,6 @@
     (lifoo-asseq 2
       1 2 swap drop)
 
-    ;; Backs up and restores stack to/from current environment
     (lifoo-asseq '(1 2)
       1 2 backup
       3 4 restore
@@ -292,12 +279,6 @@
     (lifoo-asseq 42
       1 chan 42 send recv)
     
-    ;; Creates an unbuffered channel;
-    ;; starts a new thread sends a number;
-    ;; receives number in original thread;
-    ;; waits for thread to end and returns
-    ;; consed to number
-
     (lifoo-asseq '(:done . 3)
       0 chan (1 2 + send :done) 1 spawn swap 
       recv swap drop swap 
@@ -310,12 +291,10 @@
     (lifoo-asseq 3
       1 2 "+" word eval)
 
-    ;; Defines word and returns first element from it's source
     (lifoo-asseq '(+ 1 2)
       (+ 1 2) :foo define
       :foo word source)
 
-    ;; Redefines :+ to drop arguments and return 42
     (lifoo-asseq 42
       (drop drop 42) :+ define
       1 2 +)))
