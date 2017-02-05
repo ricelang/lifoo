@@ -87,7 +87,7 @@
       :foo var 42 set env)
     
     (lifoo-asseq '(nil . 42)
-      :foo var 42 set drop :foo del :foo var cons)
+      :foo var 42 set drop :foo var del :foo var cons)
 
     ;; Sets variable named :foo to 42;
     ;; opens new environment and sets :foo to 43,

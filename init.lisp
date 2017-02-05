@@ -24,8 +24,7 @@
   (define-lisp-word :dec ()
     (decf (lifoo-peek)))
 
-  ;; Pops $val and $var,
-  ;; sets $var's value to $val and pushes $val
+  ;; Pops $val and sets value of $1 to $val
   (define-lisp-word :set ()
     (let* ((val (lifoo-pop))
            (cell (lifoo-peek-cell))
@@ -33,6 +32,16 @@
       (unless set
         (error "missing set: ~a" val))
       (funcall set val)))
+
+  ;; Pushes and deletes value of $1
+  (define-lisp-word :del ()
+    (let* ((cell (lifoo-peek-cell))
+           (val (lifoo-val cell))
+           (del (lifoo-del cell)))
+      (unless del
+        (error "missing del: ~a" val))
+      (funcall del)
+      (lifoo-push val)))
 
   (define-lisp-word :struct ()
     (let ((fields (lifoo-pop))
@@ -92,16 +101,8 @@
   (define-lisp-word :var ()
     (lifoo-eval (lifoo-pop))
     (let ((var (lifoo-pop)))
-      (lifoo-push-expr (lifoo-var var))))
-
-  ;; Pops $var;
-  ;; deletes it from current environment,
-  ;; and pushes value
-  (define-lisp-word :del ()
-    (let* ((var (lifoo-pop))
-           (val (lifoo-var var)))
-      (setf (lifoo-var var) nil)
-      (lifoo-push val)))
+      (lifoo-push-expr (lifoo-var var)
+                       :del (setf (lifoo-var var) nil))))
 
   ;; Opens new environment
   (define-lisp-word :begin ()

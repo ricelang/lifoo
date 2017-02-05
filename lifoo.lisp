@@ -251,10 +251,11 @@
                    :exec exec)
   val)
 
-(defmacro lifoo-push-expr (expr &key exec)
+(defmacro lifoo-push-expr (expr &key del exec)
   `(lifoo-push ,expr
-               :set (lambda (val)
-                      (setf ,expr val))
+               :set (lambda (val) (setf ,expr val))
+               :del ,(when del
+                       `(lambda () ,del))
                :exec (or ,exec *lifoo*)))
 
 (defun lifoo-pop-cell (&key (exec *lifoo*))
