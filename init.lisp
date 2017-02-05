@@ -365,15 +365,18 @@
                        (lifoo-peek)))))
 
   ;; Pops $fn and replaces $1 with reduction by $fn
-  (define-lisp-word :reduce (nil)
-    (let ((fn (lifoo-compile (lifoo-pop))))
-      (setf (lifoo-peek)
-            (reduce (eval `(lambda (x y)
-                             (lifoo-push x)
-                             (lifoo-push y)
-                             ,@fn
-                             (lifoo-pop)))
-                    (lifoo-peek))))))
+  (define-macro-word :reduce (in)
+    (cons
+     (cons :reduce
+           `(setf (lifoo-peek)
+                  (reduce
+                   (lambda (x y)
+                     (lifoo-push x)
+                     (lifoo-push y)
+                     ,@(lifoo-compile (first (first in)))
+                     (lifoo-pop))
+                   (lifoo-peek))))
+     (rest in))))
 
 (define-init (:stack)
   ;; Pushes stack on stack
