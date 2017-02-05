@@ -281,7 +281,7 @@
               (lifoo-pop)
               (lifoo-push (remove-nth
                            idx
-                           (lifoo-pop)))))))
+                           seq))))))
   
   
   ;; Pushes length of $1
