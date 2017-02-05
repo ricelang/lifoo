@@ -428,8 +428,13 @@
   ;; evaluates it in new thread/exec,
   ;; and pushes thread
   (define-lisp-word :spawn ()
-    (let* ((expr (lifoo-pop))
-           (exec (make-lifoo :stack (clone (stack *lifoo*))
+    (let* ((num-args (lifoo-pop))
+           (expr (lifoo-pop))
+           (exec (make-lifoo :stack (clone (if num-args
+                                               (subseq
+                                                (stack *lifoo*)
+                                                0 num-args)
+                                               (stack *lifoo*)))
                              :words (clone (words *lifoo*))))
            (thread (make-thread (lambda ()
                                   (lifoo-eval expr

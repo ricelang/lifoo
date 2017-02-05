@@ -265,7 +265,7 @@
     ;; consed to number
 
     (lifoo-asseq '(:done . 3)
-      0 chan (1 2 + send :done) spawn swap 
+      0 chan (1 2 + send :done) 1 spawn swap 
       recv swap drop swap 
       wait cons)))
 
