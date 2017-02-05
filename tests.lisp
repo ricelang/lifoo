@@ -128,11 +128,11 @@
     (lifoo-asseq :ok
       :ok (1 2 =) unless)
     
-    (lifoo-asseq 1000
-      0 (inc dup 1000 >) while)
+    (lifoo-asseq 100
+      0 (inc dup 100 >) while)
     
-    (lifoo-asseq 1000
-      0 (drop inc) 1000 times)
+    (lifoo-asseq 100
+      0 (drop inc) 100 times)
 
     (lifoo-asseq :always
       :frisbee throw

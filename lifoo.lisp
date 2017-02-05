@@ -4,7 +4,7 @@
            do-lifoo
            lifoo-break
            lifoo-call lifoo-compile lifoo-compile-args
-           lifoo-compile-fn lifoo-compile-word
+           lifoo-compile-fn lifoo-compile-form lifoo-compile-word
            lifoo-del lifoo-define lifoo-define-macro lifoo-dump-log
            lifoo-env lifoo-error lifoo-eval
            lifoo-init lifoo-log lifoo-macro-word
@@ -178,53 +178,52 @@
           (rplacd (elt in i) `(lifoo-push ',compiled))))
       (incf i))))
 
-(defun lifoo-compile (expr &key (exec *lifoo*))
+(defun lifoo-compile-form (f out)
+  (cond
+    ((simple-vector-p f)
+     (let ((len (length f)))
+       (cons (cons f `(lifoo-push
+                          ,(make-array
+                            len
+                            :adjustable t
+                            :fill-pointer len
+                            :initial-contents f)))
+             out)))
+    
+    ((consp f)
+     (if (consp (rest f))
+         (cons (cons f `(lifoo-push ',(copy-list f))) out)
+         (cons (cons f `(lifoo-push ',(cons (first f) (rest f))))
+               out)))
+
+    ((null f)
+     (cons (cons f `(lifoo-push nil)) out))
+    ((eq f t)
+     (cons (cons f `(lifoo-push t)) out))
+    ((and (symbolp f) (not (keywordp f)))
+     (let* ((id (keyword! f))
+            (mw (lifoo-macro-word id)))
+       (if mw
+           (funcall mw out)
+           (let ((w (lifoo-word id)))
+             (when (and w (args w))
+               (lifoo-compile-args w out))
+             (cons (cons f `(lifoo-call ,id)) out)))))
+    ((lifoo-word-p f)
+     (cons (cons f `(lifoo-call ,f)) out))
+    (t
+     (cons (cons f `(lifoo-push ,f)) out))))
+
+(defun lifoo-compile (forms &key (exec *lifoo*))
   "Parses EXPR and returns code for EXEC"
-  (labels
-      ((parse (fs acc)
-         (if fs
-             (let ((f (first fs)))
-               (parse
-                (rest fs)
-                (cond
-                  ((simple-vector-p f)
-                   (let ((len (length f)))
-                     (cons (cons f `(lifoo-push
-                                     ,(make-array
-                                       len
-                                       :adjustable t
-                                       :fill-pointer len
-                                       :initial-contents f)))
-                           acc)))
-                  ((consp f)
-                   (if (consp (rest f))
-                       (cons (cons f `(lifoo-push ',(copy-list f)))
-                             acc)
-                       (cons (cons f `(lifoo-push
-                                       ',(cons (first f)
-                                               (rest f))))
-                             acc)))
-                  ((null f)
-                   (cons (cons f `(lifoo-push nil)) acc))
-                  ((eq f t)
-                   (cons (cons f `(lifoo-push t)) acc))
-                  ((and (symbolp f) (not (keywordp f)))
-                   (let* ((id (keyword! f))
-                          (mw (lifoo-macro-word id)))
-                     (if mw
-                         (funcall mw acc)
-                         (let ((w (lifoo-word id)))
-                           (when (and w (args w))
-                             (lifoo-compile-args w acc))
-                           (cons (cons f `(lifoo-call ,id))
-                                 acc)))))
-                  ((lifoo-word-p f)
-                   (cons (cons f `(lifoo-call ,f)) acc))
-                  (t
-                   (cons (cons f `(lifoo-push ,f)) acc)))))
-             (mapcar #'rest (nreverse acc)))))
+  (labels ((compile-forms (in out)
+             (if in
+                 (let ((f (first in)))
+                   (compile-forms (rest in)
+                                  (lifoo-compile-form f out)))
+                 (mapcar #'rest (nreverse out)))))
     (with-lifoo (:exec exec)
-      (parse (list! expr) nil))))
+      (compile-forms (list! forms) nil))))
 
 (defun lifoo-eval (expr &key (exec *lifoo*))
   "Returns result of parsing and evaluating EXPR in EXEC"

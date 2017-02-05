@@ -5,26 +5,26 @@
 Welcome to Lifoo, a Forthy, Lispy language fused with Common Lisp. Lifoo is still very much under construction; besides [tests](https://github.com/codr4life/lifoo/blob/master/tests.lisp), inline documentation in the [implementation](https://github.com/codr4life/lifoo/blob/master/lifoo.lisp), and [built-in words](https://github.com/codr4life/lifoo/blob/master/init.lisp); the language is documented in a series of [blog](https://github.com/codr4life/vicsydev/blob/master/lispy_forth.md) [posts](https://github.com/codr4life/vicsydev/blob/master/consing_forth.md) [here](https://github.com/codr4life/vicsydev).
 
 ### tests
-Lifoo comes with a modest but grow set of tests in ```tests.lisp```, evaluating ```(cl4l-test:run-suite '(:lifoo) :warmup 10 :reps 100)``` runs all tests with 100 repetitions and 10 warmups.
+Lifoo comes with a modest but grow set of tests in ```tests.lisp```, evaluating ```(cl4l-test:run-suite '(:lifoo) :warmup 10 :reps 100)``` repeats all tests 100 times after 10 warm-up runs.
 
 ```
 CL-USER> (cl4l-test:run-suite '(:lifoo) :warmup 10 :reps 100)
-(lifoo)                       0.028
-(lifoo array)                  0.28
-(lifoo compare)               0.256
+(lifoo abc)                   0.368
+(lifoo array)                 0.188
+(lifoo compare)                0.26
 (lifoo env)                   0.036
 (lifoo error)                 0.012
-(lifoo flow)                  0.312
-(lifoo io)                    0.008
-(lifoo list)                  0.036
-(lifoo log)                   0.016
-(lifoo meta)                   0.08
+(lifoo flow)                  1.112
+(lifoo io)                    0.004
+(lifoo list)                  0.104
+(lifoo log)                   0.008
+(lifoo meta)                  0.084
 (lifoo stack)                 0.016
-(lifoo string)                 0.16
-(lifoo struct)                  1.2
-(lifoo thread)                0.172
-(lifoo word)                  0.076
-TOTAL                         2.688
+(lifoo string)                0.164
+(lifoo struct)                 1.22
+(lifoo thread)                0.116
+(lifoo word)                  0.072
+TOTAL                         3.764
 NIL
 ```
 
