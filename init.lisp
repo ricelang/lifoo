@@ -27,10 +27,11 @@
   ;; Pops $val and $var,
   ;; sets $var's value to $val and pushes $val
   (define-lisp-word :set ()
-    (let ((val (lifoo-pop))
-          (set (lifoo-peek-set)))
+    (let* ((val (lifoo-pop))
+           (cell (lifoo-peek-cell))
+           (set (lifoo-set cell)))
       (unless set
-        (error "missing set fn: ~a" val))
+        (error "missing set: ~a" val))
       (funcall set val)))
 
   (define-lisp-word :struct ()
@@ -360,7 +361,7 @@
 (define-init (:stack)
   ;; Pushes stack on stack
   (define-lisp-word :stack ()
-    (lifoo-push (stack *lifoo*)))
+    (lifoo-push (map 'list #'lifoo-val (stack *lifoo*))))
 
   ;; Pops stack
   (define-lisp-word :drop ()
@@ -368,40 +369,32 @@
 
   ;; Swaps $1 and $2
   (define-lisp-word :swap ()
-    (let ((xs (lifoo-peek-set))
-          (x (lifoo-pop))
-          (ys (lifoo-peek-set))
-          (y (lifoo-pop)))
-      (lifoo-push x :set xs)
-      (lifoo-push y :set ys)))  
+    (let ((x (lifoo-pop-cell))
+          (y (lifoo-pop-cell)))
+      (lifoo-push-cell x)
+      (lifoo-push-cell y)))  
   
   ;; Pushes $1 on stack
   (define-lisp-word :dup ()
-    (lifoo-push (lifoo-peek) :set (lifoo-peek-set)))
+    (lifoo-push (lifoo-peek)))
 
   ;; Resets stack
   (define-lisp-word :reset ()
     (lifoo-reset))
 
-  (let ((var (gensym))
-        (set-var (gensym)))
+  (let ((var (gensym)))
     ;; Pushes backup of stack to environment
     (define-lisp-word :backup ()
-      (push (copy-seq (stack *lifoo*)) (lifoo-var var))
-      (push (copy-seq (set-stack *lifoo*)) (lifoo-var set-var)))
+      (push (copy-seq (stack *lifoo*)) (lifoo-var var)))
 
     ;; Pops and restores backup from environment
     (define-lisp-word :restore ()
       (let* ((prev (pop (lifoo-var var)))
-             (prev-set (pop (lifoo-var set-var)))
              (curr (stack *lifoo*))
-             (curr-set (set-stack *lifoo*))
              (len (length prev)))
         (setf (fill-pointer curr) len)
-        (setf (fill-pointer curr-set) len)
         (dotimes (i len)
-          (setf (aref curr i) (aref prev i))
-          (setf (aref curr-set i) (aref prev-set i)))))))
+          (setf (aref curr i) (aref prev i)))))))
 
 (define-init (:string)
   ;; Pops $val and pushes string representation

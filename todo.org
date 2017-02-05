@@ -1,12 +1,6 @@
 Lifoo
 * add delf support
-** add back lifoo-cell
-** rename push/pop/peek to -cell
-** remove set-stack 
-** remove peek-set
-** change (setf peek) to update lifoo-val
-** add :del param to lifoo-push
-** replaces :del word in env
+** replace :del word in env
 ** implement del for nth in lists
 * extract define-lifoo-struct macro
 * finish struct word

@@ -85,11 +85,13 @@
   trace?
   source fn)
 
+(defstruct (lifoo-cell (:conc-name lifoo-))
+  val set del)
+
 (defstruct (lifoo-exec (:conc-name)
                        (:constructor make-lifoo))
   envs logs
   (stack (make-array 3 :adjustable t :fill-pointer 0))
-  (set-stack (make-array 3 :adjustable t :fill-pointer 0))
   (macro-words (make-hash-table :test 'eq))
   (words (make-hash-table :test 'eq)))
 
@@ -238,10 +240,15 @@
       id
       (gethash (keyword! id) (words exec))))
 
-(defun lifoo-push (val &key (exec *lifoo*) set)
+(defun lifoo-push-cell (cell &key (exec *lifoo*))
+  "Pushes CELL onto EXEC stack"  
+  (vector-push-extend cell (stack exec))
+  cell)
+
+(defun lifoo-push (val &key (exec *lifoo*) set del)
   "Pushes VAL onto EXEC stack"  
-  (vector-push-extend val (stack exec))
-  (vector-push-extend set (set-stack exec))
+  (lifoo-push-cell (make-lifoo-cell :val val :set set :del del)
+                   :exec exec)
   val)
 
 (defmacro lifoo-push-expr (expr &key exec)
@@ -250,37 +257,38 @@
                       (setf ,expr val))
                :exec (or ,exec *lifoo*)))
 
-(defun lifoo-pop (&key (exec *lifoo*))
-  "Pops and returns value from EXEC stack"
+(defun lifoo-pop-cell (&key (exec *lifoo*))
+  "Pops cell from EXEC stack"
   (unless (zerop (fill-pointer (stack exec)))
-    (vector-pop (set-stack exec))
     (vector-pop (stack exec))))
 
-(defun lifoo-peek (&key (exec *lifoo*))
-  "Returns top of EXEC stack"
+(defun lifoo-pop (&key (exec *lifoo*))
+  "Pops value from EXEC stack"
+  (unless (zerop (fill-pointer (stack exec)))
+    (lifoo-val (lifoo-pop-cell :exec exec))))
+
+(defun lifoo-peek-cell (&key (exec *lifoo*))
+  "Returns top cell from EXEC stack"
   (let* ((stack (stack exec))
          (fp (fill-pointer stack)))
     (unless (zerop fp)
       (aref stack (1- fp)))))
 
-(defun lifoo-peek-set (&key (exec *lifoo*))
-  "Returns top of EXEC set-stack"
-  (let* ((stack (set-stack exec))
-         (fp (fill-pointer stack)))
-    (unless (zerop fp)
-      (aref stack (1- fp)))))
+(defun lifoo-peek (&key (exec *lifoo*))
+  "Returns top value from EXEC stack"
+  (unless (zerop (fill-pointer (stack exec)))
+    (lifoo-val (lifoo-peek-cell :exec exec))))
 
 (defun (setf lifoo-peek) (val &key (exec *lifoo*))
   "Replaces top of EXEC stack with VAL"
   (let* ((stack (stack exec))
          (fp (fill-pointer stack)))
     (assert (not (zerop fp)))
-    (setf (aref stack (1- fp)) val)))
+    (setf (lifoo-val (aref stack (1- fp))) val)))
 
 (defun lifoo-reset (&key (exec *lifoo*))
   "Resets EXEC stack"
-  (setf (fill-pointer (stack exec)) 0)
-  (setf (fill-pointer (set-stack exec)) 0))
+  (setf (fill-pointer (stack exec)) 0))
 
 (defun lifoo-trace? (word)
   "Returns T if WORD is traced, otherwise NIL"

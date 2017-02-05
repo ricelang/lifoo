@@ -172,9 +172,6 @@
     (lifoo-asseq 3
       (1 2 3) length)
 
-    (lifoo-asseq '(1 2 3)
-      1 2 3 stack list)
-
     (lifoo-asseq 2
       (1 2 3) rest first)
 
@@ -217,15 +214,9 @@
   (with-lifoo ()
     (lifoo-init '(t :sequence :stack))
 
-    (lifoo-asseq #(1 2 3)
+    (lifoo-asseq '(1 2 3)
       1 2 3 stack)
 
-    ;; Make sure that stack is left intact
-    (assert (zerop (compare #(1 2 3) (lifoo-stack))))
-
-    (lifoo-asseq 42
-      stack 42 push)
-    
     (lifoo-asseq 1
       1 dup drop)
     
@@ -233,7 +224,7 @@
       1 2 swap drop)
 
     ;; Backs up and restores stack to/from current environment
-    (lifoo-asseq #(1 2)
+    (lifoo-asseq '(1 2)
       1 2 backup
       3 4 restore
       stack)))
