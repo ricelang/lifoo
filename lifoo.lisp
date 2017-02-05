@@ -39,19 +39,21 @@
                          ,@body)
                        :exec (or ,exec *lifoo*)))
 
-(defmacro define-lisp-word (id (&key exec) &body body)
+(defmacro define-lisp-word (id (&key exec parse?) &body body)
   "Defines new word with NAME in EXEC from Lisp forms in BODY"
   `(lifoo-define ,id
                  (make-lifoo-word :id ,id
                                   :source ',body
-                                  :fn (lambda () ,@body))
+                                  :fn (lambda () ,@body)
+                                  :parse? ,parse?)
                  :exec (or ,exec *lifoo*)))
 
-(defmacro define-word (name (&key exec) &body body)
+(defmacro define-word (name (&key exec parse?) &body body)
   "Defines new word with NAME in EXEC from BODY"
   `(lifoo-define ',name
                  (make-lifoo-word :id ,(keyword! name)
-                                  :source ',body)
+                                  :source ',body
+                                  :parse? ,parse?)
                  :exec (or ,exec *lifoo*)))
 
 (defmacro define-binary-words ((&key exec) &rest forms)
@@ -115,7 +117,7 @@
 
 (defstruct (lifoo-word (:conc-name))
   id
-  trace?
+  parse? trace?
   source fn)
 
 (defstruct (lifoo-cell (:conc-name lifoo-))
@@ -200,7 +202,16 @@
                           (mw (lifoo-macro-word id)))
                      (if mw
                          (funcall mw acc)
-                         (cons (cons f `(lifoo-call ,id)) acc))))
+                         (let ((forms))
+                           (when-let (w (lifoo-word id))
+                             (when (parse? w)
+                               (push `(lifoo-push
+                                       (lifoo-parse (lifoo-pop)))
+                                     forms)))
+                           (push `(lifoo-call ,id) forms)
+                           (cons (cons f `(progn
+                                            ,@(nreverse forms)))
+                                 acc)))))
                   ((lifoo-word-p f)
                    (cons (cons f `(lifoo-call ,f)) acc))
                   (t

@@ -8,9 +8,9 @@
    that compares equal to RES"
   `(asseq ,res (do-lifoo () reset ,@body)))
 
-(define-test (:lifoo)
+(define-test (:lifoo :abc)
   (with-lifoo ()
-    (lifoo-init '(t :sequence :stack))
+    (lifoo-init '(t :flow :sequence :stack :thread))
 
     (lifoo-asseq t
       nil nil?)
@@ -25,7 +25,7 @@
       "lifoo" symbol)
 
     (lifoo-asseq t
-      ((0.01 sleep) 10 times) time 0.01 <)
+      ((0.0001 sleep) 10 times) time 0.0001 <)
     
     (lifoo-asseq 3
       (1 2 +) eval)))
