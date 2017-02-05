@@ -439,7 +439,7 @@
   ;; Pops $expr;
   ;; evaluates it in new thread/exec,
   ;; and pushes thread
-  (define-lisp-word :thread ()
+  (define-lisp-word :spawn ()
     (let* ((expr (lifoo-pop))
            (exec (make-lifoo :stack (clone (stack *lifoo*))
                              :words (clone (words *lifoo*))))
@@ -449,7 +449,7 @@
       (lifoo-push thread)))
 
   ;; Pops $secs and sleeps that many seconds
-  (define-lisp-word :join-thread ()
+  (define-lisp-word :wait ()
     (lifoo-push (join-thread (lifoo-pop))))
 
   ;; Pops $buf-len and pushes new channel
@@ -457,12 +457,12 @@
     (lifoo-push (make-chan :max-length (lifoo-pop))))
 
   ;; Pops $msg and puts on channel in $1
-  (define-lisp-word :chan-put ()
+  (define-lisp-word :send ()
     (let ((msg (lifoo-pop)))
       (chan-put (lifoo-peek) msg)))
 
   ;; Gets and pushes message from channel in $1
-  (define-lisp-word :chan-get ()
+  (define-lisp-word :recv ()
     (let ((msg (chan-get (lifoo-peek))))
       (lifoo-push msg))))
 

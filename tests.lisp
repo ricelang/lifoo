@@ -256,18 +256,18 @@
     (lifoo-init '(t :list :stack :thread))
 
     (lifoo-asseq 42
-      1 chan 42 chan-put chan-get)
+      1 chan 42 send recv)
     
     ;; Creates an unbuffered channel;
-    ;; starts a new thread that puts 3 in channel;
-    ;; gets value from channel in original thread;
-    ;; joins thread and returns result from thread
-    ;; consed to value from channel
+    ;; starts a new thread sends a number;
+    ;; receives number in original thread;
+    ;; waits for thread to end and returns
+    ;; consed to number
 
     (lifoo-asseq '(:done . 3)
-      0 chan (1 2 + chan-put :done) thread swap 
-      chan-get swap drop swap 
-      join-thread cons)))
+      0 chan (1 2 + send :done) spawn swap 
+      recv swap drop swap 
+      wait cons)))
 
 (define-test (:lifoo :word)
   (with-lifoo ()
