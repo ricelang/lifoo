@@ -1,4 +1,6 @@
 Lifoo
+* rewrite swap using array ops
+* rewrite assert/asseq as macros
 * add local-time support
 ** now / today for current time
 ** date / time constructing

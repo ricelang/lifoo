@@ -401,10 +401,11 @@
 
   ;; Swaps $1 and $2
   (define-lisp-word :swap (nil)
-    (let ((x (lifoo-pop-cell))
-          (y (lifoo-pop-cell)))
-      (lifoo-push-cell x)
-      (lifoo-push-cell y)))  
+    (let* ((stack (stack *lifoo*))
+           (pos (1- (fill-pointer stack)))
+           (tmp (aref stack (1- pos))))
+      (setf (aref stack (1- pos)) (aref stack pos))
+      (setf (aref stack pos) tmp)))  
   
   ;; Pushes $1 on stack
   (define-lisp-word :dup (nil)
