@@ -49,11 +49,12 @@
                                   :args ',args)
                  :exec (or ,exec *lifoo*)))
 
-(defmacro define-word (name (&key exec) &body body)
+(defmacro define-word (name ((&rest args) &key exec) &body body)
   "Defines new word with NAME in EXEC from BODY"
   `(lifoo-define ',name
                  (make-lifoo-word :id ,(keyword! name)
-                                  :source ',body)
+                                  :source ',body
+                                  :args ',args)
                  :exec (or ,exec *lifoo*)))
 
 (defmacro define-binary-words ((&key exec) &rest forms)

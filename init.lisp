@@ -85,13 +85,12 @@
 
   ;; Pops $rhs and $lhs,
   ;; and pushes T if they compare equal
-  (define-word :eq? () cmp 0 =)
-  
-  (define-word :neq? () cmp 0 /=)
-  (define-word :lt? () cmp -1 =)
-  (define-word :gt? () cmp 1 =)
-  (define-word :lte? () cmp 1 <)
-  (define-word :gte? () cmp -1 >))
+  (define-word :eq? (nil) cmp 0 =)
+  (define-word :neq? (nil) cmp 0 /=)
+  (define-word :lt? (nil) cmp -1 =)
+  (define-word :gt? (nil) cmp 1 =)
+  (define-word :lte? (nil) cmp 1 <)
+  (define-word :gte? (nil) cmp -1 >))
 
 (define-init (:env)
   ;; Pushes current environment on stack
