@@ -1,4 +1,6 @@
 Lifoo
+* add with-lifoo-trace macro
+** use in lifoo-call/lifoo-expand when tracing enabled
 * add local-time support
 ** now / today for current time
 ** date / time constructing
