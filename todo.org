@@ -9,3 +9,6 @@ Lifoo
 * add local-time support
 ** now / today for current time
 ** date / time constructing
+
+(define-lifoo-init (:foo :bar)
+             (define-word :baz (nil) 42 +)) lisp eval

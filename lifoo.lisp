@@ -1,5 +1,6 @@
 (defpackage lifoo
-  (:export define-init define-binary-words define-lifoo-struct
+  (:export define-binary-words define-lifoo-init
+           define-lifoo-struct
            define-lifoo-struct-fn define-lisp-word define-word
            do-lifoo do-lifoo-call
            lifoo-call lifoo-compile lifoo-compile-args
@@ -27,7 +28,7 @@
 (defvar *lifoo* nil)
 (defvar *lifoo-init* (make-hash-table :test 'equal))
 
-(defmacro define-init (tags &body body)
+(defmacro define-lifoo-init (tags &body body)
   "Defines init for TAGS around BODY"
   `(setf (gethash ',tags *lifoo-init*)
          (lambda (exec)
@@ -177,7 +178,8 @@
                 (null (set-difference ts tags)))
         (funcall fn exec)
         (incf cnt)))
-    (assert (not (zerop cnt))))
+    (when (zerop cnt)
+      (error "init not found: ~a" tags)))
   exec)
 
 (defun lifoo-read (&key (in *standard-input*))
