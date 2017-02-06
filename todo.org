@@ -1,8 +1,4 @@
 Lifoo
-* add test fixture
-** replace with-lifoo calls
-** init with t
-*** remove init calls
 * add test *reps*
 ** compile code once and run *reps* times
 * finish lifoo-expand
