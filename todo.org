@@ -9,6 +9,11 @@ Lifoo
 (t t t (assert) map) compile lisp eval
 
 * add read word to read Lifoo from string
+** io init
+
+* add write word
+** map to princ
+** io init
 
 * add local-time support
 ** now / today for current time
