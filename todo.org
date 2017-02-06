@@ -1,5 +1,6 @@
 Lifoo
 * rename optimize? to optimize
+
 * extract lifoo-optimize macro
 ** default to *lifoo-optimize*
 
@@ -16,6 +17,13 @@ Lifoo
 * add write word
 ** map to princ
 ** io init
+
+* add define-macro word
+> (pop 10 *) :my-pop define-macro
+> '(1 2 3) my-pop
+- 10
+> :my-pop source
+(pop 10 *)
 
 * add local-time support
 ** now / today for current time
