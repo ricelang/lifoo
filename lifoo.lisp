@@ -210,6 +210,7 @@
       (incf i))))
 
 (defun lifoo-expand (in out)
+  "Expands IN into OUT and returns new token stream"
   (let ((word (lifoo-word in)))
     (if word
         (if (macro? word)
@@ -225,6 +226,7 @@
               out))))
 
 (defun lifoo-compile-form (f in)
+  "Compiles form F for token stream IN and returns new stream"
   (cond
     ((simple-vector-p f)
      (let ((len (length f)))
@@ -271,7 +273,7 @@
         (lifoo-error "thrown value not caught: ~a" (value c))))))
 
 (defun lifoo-compile-word (word &key (exec *lifoo*) speed)
-  "Returns compiled function for WORD"
+  "Makes sure word is compiled and returns function"
   (or (fn word)
       (setf (fn word)
             (eval `(lambda ()

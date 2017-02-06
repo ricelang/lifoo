@@ -206,7 +206,14 @@
   (lifoo-asseq 43
     42
     (lifoo-push (1+ (lifoo-pop)))
-    lisp eval))
+    lisp eval)
+
+  (lifoo-asseq 42
+    (define-lifoo-init (:foo :bar)
+      (define-word :baz (nil) 39 +))
+    lisp eval
+    (:foo :bar) init
+    3 baz))
 
 (define-test (:lifoo :stack)
   (lifoo-asseq '(3 2 1)
