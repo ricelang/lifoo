@@ -28,25 +28,33 @@
   "Defines init for TAGS around BODY"
   `(setf (gethash ',tags *lifoo-init*)
          (lambda (exec)
+           (declare (optimize (speed 3) (safety 0)))
            (with-lifoo (:exec exec)
              ,@body))))
 
 (defmacro define-macro-word (id (in out &key exec)
                              &body body)
   "Defines new macro word NAME in EXEC from Lisp forms in BODY"
-  `(lifoo-define ,id (make-lifoo-word :id ,id
-                                      :macro? t
-                                      :fn (lambda (,in ,out)
-                                            ,@body))
+  `(lifoo-define ,id (make-lifoo-word
+                      :id ,id
+                      :macro? t
+                      :fn (lambda (,in ,out)
+                            (declare (optimize (speed 3)
+                                               (safety 0)))
+                            ,@body))
                  :exec (or ,exec *lifoo*)))
 
 (defmacro define-lisp-word (id ((&rest args) &key exec) &body body)
   "Defines new word with NAME in EXEC from Lisp forms in BODY"
   `(lifoo-define ,id
-                 (make-lifoo-word :id ,id
-                                  :source ',body
-                                  :fn (lambda () ,@body)
-                                  :args ',args)
+                 (make-lifoo-word
+                  :id ,id
+                  :source ',body
+                  :fn (lambda ()
+                        (declare (optimize (speed 3)
+                                           (safety 0)))
+                        ,@body)
+                  :args ',args)
                  :exec (or ,exec *lifoo*)))
 
 (defmacro define-word (name ((&rest args) &key exec) &body body)
@@ -175,6 +183,7 @@
 
 (defun lifoo-compile-fn (expr &key (exec *lifoo*))
   (eval `(lambda ()
+           (declare (optimize (speed 3) (safety 0)))
            ,@(lifoo-compile expr :exec exec))))
 
 (defun lifoo-compile-args (word in)
@@ -251,6 +260,7 @@
   (or (fn word)
       (setf (fn word)
             (eval `(lambda ()
+                     (declare (optimize (speed 3) (safety 0)))
                      ,@(lifoo-compile (source word)
                                       :exec exec))))))
 
@@ -294,7 +304,8 @@
 
 (defmacro lifoo-push-expr (expr &key del exec)
   `(lifoo-push ,expr
-               :set (lambda (val) (setf ,expr val))
+               :set (lambda (val)
+                      (setf ,expr val))
                :del ,(when del
                        `(lambda () ,del))
                :exec (or ,exec *lifoo*)))

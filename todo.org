@@ -1,6 +1,4 @@
 Lifoo
-* add do-lifoo-call macro
-** use in lifoo-call/lifoo-expand
 * add local-time support
 ** now / today for current time
 ** date / time constructing

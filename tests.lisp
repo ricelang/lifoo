@@ -10,7 +10,10 @@
    that compares equal to RES"
   `(asseq ,res (let* ((compiled 
                         (lifoo-compile '(reset ,@body)))
-                      (fn (eval `(lambda () ,@compiled))))
+                      (fn (eval `(lambda ()
+                                   (declare (optimize (speed 3)
+                                                      (safety 0)))
+                                   ,@compiled))))
                  (dotimes (_ *reps*)
                    (funcall fn))
                  (lifoo-pop))))
