@@ -3,7 +3,7 @@
 
 (in-package lifoo-tests)
 
-(defparameter *reps* 10)
+(defparameter *reps* 30)
 
 (defmacro lifoo-asseq (res &body body)
   "Asserts that evaluating BODY after stack reset pushes value 

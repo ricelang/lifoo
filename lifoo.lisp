@@ -2,7 +2,6 @@
   (:export define-init define-binary-words define-lifoo-struct
            define-lifoo-struct-fn define-lisp-word define-word
            do-lifoo
-           lifoo-break
            lifoo-call lifoo-compile lifoo-compile-args
            lifoo-compile-fn lifoo-compile-form lifoo-compile-word
            lifoo-del lifoo-define lifoo-define-macro lifoo-dump-log
@@ -77,6 +76,19 @@
      (lifoo-eval ',body)
      (lifoo-pop)))
 
+(defmacro do-lifoo-call ((word &key exec) &body body)
+  (with-symbols (_w)
+    `(with-lifoo (:exec (or ,exec *lifoo*))
+       (let ((,_w ,word))
+         (if (trace? ,_w)
+             (progn
+               (push (list :enter (id ,_w) (lifoo-stack))
+                     (logs *lifoo*))
+               ,@body
+               (push (list :exit (id ,_w) (lifoo-stack))
+                     (logs *lifoo*)))
+             (progn ,@body))))))
+
 (defmacro with-lifoo ((&key env exec) &body body)
   "Runs body with *LIFOO* bound to EXEC or new; environment
    is bound to ENV if not NIL, or copy of current if T"
@@ -130,16 +142,10 @@
   (stack (make-array 3 :adjustable t :fill-pointer 0))
   (words (make-hash-table :test 'eq)))
 
-(define-condition lifoo-break (condition) ()) 
-
 (define-condition lifoo-error (simple-error) ()) 
 
 (define-condition lifoo-throw (condition)
   ((value :initarg :value :reader value)))
-
-(defun lifoo-break ()
-  "Signals break"
-  (signal 'lifoo-break))
 
 (defun lifoo-error (fmt &rest args)
   "Signals error with message from FMT and ARGS"
@@ -184,23 +190,9 @@
     (if word
         (if (macro? word)
             (let ((exp (funcall (fn word) in out)))
-              (cons
-               (cons (first (first exp)) 
-                     `(progn
-                        (let ((w (lifoo-word ',in)))
-                          (when (trace? w)
-                            (push (list :enter
-                                        (id w)
-                                        (lifoo-stack))
-                                  (logs *lifoo*)))
-
-                          ,(rest (first exp))
-
-                          (when (trace? w)
-                            (push (list :exit
-                                        (id w)
-                                        (lifoo-stack))
-                                  (logs *lifoo*))))))
+              (cons (cons (first (first exp)) 
+                          `(do-lifoo-call ((lifoo-word ',in))
+                               ,(rest (first exp))))
                (rest exp)))
             (progn
               (when (args word) (lifoo-compile-args word out))
@@ -270,14 +262,8 @@
       (unless (setf word (lifoo-word id))
         (error "missing word: ~a" id)))) 
 
-  (with-lifoo (:exec exec)
-    (when (trace? word)
-      (push (list :enter (id word) (lifoo-stack)) (logs exec)))
-
-    (funcall (lifoo-compile-word word))
-    
-    (when (trace? word)
-      (push (list :exit (id word) (lifoo-stack)) (logs exec)))))
+  (do-lifoo-call (word :exec exec)
+    (funcall (lifoo-compile-word word))))
 
 (defun lifoo-define (id word &key (exec *lifoo*))
   "Defines ID as WORD in EXEC"
