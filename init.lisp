@@ -17,12 +17,12 @@
     (lifoo-push (keyword! (lifoo-pop))))
 
   ;; Increases $1
-  (define-lisp-word :inc (nil)
-    (incf (lifoo-peek)))
+  (define-macro-word :inc (in)
+    (cons (cons :inc `(incf (lifoo-peek))) in))
 
   ;; Decreases $1
-  (define-lisp-word :dec (nil)
-    (decf (lifoo-peek)))
+  (define-macro-word :dec (in)
+    (cons (cons :dec `(decf (lifoo-peek))) in))
 
   ;; Pops $val and sets value of $1 to $val
   (define-lisp-word :set (nil)
