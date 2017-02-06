@@ -225,11 +225,7 @@
                      ,@(reverse (mapcar #'rest (rest out))))
                  (lifoo-throw (c)
                    (lifoo-push (value c))
-                   (lifoo-eval ',(first (first out))))))))
-  
-  ;; Breaks out from word
-  (define-macro-word :break (in out)
-    (cons (cons in `(lifoo-break)) out)))
+                   (lifoo-eval ',(first (first out)))))))))
 
 (define-init (:io)
   ;; Pops $val and prints it
