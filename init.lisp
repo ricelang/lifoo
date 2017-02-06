@@ -310,12 +310,12 @@
       (lifoo-push (cons 'progn
                         (lifoo-compile code)))))
   
-  ;; Pops $expr and pushes function that evaluates $expr as Lisp
+  ;; Pops $expr and pushes function that evaluates as Lisp
   (define-lisp-word :lisp (nil)
     (let ((expr (lifoo-pop)))
-      (lifoo-push (make-lifoo-word
-                   :source expr
-                   :fn (eval `(lambda () ,expr)))))))
+      (lifoo-push (eval `(lambda ()
+                           (lifoo-optimize)
+                           ,expr))))))
 
 (define-lifoo-init (:sequence)
   ;; Pops $idx and pushes item from seq

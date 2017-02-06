@@ -250,6 +250,8 @@
     ((or (and (symbolp f) (not (keywordp f)))
          (lifoo-word-p f))
      (lifoo-expand f in))
+    ((functionp f)
+     (cons (cons f `(funcall ,f)) in))
     (t
      (cons (cons f `(lifoo-push ,f)) in))))
 
