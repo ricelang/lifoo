@@ -118,7 +118,10 @@
            :ok
            (handler-case (do-lifoo ()
                            1 2 asseq)    
-             (lifoo-error () :ok)))))
+             (lifoo-error () :ok))))
+
+  (lifoo-asseq '(nil nil nil)
+    (t t t) (assert) map))
 
 (define-test (:lifoo :flow)
   (lifoo-asseq :true

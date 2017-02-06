@@ -490,10 +490,15 @@
       (lifoo-push msg))))
 
 (define-init (:word)
-  ;; Pops $val and pushes the word it represents
+  ;; Pops $id and pushes word
   (define-lisp-word :word (nil)
     (let ((word (lifoo-word (lifoo-pop))))
       (lifoo-push word)))
+
+  ;; Pops $word and pushes T if MACRO?
+    (define-lisp-word :macro? (nil)
+    (let ((word (lifoo-word (lifoo-pop))))
+      (lifoo-push (macro? word))))
 
   ;; Pops word and pushes source
   (define-lisp-word :source (nil)

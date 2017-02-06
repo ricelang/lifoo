@@ -1,4 +1,10 @@
 Lifoo
+
+* add compile word to get compiled code
+** update post
+(t t t (assert) map) compile
+(t t t (assert) map) compile lisp eval
+
 * add local-time support
 ** now / today for current time
 ** date / time constructing

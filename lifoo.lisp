@@ -37,6 +37,7 @@
   `(lifoo-define ,id (make-lifoo-word
                       :id ,id
                       :macro? t
+                      :source ',body
                       :fn (lambda (,in ,out)
                             ,@body))
                  :exec (or ,exec *lifoo*)))
