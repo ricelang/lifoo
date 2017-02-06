@@ -1,7 +1,7 @@
 (defpackage lifoo
   (:export define-init define-binary-words define-lifoo-struct
            define-lifoo-struct-fn define-lisp-word define-word
-           do-lifoo
+           do-lifoo do-lifoo-call
            lifoo-call lifoo-compile lifoo-compile-args
            lifoo-compile-fn lifoo-compile-form lifoo-compile-word
            lifoo-del lifoo-define lifoo-define-macro lifoo-dump-log
@@ -80,14 +80,14 @@
   (with-symbols (_w)
     `(with-lifoo (:exec (or ,exec *lifoo*))
        (let ((,_w ,word))
-         (if (trace? ,_w)
-             (progn
-               (push (list :enter (id ,_w) (lifoo-stack))
-                     (logs *lifoo*))
-               ,@body
-               (push (list :exit (id ,_w) (lifoo-stack))
-                     (logs *lifoo*)))
-             (progn ,@body))))))
+         (when (trace? ,_w)
+           (push (list :enter (id ,_w) (lifoo-stack))
+                 (logs *lifoo*)))
+         ,@body
+
+         (when (trace? ,_w)
+           (push (list :exit (id ,_w) (lifoo-stack))
+                 (logs *lifoo*)))))))
 
 (defmacro with-lifoo ((&key env exec) &body body)
   "Runs body with *LIFOO* bound to EXEC or new; environment
