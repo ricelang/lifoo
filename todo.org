@@ -1,4 +1,7 @@
 Lifoo
+* rename optimize? to optimize
+* extract lifoo-optimize macro
+** default to *lifoo-optimize*
 
 * add compile word to get compiled code
 ** update post
