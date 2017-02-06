@@ -7,7 +7,7 @@
            lifoo-compile-fn lifoo-compile-form lifoo-compile-word
            lifoo-del lifoo-define lifoo-define-macro lifoo-dump-log
            lifoo-env lifoo-error lifoo-eval
-           lifoo-init lifoo-log lifoo-macro-word
+           lifoo-init lifoo-log
            lifoo-peek lifoo-peek-set
            lifoo-pop lifoo-print-log lifoo-push
            lifoo-read lifoo-repl lifoo-reset
@@ -32,13 +32,14 @@
            (with-lifoo (:exec exec)
              ,@body))))
 
-(defmacro define-macro-word (name (in &key exec)
+(defmacro define-macro-word (id (in out &key exec)
                              &body body)
   "Defines new macro word NAME in EXEC from Lisp forms in BODY"
-  `(lifoo-define-macro (keyword! ',name)
-                       (lambda (,in)
-                         ,@body)
-                       :exec (or ,exec *lifoo*)))
+  `(lifoo-define ,id (make-lifoo-word :id ,id
+                                      :macro? t
+                                      :fn (lambda (,in ,out)
+                                            ,@body))
+                 :exec (or ,exec *lifoo*)))
 
 (defmacro define-lisp-word (id ((&rest args) &key exec) &body body)
   "Defines new word with NAME in EXEC from Lisp forms in BODY"
@@ -118,7 +119,7 @@
                    (funcall ,_sfn val (lifoo-peek)))))))))
 
 (defstruct (lifoo-word (:conc-name))
-  id trace? source fn args)
+  id macro? trace? source fn args)
 
 (defstruct (lifoo-cell (:conc-name lifoo-))
   val set del)
@@ -127,7 +128,6 @@
                        (:constructor make-lifoo))
   envs logs (backup-key (gensym))
   (stack (make-array 3 :adjustable t :fill-pointer 0))
-  (macro-words (make-hash-table :test 'eq))
   (words (make-hash-table :test 'eq)))
 
 (define-condition lifoo-break (condition) ()) 
@@ -179,7 +179,18 @@
           (rplacd (elt in i) `(lifoo-push ',compiled))))
       (incf i))))
 
-(defun lifoo-compile-form (f out)
+(defun lifoo-expand (in out)
+  (let ((word (lifoo-word in)))
+    (if word
+        (if (macro? word)
+            (funcall (fn word) in out)
+            (progn
+              (when (args word) (lifoo-compile-args word out))
+              (cons (cons in `(lifoo-call ',in)) out)))
+        (cons (cons in `(lifoo-call ',in))
+              out))))
+
+(defun lifoo-compile-form (f in)
   (cond
     ((simple-vector-p f)
      (let ((len (length f)))
@@ -189,31 +200,22 @@
                             :adjustable t
                             :fill-pointer len
                             :initial-contents f)))
-             out)))
+             in)))
     
     ((consp f)
      (if (consp (rest f))
-         (cons (cons f `(lifoo-push ',(copy-list f))) out)
+         (cons (cons f `(lifoo-push ',(copy-list f))) in)
          (cons (cons f `(lifoo-push ',(cons (first f) (rest f))))
-               out)))
-
+               in)))
     ((null f)
-     (cons (cons f `(lifoo-push nil)) out))
+     (cons (cons f `(lifoo-push nil)) in))
     ((eq f t)
-     (cons (cons f `(lifoo-push t)) out))
-    ((and (symbolp f) (not (keywordp f)))
-     (let* ((id (keyword! f))
-            (mw (lifoo-macro-word id)))
-       (if mw
-           (funcall mw out)
-           (let ((w (lifoo-word id)))
-             (when (and w (args w))
-               (lifoo-compile-args w out))
-             (cons (cons f `(lifoo-call ,id)) out)))))
-    ((lifoo-word-p f)
-     (cons (cons f `(lifoo-call ,f)) out))
+     (cons (cons f `(lifoo-push t)) in))
+    ((or (and (symbolp f) (not (keywordp f)))
+         (lifoo-word-p f))
+     (lifoo-expand f in))
     (t
-     (cons (cons f `(lifoo-push ,f)) out))))
+     (cons (cons f `(lifoo-push ,f)) in))))
 
 (defun lifoo-compile (forms &key (exec *lifoo*))
   "Parses EXPR and returns code for EXEC"
@@ -266,14 +268,6 @@
         (when (trace? word)
           (push (list :break (id word) (clone (stack exec)))
                 (logs exec)))))))
-
-(defun lifoo-macro-word (id &key (exec *lifoo*))
-  "Returns macro word for ID from EXEC, or NIL if missing"
-  (gethash (keyword! id) (macro-words exec)))
-
-(defun lifoo-define-macro (id word &key (exec *lifoo*))
-  "Defines ID as macro WORD in EXEC"
-  (setf (gethash (keyword! id) (macro-words exec)) word))
 
 (defun lifoo-define (id word &key (exec *lifoo*))
   "Defines ID as WORD in EXEC"

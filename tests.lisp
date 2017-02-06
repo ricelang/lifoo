@@ -117,7 +117,7 @@
 
 (define-test (:lifoo :flow)
   (with-lifoo ()
-    (lifoo-init '(:abc :flow :sequence :stack))
+    (lifoo-init '(:abc :flow :io :sequence :stack))
     
     (lifoo-asseq :true
       :false :true (1 1 =) cond)

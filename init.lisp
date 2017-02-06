@@ -17,12 +17,12 @@
     (lifoo-push (keyword! (lifoo-pop))))
 
   ;; Increases $1
-  (define-macro-word :inc (in)
-    (cons (cons :inc `(incf (lifoo-peek))) in))
+  (define-macro-word :inc (in out)
+    (cons (cons in `(incf (lifoo-peek))) out))
 
   ;; Decreases $1
-  (define-macro-word :dec (in)
-    (cons (cons :dec `(decf (lifoo-peek))) in))
+  (define-macro-word :dec (in out)
+    (cons (cons in `(decf (lifoo-peek))) out))
 
   ;; Pops $val and sets value of $1 to $val
   (define-lisp-word :set (nil)
@@ -118,92 +118,90 @@
 
 (define-init (:error)
   ;; Pops $cnd and signals error if NIL
-  (define-macro-word :assert (in)
-    (cons (cons :assert
+  (define-macro-word :assert (in out)
+    (cons (cons in
                 `(let ((ok? (progn
-                              ,@(lifoo-compile (first (first in)))
+                              ,@(lifoo-compile (first (first out)))
                               (lifoo-pop))))
                    (unless ok?
                      (lifoo-error "assert failed: ~a"
-                                  ',(first (first in))))))
-          (rest in)))
+                                  ',(first (first out))))))
+          (rest out)))
 
   ;; Pops $expected and $actual,
   ;; and signals error they don't compare equal  
-  (define-macro-word :asseq (in)
-    (cons (cons :asseq
+  (define-macro-word :asseq (in out)
+    (cons (cons in
                 `(let ((expected (progn
                                    ,@(lifoo-compile
-                                      (first (first in)))))
+                                      (first (first out)))))
                        (actual (progn
                                  ,@(lifoo-compile
-                                    (first (second in))))))
+                                    (first (second out))))))
                    (unless (zerop (compare expected actual))
                      (lifoo-error "assert failed: ~a /= ~a"
                                   actual expected))))
-          (nthcdr 2 in))))
+          (nthcdr 2 out))))
 
 (define-init (:flow)
   ;; Pops $cnd, $true and $false;
   ;; and pushes $true if $cnd, otherwise $false
-  (define-macro-word :cond (in)
-    (cons (cons :cond
+  (define-macro-word :cond (in out)
+    (cons (cons in
                 `(progn
-                   ,@(lifoo-compile (first (first in)))
+                   ,@(lifoo-compile (first (first out)))
                    (if (lifoo-pop)
                        (progn ,@(lifoo-compile
-                                 (first (second in))))
+                                 (first (second out))))
                        (progn ,@(lifoo-compile
-                                 (first (third in)))))))
-          (nthcdr 3 in)))
+                                 (first (third out)))))))
+          (nthcdr 3 out)))
   
   ;; Pops $cnd and $res;
   ;; and pushes $res if $cnd, otherwise NIL
-  (define-macro-word :when (in)
-    (cons (cons :when
+  (define-macro-word :when (in out)
+    (cons (cons in
                 `(progn
-                   ,@(lifoo-compile (first (first in)))
+                   ,@(lifoo-compile (first (first out)))
                    (if (lifoo-pop)
                        (progn
-                         ,@(lifoo-compile (first (second in))))
+                         ,@(lifoo-compile (first (second out))))
                        (lifoo-push nil))))
-          (nthcdr 2 in)))
+          (nthcdr 2 out)))
 
   ;; Pops $cnd and $res;
   ;; and pushes $res unless $cnd, otherwise NIL
-  (define-macro-word :unless (in)
-    (cons (cons :unless
+  (define-macro-word :unless (in out)
+    (cons (cons in
                 `(progn
-                   ,@(lifoo-compile (first (first in)))
+                   ,@(lifoo-compile (first (first out)))
                    (if (lifoo-pop)
                        (lifoo-push nil)
                        (progn
-                         ,@(lifoo-compile (first (second in)))))))
-          (nthcdr 2 in)))
+                         ,@(lifoo-compile (first (second out)))))))
+          (nthcdr 2 out)))
 
   ;; Pops $reps and $body;
   ;; and repeats $body $reps times,
   ;; pushing indexes before evaluating body
-  (define-macro-word :times (in)
-    (cons
-     (cons :times
-           `(let ((reps (lifoo-pop)))
-              (dotimes (i reps)
-                (lifoo-push i)
-                ,@(lifoo-compile (first (second in))))))
-     (cons (first in) (rest (rest in)))))
+  (define-macro-word :times (in out)
+    (cons (cons in `(let ((reps (lifoo-pop)))
+                      (dotimes (i reps)
+                        (lifoo-push i)
+                        ,@(lifoo-compile (first (second out))))))
+     (cons (first out) (rest (rest out)))))
 
   ;; Pops $body and loops until $body pushes nil 
-  (define-macro-word :while (in)
+  (define-macro-word :while (in out)
     (cons
-     (cons :while
+     (cons in
            `(progn
               (do-while ((progn
-                           ,@(lifoo-compile (first (first in)))
+                           ,@(lifoo-compile (first (first out)))
                            (lifoo-peek)))
                 (lifoo-pop))
               (lifoo-pop)))
-     (rest in)))
+     (rest out)))
 
   ;; Pops $value and throws it 
   (define-lisp-word :throw (nil)
@@ -211,27 +209,27 @@
 
   ;; Wraps parsed forms in unwind-protect with previous
   ;; form as body
-  (define-macro-word :always (in)
+  (define-macro-word :always (in out)
     (list
-     (cons :always `(unwind-protect
-                         (progn
-                           ,@(reverse (mapcar #'rest (rest in))))
-                      (lifoo-eval ',(first (first in)))))))
+     (cons in `(unwind-protect
+                    (progn
+                      ,@(reverse (mapcar #'rest (rest out))))
+                 (lifoo-eval ',(first (first out)))))))
   
   ;; Wraps parsed forms in handler-case with previous
   ;; form as handler
-  (define-macro-word :catch (in)
+  (define-macro-word :catch (in out)
     (list
-     (cons :catch `(handler-case
-                       (progn
-                         ,@(reverse (mapcar #'rest (rest in))))
-                     (lifoo-throw (c)
-                       (lifoo-push (value c))
-                       (lifoo-eval ',(first (first in))))))))
+     (cons in `(handler-case
+                   (progn
+                     ,@(reverse (mapcar #'rest (rest out))))
+                 (lifoo-throw (c)
+                   (lifoo-push (value c))
+                   (lifoo-eval ',(first (first out))))))))
   
   ;; Breaks out from word
-  (define-macro-word :break (in)
-    (cons (cons :break `(lifoo-break)) in)))
+  (define-macro-word :break (in out)
+    (cons (cons in `(lifoo-break)) out)))
 
 (define-init (:io)
   ;; Pops $val and prints it
@@ -358,8 +356,8 @@
 
   ;; Pops $fn and $seq,
   ;; and pushes result of mapping $fn over $seq
-  (define-macro-word :map (in)
-    (cons (cons :map
+  (define-macro-word :map (in out)
+    (cons (cons in
                 `(let ((seq (lifoo-pop)))
                    (lifoo-push
                     (map
@@ -369,69 +367,69 @@
                        (t 'list))
                      (lambda (it)
                        (lifoo-push it)
-                       ,@(lifoo-compile (first (first in)))
+                       ,@(lifoo-compile (first (first out)))
                        (lifoo-pop))
                      seq))))
-          (rest in)))
+          (rest out)))
 
   ;; Pops $pred and filters $1 by it
-  (define-macro-word :filter (in)
-    (cons (cons :filter
+  (define-macro-word :filter (in out)
+    (cons (cons in
                 `(setf (lifoo-peek)
                        (remove-if (lambda (it)
                                     (lifoo-push it)
                                     ,@(lifoo-compile
-                                       (first (first in)))
+                                       (first (first out)))
                                     (lifoo-pop))
                                   (lifoo-peek))))
-          (rest in)))
+          (rest out)))
 
   ;; Pops $fn and replaces $1 with reduction by $fn
-  (define-macro-word :reduce (in)
+  (define-macro-word :reduce (in out)
     (cons
-     (cons :reduce
+     (cons in
            `(setf (lifoo-peek)
                   (reduce
                    (lambda (x y)
                      (lifoo-push x)
                      (lifoo-push y)
-                     ,@(lifoo-compile (first (first in)))
+                     ,@(lifoo-compile (first (first out)))
                      (lifoo-pop))
                    (lifoo-peek))))
-     (rest in))))
+     (rest out))))
 
 (define-init (:stack)
   ;; Pushes stack on stack
-  (define-macro-word :stack (in)
-    (cons (cons :stack
+  (define-macro-word :stack (in out)
+    (cons (cons in
                 `(lifoo-push (map 'list
                                   #'lifoo-val
                                   (stack *lifoo*))))
-          in))
+          out))
   
   ;; Pops stack
-  (define-macro-word :drop (in)
-    (cons (cons :drop `(lifoo-pop)) in))
+  (define-macro-word :drop (in out)
+    (cons (cons in `(lifoo-pop)) out))
 
   ;; Swaps $1 and $2
-  (define-macro-word :swap (in)
-    (cons (cons :swap `(lifoo-swap)) in))
+  (define-macro-word :swap (in out)
+    (cons (cons in `(lifoo-swap)) out))
   
   ;; Pushes $1 on stack
-  (define-macro-word :dup (in)
-    (cons (cons :dup `(lifoo-dup)) in))
+  (define-macro-word :dup (in out)
+    (cons (cons in `(lifoo-dup)) out))
 
   ;; Resets stack
-  (define-macro-word :reset (in)
-    (cons (cons :reset `(lifoo-reset)) in))
+  (define-macro-word :reset (in out)
+    (cons (cons in `(lifoo-reset)) out))
 
   ;; Pushes backup of stack to environment
-  (define-macro-word :backup (in)
-    (cons (cons :backup `(lifoo-backup)) in))
+  (define-macro-word :backup (in out)
+    (cons (cons in `(lifoo-backup)) out))
 
   ;; Pops and restores backup from environment
-  (define-macro-word :restore (in)
-    (cons (cons :restore `(lifoo-restore))in)))
+  (define-macro-word :restore (in out)
+    (cons (cons in `(lifoo-restore)) out)))
 
 (define-init (:string)
   ;; Pops $val and pushes string representation
