@@ -436,19 +436,18 @@
 
 (defun lifoo-repl (&key (exec (lifoo-init t :exec (make-lifoo)))
                         (in *standard-input*)
-                        (prompt "Lifoo>")
                         (out *standard-output*))
   "Starts a REPL for EXEC with input from IN and output to OUT,
    using PROMPT"
 
   (format out "Welcome to Lifoo,~%")
-  (format out "press enter on empty line to eval expr,~%")
+  (format out "press enter on empty line to evaluate,~%")
   (format out "exit ends session~%")
   
   (with-lifoo (:exec exec :env t)
     (tagbody
      start
-       (format out "~%~a " prompt)
+       (format out "~%Lifoo> ")
        (let ((expr (with-output-to-string (expr)
                       (let ((line))
                         (do-while

@@ -461,15 +461,14 @@
   (define-lisp-word :spawn (nil :optimize? 1)
     (let* ((num-args (lifoo-pop))
            (expr (lifoo-pop))
-           (exec (make-lifoo :stack (clone (if num-args
-                                               (subseq
-                                                (stack *lifoo*)
-                                                0 num-args)
-                                               (stack *lifoo*)))
-                             :words (clone (words *lifoo*))))
+           (exec (make-lifoo
+                  :stack (clone
+                          (if num-args
+                              (subseq (stack *lifoo*) 0 num-args)
+                              (stack *lifoo*)))
+                  :words (clone (words *lifoo*))))
            (thread (make-thread (lambda ()
-                                  (lifoo-eval expr
-                                              :exec exec)))))
+                                  (lifoo-eval expr :exec exec)))))
       (lifoo-push thread)))
 
   ;; Pops $secs and sleeps that many seconds
