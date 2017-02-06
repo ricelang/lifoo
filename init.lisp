@@ -1,7 +1,7 @@
 (in-package lifoo)
 
 (define-init (:abc)
-  (define-binary-words (:optimize 1) + - * / = /= < > cons)
+  (define-binary-words (:speed 1) + - * / = /= < > cons)
 
   ;; Pops $val and pushes T if NIL,
   ;; otherwise NIL
@@ -17,15 +17,15 @@
     (lifoo-push (keyword! (lifoo-pop))))
 
   ;; Increases $1
-  (define-lisp-word :inc (nil :optimize 1)
+  (define-lisp-word :inc (nil :speed 1)
     (incf (lifoo-peek)))
 
   ;; Decreases $1
-  (define-lisp-word :dec (nil :optimize 1)
+  (define-lisp-word :dec (nil :speed 1)
     (decf (lifoo-peek)))
 
   ;; Pops $val and sets value of $1 to $val
-  (define-lisp-word :set (nil :optimize 1)
+  (define-lisp-word :set (nil :speed 1)
     (let* ((val (lifoo-pop))
            (cell (lifoo-peek-cell))
            (set (lifoo-set cell)))
@@ -34,7 +34,7 @@
       (funcall set val)))
 
   ;; Pushes and deletes value of $1
-  (define-lisp-word :del (nil :optimize 1)
+  (define-lisp-word :del (nil :speed 1)
     (let* ((cell (lifoo-peek-cell))
            (val (lifoo-val cell))
            (del (lifoo-del cell)))
@@ -46,7 +46,7 @@
   ;; Pops $expr,
   ;; measures the time it takes to run;
   ;; and pushes cpu and real
-  (define-lisp-word :time ((t) :optimize 1)
+  (define-lisp-word :time ((t) :speed 1)
     (let* ((fn (lifoo-pop))
            (real (get-internal-real-time))
            (cpu (get-internal-run-time)))
@@ -67,7 +67,7 @@
 
 (define-init (:array)
   ;; Pops $items and pushes new array
-  (define-lisp-word :array (nil :optimize 1)
+  (define-lisp-word :array (nil :speed 1)
     (let* ((items (lifoo-pop))
            (len (length items)))
       (lifoo-push (make-array len
@@ -302,7 +302,7 @@
 
 (define-init (:sequence)
   ;; Pops $idx and pushes item from seq
-  (define-lisp-word :nth (nil :optimize 1)
+  (define-lisp-word :nth (nil :speed 1)
     (let* ((idx (lifoo-pop))
            (seq (lifoo-peek))
            (it (elt seq idx)))
@@ -317,7 +317,7 @@
                            seq))))))
   
   ;; Pushes length of $1
-  (define-lisp-word :length (nil :optimize 1)
+  (define-lisp-word :length (nil :speed 1)
     (let ((val (lifoo-peek)))
       (lifoo-push
        (cond
@@ -452,13 +452,13 @@
     (thread-yield))
 
   ;; Pops $secs and sleeps that many seconds
-  (define-lisp-word :sleep (nil :optimize 1)
+  (define-lisp-word :sleep (nil :speed 1)
     (sleep (lifoo-pop)))
 
   ;; Pops $expr;
   ;; evaluates it in new thread/exec,
   ;; and pushes thread
-  (define-lisp-word :spawn (nil :optimize 1)
+  (define-lisp-word :spawn (nil :speed 1)
     (let* ((num-args (lifoo-pop))
            (expr (lifoo-pop))
            (exec (make-lifoo
