@@ -1,7 +1,7 @@
 Lifoo
-* add macro-word struct
-** fn and trace?
-** add lifoo-expand mw in
+* add word.macro? flag
+** remove macro-words
+** add lifoo-expand word in
 ** add tracing and break handling like lifo-call
 ** test macro tracing
 * add local-time support
