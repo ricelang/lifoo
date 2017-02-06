@@ -14,7 +14,7 @@
            lifoo-set lifoo-stack
            lifoo-trace?
            lifoo-undefine
-           lifoo-var lifoo-word make-lifoo
+           lifoo-var lifoo-word lifoo-write make-lifoo
            with-lifoo
            *lifoo* *lifoo-init* *lifoo-speed*)
   (:use bordeaux-threads cl cl4l-chan cl4l-clone cl4l-compare
@@ -186,6 +186,13 @@
     (do-while ((not (eq (setf more? (read in nil eof?)) eof?)))
       (push more? expr))
     (nreverse expr)))
+
+(defun lifoo-write (expr &key (out *standard-output*))
+  (let ((sep))
+    (dolist (f expr)
+      (when sep (princ sep out))
+      (write f :stream out)
+      (setf sep #\space))))
 
 (defun lifoo-compile-fn (expr &key (exec *lifoo*) speed)
   (eval `(lambda ()
@@ -465,7 +472,9 @@
                (progn
                  (lifoo-reset)
                  (lifoo-eval (lifoo-read :in in))
-                 (write (lifoo-pop) :stream out))
+                 (write (lifoo-pop) :stream out)
+                 (terpri out))
+             
              (ignore ()
                :report "Ignore error and continue.")))
          (go start))

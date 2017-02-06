@@ -61,6 +61,17 @@
           (fields (lifoo-pop)))
       (define-lifoo-struct name fields)))
   
+  ;; Pops $str and pushes read result
+  (define-lisp-word :read (nil)
+    (with-input-from-string (in (lifoo-pop))
+      (lifoo-push (lifoo-read :in in))))
+  
+  ;; Pops $expr and pushes string representation
+  (define-lisp-word :write (nil)
+    (lifoo-push
+     (with-output-to-string (out)
+       (lifoo-write (lifoo-pop) :out out))))
+
   ;; Pops $expr and pushes result of evaluating
   (define-lisp-word :eval (nil)
     (lifoo-eval (lifoo-pop))))
@@ -292,6 +303,12 @@
   (define-lisp-word :init (nil)
     (let ((protos (lifoo-pop)))
       (lifoo-init (if (consp protos) protos (list protos)))))
+
+  ;; Pops $code and pushes compiled code
+  (define-lisp-word :compile (nil)
+    (let ((code (lifoo-pop)))
+      (lifoo-push (cons 'progn
+                        (lifoo-compile code)))))
   
   ;; Pops $expr and pushes function that evaluates $expr as Lisp
   (define-lisp-word :lisp (nil)
