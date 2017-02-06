@@ -17,12 +17,12 @@
     (lifoo-push (keyword! (lifoo-pop))))
 
   ;; Increases $1
-  (define-macro-word :inc (in out)
-    (cons (cons in `(incf (lifoo-peek))) out))
+  (define-lisp-word :inc (nil :optimize? nil)
+    (incf (lifoo-peek)))
 
   ;; Decreases $1
-  (define-macro-word :dec (in out)
-    (cons (cons in `(decf (lifoo-peek))) out))
+  (define-lisp-word :dec (nil :optimize? nil)
+    (decf (lifoo-peek)))
 
   ;; Pops $val and sets value of $1 to $val
   (define-lisp-word :set (nil :optimize? nil)
@@ -396,8 +396,8 @@
 
 (define-init (:stack)
   ;; Pushes stack on stack
-  (define-macro-word :stack (in out)
-    (cons (cons in `(lifoo-push (lifoo-stack))) out))
+  (define-lisp-word :stack (nil)
+    (lifoo-push (lifoo-stack)))
   
   ;; Pops stack
   (define-lisp-word :drop (nil)
@@ -412,16 +412,16 @@
     (lifoo-dup))
 
   ;; Resets stack
-  (define-macro-word :reset (in out)
-    (cons (cons in `(lifoo-reset)) out))
+  (define-lisp-word :reset (nil)
+    (lifoo-reset))
 
   ;; Pushes backup of stack to environment
-  (define-macro-word :backup (in out)
-    (cons (cons in `(lifoo-backup)) out))
+  (define-lisp-word :backup (nil)
+    (lifoo-backup))
 
   ;; Pops and restores backup from environment
-  (define-macro-word :restore (in out)
-    (cons (cons in `(lifoo-restore)) out)))
+  (define-lisp-word :restore (nil)
+    (lifoo-restore)))
 
 (define-init (:string)
   ;; Pops $val and pushes string representation
