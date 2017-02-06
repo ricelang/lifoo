@@ -1,4 +1,9 @@
 Lifoo
+* add macro-word struct
+** fn and trace?
+** add lifoo-expand mw in
+** add tracing and break handling like lifo-call
+** test macro tracing
 * add local-time support
 ** now / today for current time
 ** date / time constructing
