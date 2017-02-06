@@ -37,17 +37,23 @@
   `(lifoo-define ,id (make-lifoo-word
                       :id ,id
                       :macro? t
-                      :fn (lambda (,in ,out) ,@body))
+                      :fn (lambda (,in ,out)
+                            ,@body))
                  :exec (or ,exec *lifoo*)))
 
-(defmacro define-lisp-word (id ((&rest args) &key exec) &body body)
+(defmacro define-lisp-word (id ((&rest args) &key exec
+                                                  (optimize? t))
+                            &body body)
   "Defines new word with NAME in EXEC from Lisp forms in BODY"
   `(lifoo-define ,id
                  (make-lifoo-word
                   :id ,id
                   :source ',body
                   :fn (lambda ()
-                        (declare (optimize (speed 3) (safety 0)))
+                        (declare (optimize
+                                  ,@(if optimize?
+                                        `((speed 3) (safety 0))
+                                        `((speed 0) (safety 3)))))
                         ,@body)
                   :args ',args)
                  :exec (or ,exec *lifoo*)))
@@ -60,13 +66,14 @@
                                   :args ',args)
                  :exec (or ,exec *lifoo*)))
 
-(defmacro define-binary-words ((&key exec) &rest forms)
+(defmacro define-binary-words ((&key exec (optimize? t))
+                               &rest forms)
   "Defines new words in EXEC for FORMS"
   (with-symbols (_lhs _rhs)
     `(progn
        ,@(mapcar (lambda (op)
                    `(define-lisp-word ,(keyword! op)
-                        (nil :exec ,exec)
+                        (nil :exec ,exec :optimize? ,optimize?)
                       (let ((,_lhs (lifoo-pop))
                             (,_rhs (lifoo-pop)))
                         (lifoo-push (,op ,_lhs ,_rhs)))))
