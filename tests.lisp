@@ -8,15 +8,15 @@
 (defmacro lifoo-asseq (res &body body)
   "Asserts that evaluating BODY after stack reset pushes value 
    that compares equal to RES"
-  `(asseq ,res (let* ((compiled 
-                        (lifoo-compile '(reset ,@body)))
-                      (fn (eval `(lambda ()
-                                   (declare (optimize (speed 3)
-                                                      (safety 0)))
-                                   ,@compiled))))
-                 (dotimes (_ *reps*)
-                   (funcall fn))
-                 (lifoo-pop))))
+  `(asseq ,res
+     (let* ((compiled 
+              (lifoo-compile '(reset ,@body)))
+            (fn (eval `(lambda ()
+                         (declare (optimize (speed 3) (safety 0)))
+                         ,@compiled))))
+       (dotimes (_ *reps*)
+         (funcall fn))
+       (lifoo-pop))))
 
 (define-fixture (:lifoo)
   (with-lifoo (:env t)
