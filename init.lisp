@@ -349,28 +349,33 @@
 
   ;; Pops $fn and $seq,
   ;; and pushes result of mapping $fn over $seq
-  (define-lisp-word :map (nil)
-    (let ((expr (lifoo-pop)) (seq (lifoo-pop)))
-      (lifoo-push (map
-                   (cond
-                     ((stringp seq) 'string)
-                     ((vectorp seq) 'vector)
-                     (t 'list))
-                   (eval `(lambda (it)
-                            (lifoo-push it)
-                            ,@(lifoo-compile expr)
-                            (lifoo-pop)))
-                   seq))))
+  (define-macro-word :map (in)
+    (cons (cons :map
+                `(let ((seq (lifoo-pop)))
+                   (lifoo-push
+                    (map
+                     (cond
+                       ((stringp seq) 'string)
+                       ((vectorp seq) 'vector)
+                       (t 'list))
+                     (lambda (it)
+                       (lifoo-push it)
+                       ,@(lifoo-compile (first (first in)))
+                       (lifoo-pop))
+                     seq))))
+          (rest in)))
 
   ;; Pops $pred and filters $1 by it
-  (define-lisp-word :filter (nil)
-    (let ((pred (lifoo-compile (lifoo-pop))))
-      (setf (lifoo-peek)
-            (remove-if (eval `(lambda (it)
-                                (lifoo-push it)
-                                ,@pred
-                                (lifoo-pop)))
-                       (lifoo-peek)))))
+  (define-macro-word :filter (in)
+    (cons (cons :filter
+                `(setf (lifoo-peek)
+                       (remove-if (lambda (it)
+                                    (lifoo-push it)
+                                    ,@(lifoo-compile
+                                       (first (first in)))
+                                    (lifoo-pop))
+                                  (lifoo-peek))))
+          (rest in)))
 
   ;; Pops $fn and replaces $1 with reduction by $fn
   (define-macro-word :reduce (in)
