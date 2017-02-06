@@ -118,20 +118,30 @@
 
 (define-init (:error)
   ;; Pops $cnd and signals error if NIL
-  (define-lisp-word :assert ((t))
-    (let* ((cnd (lifoo-pop))
-           (ok? (progn (funcall cnd) (lifoo-pop))))
-      (unless ok?
-        (lifoo-error "assert failed: ~a" cnd))))
+  (define-macro-word :assert (in)
+    (cons (cons :assert
+                `(let ((ok? (progn
+                              ,@(lifoo-compile (first (first in)))
+                              (lifoo-pop))))
+                   (unless ok?
+                     (lifoo-error "assert failed: ~a"
+                                  ',(first (first in))))))
+          (rest in)))
 
   ;; Pops $expected and $actual,
   ;; and signals error they don't compare equal  
-  (define-lisp-word :asseq (nil)
-    (let ((expected (lifoo-pop))
-          (actual (lifoo-pop)))
-      (unless (zerop (compare expected actual))
-        (lifoo-error "assert failed: ~a /= ~a"
-                     actual expected)))))
+  (define-macro-word :asseq (in)
+    (cons (cons :asseq
+                `(let ((expected (progn
+                                   ,@(lifoo-compile
+                                      (first (first in)))))
+                       (actual (progn
+                                 ,@(lifoo-compile
+                                    (first (second in))))))
+                   (unless (zerop (compare expected actual))
+                     (lifoo-error "assert failed: ~a /= ~a"
+                                  actual expected))))
+          (nthcdr 2 in))))
 
 (define-init (:flow)
   ;; Pops $cnd, $true and $false;
@@ -392,42 +402,36 @@
 
 (define-init (:stack)
   ;; Pushes stack on stack
-  (define-lisp-word :stack (nil)
-    (lifoo-push (map 'list #'lifoo-val (stack *lifoo*))))
-
+  (define-macro-word :stack (in)
+    (cons (cons :stack
+                `(lifoo-push (map 'list
+                                  #'lifoo-val
+                                  (stack *lifoo*))))
+          in))
+  
   ;; Pops stack
-  (define-lisp-word :drop (nil)
-    (lifoo-pop))
+  (define-macro-word :drop (in)
+    (cons (cons :drop `(lifoo-pop)) in))
 
   ;; Swaps $1 and $2
-  (define-lisp-word :swap (nil)
-    (let* ((stack (stack *lifoo*))
-           (pos (1- (fill-pointer stack)))
-           (tmp (aref stack (1- pos))))
-      (setf (aref stack (1- pos)) (aref stack pos))
-      (setf (aref stack pos) tmp)))  
+  (define-macro-word :swap (in)
+    (cons (cons :swap `(lifoo-swap)) in))
   
   ;; Pushes $1 on stack
-  (define-lisp-word :dup (nil)
-    (lifoo-push-cell (lifoo-peek-cell)))
+  (define-macro-word :dup (in)
+    (cons (cons :dup `(lifoo-dup)) in))
 
   ;; Resets stack
-  (define-lisp-word :reset (nil)
-    (lifoo-reset))
+  (define-macro-word :reset (in)
+    (cons (cons :reset `(lifoo-reset)) in))
 
-  (let ((var (gensym)))
-    ;; Pushes backup of stack to environment
-    (define-lisp-word :backup (nil)
-      (push (copy-seq (stack *lifoo*)) (lifoo-var var)))
+  ;; Pushes backup of stack to environment
+  (define-macro-word :backup (in)
+    (cons (cons :backup `(lifoo-backup)) in))
 
-    ;; Pops and restores backup from environment
-    (define-lisp-word :restore (nil)
-      (let* ((prev (pop (lifoo-var var)))
-             (curr (stack *lifoo*))
-             (len (length prev)))
-        (setf (fill-pointer curr) len)
-        (dotimes (i len)
-          (setf (aref curr i) (aref prev i)))))))
+  ;; Pops and restores backup from environment
+  (define-macro-word :restore (in)
+    (cons (cons :restore `(lifoo-restore))in)))
 
 (define-init (:string)
   ;; Pops $val and pushes string representation

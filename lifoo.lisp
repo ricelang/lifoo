@@ -125,7 +125,7 @@
 
 (defstruct (lifoo-exec (:conc-name)
                        (:constructor make-lifoo))
-  envs logs
+  envs logs (backup-key (gensym))
   (stack (make-array 3 :adjustable t :fill-pointer 0))
   (macro-words (make-hash-table :test 'eq))
   (words (make-hash-table :test 'eq)))
@@ -338,9 +338,34 @@
     (assert (not (zerop fp)))
     (setf (lifoo-val (aref stack (1- fp))) val)))
 
+(defun lifoo-dup (&key (exec *lifoo*))
+  "Pushes top of stack on stack in EXEC"
+  (lifoo-push-cell (lifoo-peek-cell :exec exec) :exec exec))
+
+(defun lifoo-swap (&key (exec *lifoo*))
+  "Swaps top and previous items in EXEC stack"
+  (let* ((stack (stack exec))
+         (pos (1- (fill-pointer stack)))
+         (tmp (aref stack (1- pos))))
+    (setf (aref stack (1- pos)) (aref stack pos))
+    (setf (aref stack pos) tmp)))
+
 (defun lifoo-reset (&key (exec *lifoo*))
   "Resets EXEC stack"
   (setf (fill-pointer (stack exec)) 0))
+
+(defun lifoo-backup (&key (exec *lifoo*))
+  "Stores backup of EXEC stack in current environment"
+  (push (copy-seq (stack exec)) (lifoo-var (backup-key exec))))
+
+(defun lifoo-restore (&key (exec *lifoo*))
+  "Restores EXEC stack from current environment"
+  (let* ((prev (pop (lifoo-var (backup-key exec))))
+         (curr (stack exec))
+         (len (length prev)))
+    (setf (fill-pointer curr) len)
+    (dotimes (i len)
+      (setf (aref curr i) (aref prev i)))))
 
 (defun lifoo-trace? (word)
   "Returns T if WORD is traced, otherwise NIL"
