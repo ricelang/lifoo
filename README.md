@@ -9,22 +9,22 @@ Lifoo comes with a modest but grow set of tests in ```tests.lisp```, evaluating 
 
 ```
 CL-USER> (cl4l-test:run-suite '(:lifoo) :warmup 10 :reps 100)
-(lifoo abc)                   0.368
-(lifoo array)                 0.188
-(lifoo compare)                0.26
-(lifoo env)                   0.036
-(lifoo error)                 0.012
-(lifoo flow)                  1.112
+(lifoo abc)                    0.34
+(lifoo array)                 0.396
+(lifoo compare)               0.256
+(lifoo env)                   0.028
+(lifoo error)                 0.072
+(lifoo flow)                  1.192
 (lifoo io)                    0.004
-(lifoo list)                  0.104
+(lifoo list)                  0.244
 (lifoo log)                   0.008
 (lifoo meta)                  0.084
 (lifoo stack)                 0.016
-(lifoo string)                0.164
-(lifoo struct)                 1.22
-(lifoo thread)                0.116
-(lifoo word)                  0.072
-TOTAL                         3.764
+(lifoo string)                0.248
+(lifoo struct)                1.228
+(lifoo thread)                0.176
+(lifoo word)                  0.084
+TOTAL                         4.376
 NIL
 ```
 
