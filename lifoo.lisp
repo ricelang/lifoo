@@ -28,7 +28,6 @@
   "Defines init for TAGS around BODY"
   `(setf (gethash ',tags *lifoo-init*)
          (lambda (exec)
-           (declare (optimize (speed 3) (safety 0)))
            (with-lifoo (:exec exec)
              ,@body))))
 
@@ -38,10 +37,7 @@
   `(lifoo-define ,id (make-lifoo-word
                       :id ,id
                       :macro? t
-                      :fn (lambda (,in ,out)
-                            (declare (optimize (speed 3)
-                                               (safety 0)))
-                            ,@body))
+                      :fn (lambda (,in ,out) ,@body))
                  :exec (or ,exec *lifoo*)))
 
 (defmacro define-lisp-word (id ((&rest args) &key exec) &body body)
@@ -51,8 +47,7 @@
                   :id ,id
                   :source ',body
                   :fn (lambda ()
-                        (declare (optimize (speed 3)
-                                           (safety 0)))
+                        (declare (optimize (speed 3) (safety 0)))
                         ,@body)
                   :args ',args)
                  :exec (or ,exec *lifoo*)))
