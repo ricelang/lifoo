@@ -162,13 +162,15 @@
 
   ;; Pops $cnd and $res;
   ;; and pushes $res unless $cnd, otherwise NIL
-  (define-lisp-word :unless ((t t))
-    (let ((cnd (lifoo-pop))
-          (res (lifoo-pop)))
-      (funcall cnd)
-      (if (lifoo-pop)
-          (lifoo-push nil)
-          (funcall res))))
+  (define-macro-word :unless (in)
+    (cons (cons :unless
+                `(progn
+                   ,@(lifoo-compile (first (first in)))
+                   (if (lifoo-pop)
+                       (lifoo-push nil)
+                       (progn
+                         ,@(lifoo-compile (first (second in)))))))
+          (nthcdr 2 in)))
 
   ;; Pops $reps and $body;
   ;; and repeats $body $reps times,
