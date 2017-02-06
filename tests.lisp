@@ -9,7 +9,7 @@
   "Asserts that evaluating BODY after stack reset pushes value 
    that compares equal to RES"
   `(asseq ,res (let* ((compiled 
-                        (lifoo-compile '(reset clear ,@body)))
+                        (lifoo-compile '(reset ,@body)))
                       (fn (eval `(lambda () ,@compiled))))
                  (dotimes (_ *reps*)
                    (funcall fn))
@@ -77,15 +77,23 @@
 
 (define-test (:lifoo :env)
   (lifoo-asseq 42
-    :foo var 42 set :foo var)
+    clear
+    :foo var 42 set
+    :foo var)
     
   (lifoo-asseq '((:bar . 42))
-    :bar var 42 set env)
+    clear
+    :bar var 42 set
+    env)
     
   (lifoo-asseq '(nil . 42)
-    :foo var 42 set drop :foo var del :foo var cons)
+    clear
+    :foo var 42 set drop
+    :foo var del
+    :foo var cons)
 
   (lifoo-asseq 42
+    clear
     :foo var 42 set
     begin :foo var 43 set end
     :foo var))
@@ -134,10 +142,7 @@
   (lifoo-asseq '(:caught . :frisbee)
     :frisbee throw
     "skipped" print ln
-    (:caught cons) catch)
-
-  (lifoo-asseq 1
-    0 (inc break inc) eval))
+    (:caught cons) catch))
 
 (define-test (:lifoo :io)
   (assert (string= (format nil "hello lifoo!~%")
@@ -183,7 +188,7 @@
 
 (define-test (:lifoo :meta)
   (with-lifoo ()
-    (lifoo-init '(:env :meta :stack))
+    (lifoo-init '(:meta :stack))
 
     (lifoo-asseq "LIFOO"
       :string init
@@ -198,7 +203,7 @@
     lisp eval))
 
 (define-test (:lifoo :stack)
-  (lifoo-asseq '(1 2 3)
+  (lifoo-asseq '(3 2 1)
     1 2 3 stack)
 
   (lifoo-asseq 1
@@ -207,7 +212,7 @@
   (lifoo-asseq 2
     1 2 swap drop)
 
-  (lifoo-asseq '(1 2)
+  (lifoo-asseq '(2 1)
     1 2 backup
     3 4 restore
     stack))
@@ -262,7 +267,7 @@
     1 2 "+" word eval)
 
   (with-lifoo ()
-    (lifoo-init '(:env :meta :stack :word))
+    (lifoo-init '(:meta :stack :word))
     
     (lifoo-asseq '(+ 1 2)
       (+ 1 2) :foo define

@@ -1,7 +1,4 @@
 Lifoo
-* finish lifoo-expand
-** add tracing and break handling like lifo-call for macro
-** test macro tracing
 * add local-time support
 ** now / today for current time
 ** date / time constructing

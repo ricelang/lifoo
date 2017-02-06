@@ -401,11 +401,7 @@
 (define-init (:stack)
   ;; Pushes stack on stack
   (define-macro-word :stack (in out)
-    (cons (cons in
-                `(lifoo-push (map 'list
-                                  #'lifoo-val
-                                  (stack *lifoo*))))
-          out))
+    (cons (cons in `(lifoo-push (lifoo-stack))) out))
   
   ;; Pops stack
   (define-macro-word :drop (in out)

@@ -183,7 +183,25 @@
   (let ((word (lifoo-word in)))
     (if word
         (if (macro? word)
-            (funcall (fn word) in out)
+            (let ((exp (funcall (fn word) in out)))
+              (cons
+               (cons (first (first exp)) 
+                     `(progn
+                        (let ((w (lifoo-word ',in)))
+                          (when (trace? w)
+                            (push (list :enter
+                                        (id w)
+                                        (lifoo-stack))
+                                  (logs *lifoo*)))
+
+                          ,(rest (first exp))
+
+                          (when (trace? w)
+                            (push (list :exit
+                                        (id w)
+                                        (lifoo-stack))
+                                  (logs *lifoo*))))))
+               (rest exp)))
             (progn
               (when (args word) (lifoo-compile-args word out))
               (cons (cons in `(lifoo-call ',in)) out)))
@@ -252,22 +270,14 @@
       (unless (setf word (lifoo-word id))
         (error "missing word: ~a" id)))) 
 
-  (when (trace? word)
-    (push (list :enter (id word) (clone (stack exec)))
-          (logs exec)))
-
   (with-lifoo (:exec exec)
-    (handler-case
-        (progn 
-          (funcall (lifoo-compile-word word))
+    (when (trace? word)
+      (push (list :enter (id word) (lifoo-stack)) (logs exec)))
 
-          (when (trace? word)
-            (push (list :exit (id word) (clone (stack exec)))
-                  (logs exec))))
-      (lifoo-break ()
-        (when (trace? word)
-          (push (list :break (id word) (clone (stack exec)))
-                (logs exec)))))))
+    (funcall (lifoo-compile-word word))
+    
+    (when (trace? word)
+      (push (list :exit (id word) (lifoo-stack)) (logs exec)))))
 
 (defun lifoo-define (id word &key (exec *lifoo*))
   "Defines ID as WORD in EXEC"
@@ -392,7 +402,7 @@
 
 (defun lifoo-stack (&key (exec *lifoo*))
   "Returns stack for EXEC"
-  (stack exec))
+  (nreverse (map 'list #'lifoo-val (stack exec))))
 
 (defun lifoo-begin (&key (env t) (exec *lifoo*))
   "Opens ENV or new environment if T in EXEC"
