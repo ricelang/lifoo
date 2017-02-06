@@ -12,7 +12,7 @@
      (let* ((compiled 
               (lifoo-compile '(reset ,@body)))
             (fn (eval `(lambda ()
-                         (declare (optimize (speed 3) (safety 0)))
+                         ,(lifoo-optimize)
                          ,@compiled))))
        (dotimes (_ *reps*)
          (funcall fn))

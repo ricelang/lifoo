@@ -7,6 +7,7 @@
            lifoo-del lifoo-define lifoo-define-macro lifoo-dump-log
            lifoo-env lifoo-error lifoo-eval
            lifoo-init lifoo-log
+           lifoo-optimize
            lifoo-peek lifoo-peek-set
            lifoo-pop lifoo-print-log lifoo-push
            lifoo-read lifoo-repl lifoo-reset
@@ -15,7 +16,7 @@
            lifoo-undefine
            lifoo-var lifoo-word make-lifoo
            with-lifoo
-           *lifoo* *lifoo-init*)
+           *lifoo* *lifoo-init* *lifoo-speed*)
   (:use bordeaux-threads cl cl4l-chan cl4l-clone cl4l-compare
         cl4l-test cl4l-utils))
 
@@ -44,9 +45,10 @@
                             ,@body))
                  :exec (or ,exec *lifoo*)))
 
-(defmacro lifoo-speed (&key speed)
+(defmacro lifoo-optimize (&key speed)
   `(let ((spd (or ,speed *lifoo-speed*)))
-     `(declare (optimize (speed ,spd) (safety ,(- 3 spd))))))
+     `(declare (optimize (speed ,spd)
+                         (safety ,(- 3 spd))))))
 
 (defmacro define-lisp-word (id ((&rest args) &key exec speed)
                             &body body)
@@ -56,7 +58,7 @@
                   :id ,id
                   :source ',body
                   :fn (lambda ()
-                        ,(lifoo-speed :speed speed)
+                        ,(lifoo-optimize :speed speed)
                         ,@body)
                   :args ',args)
                  :exec (or ,exec *lifoo*)))
@@ -185,9 +187,9 @@
       (push more? expr))
     (nreverse expr)))
 
-(defun lifoo-compile-fn (expr &key (exec *lifoo*))
+(defun lifoo-compile-fn (expr &key (exec *lifoo*) speed)
   (eval `(lambda ()
-           (declare (optimize (speed 3) (safety 0)))
+           ,(lifoo-optimize :speed speed)
            ,@(lifoo-compile expr :exec exec))))
 
 (defun lifoo-compile-args (word in)
@@ -259,12 +261,12 @@
       (lifoo-throw (c)
         (lifoo-error "thrown value not caught: ~a" (value c))))))
 
-(defun lifoo-compile-word (word &key (exec *lifoo*))
+(defun lifoo-compile-word (word &key (exec *lifoo*) speed)
   "Returns compiled function for WORD"
   (or (fn word)
       (setf (fn word)
             (eval `(lambda ()
-                     (declare (optimize (speed 3) (safety 0)))
+                     ,(lifoo-optimize :speed speed)
                      ,@(lifoo-compile (source word)
                                       :exec exec))))))
 
