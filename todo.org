@@ -2,7 +2,10 @@ Lifoo
 * add word.macro? flag
 ** remove macro-words
 ** add lifoo-expand word in
-** add tracing and break handling like lifo-call
+*** either expend to lifoo-call or macro block
+*** replaces word calling in lifoo-compile
+*** add tracing and break handling like lifo-call
+** add lifoo-define-macro/undefine-macro
 ** test macro tracing
 * add local-time support
 ** now / today for current time
