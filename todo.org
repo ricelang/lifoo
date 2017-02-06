@@ -10,6 +10,8 @@ Lifoo
 
 * add read word to read Lifoo from string
 ** io init
+(:foo "bar" 42) string read
+- '(:foo "bar" 42)
 
 * add write word
 ** map to princ
