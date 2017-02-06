@@ -409,7 +409,10 @@
 
 (defun (setf lifoo-env) (env &key (exec *lifoo*))
   "Replaces current environment"
-  (rplaca (envs exec) env))
+  (if (envs exec)
+      (rplaca (envs exec) env)
+      (when env
+        (error "setf nil environment"))))
 
 (defun lifoo-var (var)
   "Returns value of VAR in EXEC"

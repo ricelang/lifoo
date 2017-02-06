@@ -3,13 +3,20 @@
 
 (in-package lifoo-tests)
 
+(defparameter *reps* 10)
+
 (defmacro lifoo-asseq (res &body body)
   "Asserts that evaluating BODY after stack reset pushes value 
    that compares equal to RES"
-  `(asseq ,res (do-lifoo () reset clear ,@body)))
+  `(asseq ,res (let* ((compiled 
+                        (lifoo-compile '(reset clear ,@body)))
+                      (fn (eval `(lambda () ,@compiled))))
+                 (dotimes (_ *reps*)
+                   (funcall fn))
+                 (lifoo-pop))))
 
 (define-fixture (:lifoo)
-  (with-lifoo ()
+  (with-lifoo (:env t)
     (lifoo-init t)
     (call-next-fixture)))
 
@@ -45,9 +52,6 @@
   (lifoo-asseq #(1 2 3)
     nil array 1 push 2 push 3 push)
 
-  (lifoo-asseq 2
-    #(1 2 3) pop drop pop)
-    
   (lifoo-asseq #(2 4 6)
     #(1 2 3) (2 *) map)
 

@@ -1,6 +1,4 @@
 Lifoo
-* add test *reps*
-** compile code once and run *reps* times
 * finish lifoo-expand
 ** add tracing and break handling like lifo-call for macro
 ** test macro tracing
