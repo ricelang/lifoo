@@ -1,5 +1,4 @@
 Lifoo
-* convert stack protocol back to lisp words amd compare perf
 * add local-time support
 ** now / today for current time
 ** date / time constructing
