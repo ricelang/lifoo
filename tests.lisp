@@ -140,10 +140,10 @@
     0 (drop inc) 100 times)
 
   (lifoo-asseq :always
-    :frisbee throw
-    "skipped" print ln
-    (:always) always
-    (drop) catch)
+    (:frisbee throw
+     "skipped" print ln
+     (:always) always
+     (drop) catch) eval)
     
   (lifoo-asseq '(:caught . :frisbee)
     :frisbee throw
