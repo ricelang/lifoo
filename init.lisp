@@ -150,13 +150,15 @@
   
   ;; Pops $cnd and $res;
   ;; and pushes $res if $cnd, otherwise NIL
-  (define-lisp-word :when ((t t))
-    (let ((cnd (lifoo-pop))
-          (res (lifoo-pop)))
-      (funcall cnd)
-      (if (lifoo-pop)
-          (funcall res)
-          (lifoo-push nil))))
+  (define-macro-word :when (in)
+    (cons (cons :when
+                `(progn
+                   ,@(lifoo-compile (first (first in)))
+                   (if (lifoo-pop)
+                       (progn
+                         ,@(lifoo-compile (first (second in))))
+                       (lifoo-push nil))))
+          (nthcdr 2 in)))
 
   ;; Pops $cnd and $res;
   ;; and pushes $res unless $cnd, otherwise NIL
