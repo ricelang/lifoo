@@ -6,7 +6,7 @@
 (defmacro lifoo-asseq (res &body body)
   "Asserts that evaluating BODY after stack reset pushes value 
    that compares equal to RES"
-  `(asseq ,res (do-lifoo () reset ,@body)))
+  `(asseq ,res (do-lifoo () reset clear ,@body)))
 
 (define-test (:lifoo :abc)
   (with-lifoo ()
