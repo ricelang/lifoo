@@ -1,8 +1,4 @@
 Lifoo
-* rewrite map as lisp word
-** update post/quoting with inline examples
-(1 2 3) (2 *) inline map
-- (2 4 6)
 * remove word args & define params
 ** remove compile-args
 * rewrite reduce, filter as lisp words

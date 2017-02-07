@@ -43,7 +43,15 @@
     (1 2 +) eval)
 
   (lifoo-asseq 3
-    (1 2 +) inline eval))
+    (1 2 +) inline eval)
+
+  (lifoo-asseq '(3 7 11)
+    (1 2 +) inline
+    (3 4 +) inline
+    (5 6 +) inline
+    stack reverse
+    (eval) map)
+  )
 
 (define-test (:lifoo :array)
   (lifoo-asseq 2
