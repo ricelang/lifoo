@@ -19,6 +19,16 @@ hash-table
 list (first) sort
 - '((1 . :abc) (2 . :def) (3 . :ghi))
 
+0 chan (:words var hash-table set 
+        (recv dup :words var swap get inc drop) while
+        list (first) sort) spawn
+swap
+"abc" send
+"def" send
+"ghi" send
+swap
+join-thread
+
 * add net package
 ** add fetch word based on drakma
 (let ((stream (drakma:http-request "https://api.github.com/orgs/edicl/public_members"
@@ -33,13 +43,3 @@ list (first) sort
 
 (define-lifoo-init (:foo :bar)
  (define-word :baz (nil) 39 +)) lisp eval
-
-
-0 chan (:words var hash-table set 
-        (recv dup :words var swap get inc drop) while) spawn
-swap
-"abc" send
-"def" send
-"ghi" send
-swap
-join-thread
