@@ -1,7 +1,3 @@
-Lifoo
-* store open files in env like backups
-** remove close
-** close on exit
 * add hash-tables
 ** create with equal
 ** add hash-table word

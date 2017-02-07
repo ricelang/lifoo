@@ -267,11 +267,9 @@
 (define-lifoo-init (:io)
   ;; Pops $path and pushes open file
   (define-lisp-word :open ()
-    (lifoo-push (open (lifoo-pop))))
-
-  ;; Pops $stream and closes it
-  (define-lisp-word :close ()
-    (close (lifoo-pop)))
+    (let ((stm (open (lifoo-pop))))
+      (lifoo-stream stm)
+      (lifoo-push stm)))
 
   ;; Pops $val and prints it
   (define-lisp-word :print ()
@@ -502,7 +500,9 @@
 (define-lifoo-init (:string :io)
   ;; Pushes new output stream
   (define-lisp-word :stream ()
-    (lifoo-push (make-string-output-stream)))
+    (let ((stm (make-string-output-stream)))
+      (lifoo-stream stm)
+      (lifoo-push stm)))
 
   ;; Pushes new output stream
   (define-lisp-word :stream-string ()
@@ -510,11 +510,14 @@
 
   ;; Pops $string and pushes input stream
   (define-lisp-word :string-stream ()
-    (lifoo-push (make-string-input-stream (lifoo-pop))))
+    (let ((stm (make-string-input-stream (lifoo-pop))))
+      (lifoo-stream stm)
+      (lifoo-push stm)))
 
-  ;; Pops $fn and $out,
+  ;; Pops $fn and $out;
   ;; calls $fn for new lines until nil;
-  ;; and writes to $out separated by newlines
+  ;; writes to $out separated by newlines,
+  ;; and pushes $out again
   (define-lisp-word :dump-lines ()
     (let ((fn (lifoo-pop))
           (out (lifoo-pop))
@@ -526,16 +529,14 @@
       (lifoo-push out)))
 
   ;; Pops $fn and $in,
-  ;; calls $fn for each line;
-  ;; and puts $in back on stack
+  ;; and calls $fn for each line
   (define-lisp-word :slurp-lines ()
     (let ((fn (lifoo-pop))
           (in (lifoo-pop))
           (line))
       (do-while ((setf line (read-line in nil)))
         (lifoo-push line)
-        (lifoo-eval fn))
-      (lifoo-push in))))
+        (lifoo-eval fn)))))
 
 (define-lifoo-init (:thread)
   ;; Yields processor and re-schedules thread

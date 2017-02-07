@@ -12,7 +12,7 @@
            lifoo-peek lifoo-peek-set
            lifoo-pop lifoo-print-log lifoo-push
            lifoo-read lifoo-repl lifoo-reset
-           lifoo-set lifoo-stack
+           lifoo-set lifoo-stack lifoo-stream
            lifoo-trace?
            lifoo-undefine
            lifoo-var lifoo-word lifoo-write make-lifoo
@@ -150,7 +150,8 @@
 
 (defstruct (lifoo-exec (:conc-name)
                        (:constructor make-lifoo))
-  envs logs (backup-key (gensym)) (defer-key (gensym))
+  envs logs
+  (backup-key (gensym)) (defer-key (gensym)) (stream-key (gensym))
   (stack (make-array 3 :adjustable t :fill-pointer 0))
   (words (make-hash-table :test 'eq)))
 
@@ -178,6 +179,9 @@
     (when (zerop cnt)
       (error "init not found: ~a" tags)))
   exec)
+
+(defun lifoo-stream (stream &key (exec *lifoo*))
+  (push stream (lifoo-var (stream-key exec))))
 
 (defun lifoo-read (&key (in *standard-input*))
   "Reads Lifoo code from IN until end of file"
@@ -419,6 +423,8 @@
   "Closes current environment in EXEC"
   (dolist (fn (lifoo-var (defer-key exec)))
     (lifoo-eval fn :exec exec))
+  (dolist (stm (lifoo-var (stream-key exec)))
+    (close stm))
   (pop (envs exec)))
 
 (defun lifoo-env (&key (exec *lifoo*))

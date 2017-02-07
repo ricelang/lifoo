@@ -275,8 +275,7 @@
   
   (lifoo-asseq '("abc" "def" "ghi")
     begin
-      "abc~%def~%ghi~%" nil format
-      string-stream (close) defer
+      "abc~%def~%ghi~%" nil format string-stream
       nil swap (push) slurp-lines
     end reverse))
 
