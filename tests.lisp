@@ -185,10 +185,10 @@
 
 (define-test (:lifoo :list)
   (lifoo-asseq '(3 . 1)
-    1 2 cons first 3 set)
+    1 2 cons first 3 set drop)
     
   (lifoo-asseq '(1 . 3)
-    (1 . 2) rest 3 set)
+    (1 . 2) rest 3 set drop)
 
   (lifoo-asseq 3
     (1 2 3) length)
@@ -203,10 +203,10 @@
     (1 2 3) rest first)
 
   (lifoo-asseq '(1)
-    (1 2 3) rest nil set)
+    (1 2 3) rest nil set drop)
 
   (lifoo-asseq '(4 2 3)
-    (1 2 3) first 4 set)
+    (1 2 3) first 4 set drop)
     
   (lifoo-asseq '(1 2 3)
     nil 1 push 2 push 3 push reverse)
@@ -313,8 +313,7 @@
 
   (lifoo-asseq 43
     (:bar 42) make-foo
-    foo-bar 43 set
-    foo-bar))
+    foo-bar 43 set))
 
 (define-test (:lifoo :thread)
   (lifoo-asseq 42

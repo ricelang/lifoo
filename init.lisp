@@ -33,7 +33,8 @@
            (set (lifoo-set cell)))
       (unless set
         (error "missing set: ~a" val))
-      (funcall set val)))
+      (funcall set val)
+      (setf (lifoo-peek) val)))
 
   ;; Pushes and deletes value of $1
   (define-lisp-word :del (:speed 1)
@@ -290,7 +291,7 @@
 
   ;; Pops $list and pushes rest
   (define-lisp-word :rest ()
-    (let ((lst (lifoo-pop)))
+    (let ((lst (lifoo-peek)))
       (lifoo-push (rest lst)
                   :set (lambda (val)
                          (lifoo-pop)
@@ -299,7 +300,7 @@
 
   ;; Pops $list and pushes first element
   (define-lisp-word :first ()
-    (let ((lst (lifoo-pop)))
+    (let ((lst (lifoo-peek)))
       (lifoo-push (first lst)
                   :set (lambda (val)
                          (lifoo-pop)
