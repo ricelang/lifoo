@@ -25,7 +25,7 @@ CL-USER>
 ```
 
 ### encryption
-The ```crypt``` package is based on AES in CTR mode with SHA256 hashed keys, and requires identical seed and message sequence for decryption.
+The ```crypt``` package is based on AES in CTR mode with SHA256 hashed keys, and requires identical seed and message sequence for ```encrypt``` and ```decrypt```.
 
 ```
 Lifoo> :seed var crypt-seed set
@@ -39,7 +39,7 @@ Lifoo>
 ```
 
 ### multi-threading
-All Lifoo code runs in a ```lifoo-exec``` object, the result of accessing a ```lifoo-exec``` from multiple threads at the same time is undefined. Spawning new threads clones the current exec and [channels](http://vicsydev.blogspot.de/2017/01/channels-in-common-lisp.html) are used for communication.
+All Lifoo code runs in a ```lifoo-exec``` object, the result of accessing a ```lifoo-exec``` from multiple threads at the same time is undefined. The ```thread``` package allows spawning new threads as clones of the current exec. [Channels](http://vicsydev.blogspot.de/2017/01/channels-in-common-lisp.html) are used for communicating between threads.
 
 ```
 Lifoo> 0 chan 
