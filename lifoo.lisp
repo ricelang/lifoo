@@ -85,7 +85,7 @@
   "Runs BODY in EXEC"
   `(with-lifoo (:exec (or ,exec *lifoo* (make-lifoo))
                 :env ,env)
-     (lifoo-eval ',body)
+     (lifoo-eval ',body :throw? nil)
      (lifoo-pop)))
 
 (defmacro do-lifoo-call ((word &key exec) &body body)
@@ -260,13 +260,17 @@
     (with-lifoo (:exec exec)
       (compile-forms (list! forms) nil))))
 
-(defun lifoo-eval (expr &key (exec *lifoo*))
+(defun lifoo-eval (expr &key (exec *lifoo*) (throw? t))
   "Returns result of parsing and evaluating EXPR in EXEC"
   (with-lifoo (:exec exec)
-    (handler-case
-        (eval `(progn ,@(lifoo-compile expr)))
-      (lifoo-throw (c)
-        (lifoo-error "thrown value not caught: ~a" (value c))))))
+    (let ((code `(progn ,@(lifoo-compile expr))))
+      (if throw?
+          (eval code)
+          (handler-case
+              (eval code)
+            (lifoo-throw (c)
+              (lifoo-error "thrown value not caught: ~a"
+                           (value c))))))))
 
 (defun lifoo-compile-word (word &key (exec *lifoo*) speed)
   "Makes sure word is compiled and returns function"
@@ -419,10 +423,10 @@
   (push (if (eq t env) (copy-list (lifoo-env)) env)
         (envs exec)))
 
-(defun lifoo-end (&key (exec *lifoo*))
+(defun lifoo-end (&key (exec *lifoo*) (throw? t))
   "Closes current environment in EXEC"
   (dolist (fn (lifoo-var (defer-key exec)))
-    (lifoo-eval fn :exec exec))
+    (lifoo-eval fn :exec exec :throw? throw?))
   (dolist (stm (lifoo-var (stream-key exec)))
     (close stm))
   (pop (envs exec)))
@@ -475,10 +479,9 @@
            (restart-case
                (progn
                  (lifoo-reset)
-                 (lifoo-eval (lifoo-read :in in))
+                 (lifoo-eval (lifoo-read :in in) :throw nil)
                  (write (lifoo-pop) :stream out)
                  (terpri out))
-             
              (ignore ()
                :report "Ignore error and continue.")))
          (go start))

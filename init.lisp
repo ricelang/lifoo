@@ -248,26 +248,28 @@
   (define-lisp-word :throw ()
     (lifoo-throw (lifoo-pop)))
 
-  ;; Wraps parsed forms in unwind-protect with previous
-  ;; form as body
-  (define-macro-word :always (in out)
-    (list
-     (cons in `(unwind-protect
-                    (progn
-                      ,@(reverse (mapcar #'rest (rest out))))
-                 (lifoo-eval ',(first (first out)))))))
-  
-  ;; Wraps parsed forms in handler-case with previous
-  ;; form as handler
-  (define-macro-word :catch (in out)
-    (list
-     (cons in `(handler-case
-                   (progn
-                     ,@(reverse (mapcar #'rest (rest out))))
-                 (lifoo-throw (c)
-                   (lifoo-push (value c))
-                   (lifoo-eval ',(first (first out)))))))))
+  ;; Pops $res and $block,
+  ;; evaluates $block while guaranteeing that $res runs
+  ;; even in the case of errors.
+  (define-lisp-word :always ()
+    (let ((res (lifoo-pop))
+          (blk (lifoo-pop)))
+      (unwind-protect
+           (lifoo-eval blk)
+        (lifoo-eval res))))
 
+  ;; Pops $hnd and $block,
+  ;; evaluates $block with $hnd registered as handler
+  ;; for LIFOO-THROW.
+  (define-lisp-word :catch ()
+    (let ((hnd (lifoo-pop))
+          (blk (lifoo-pop)))
+      (handler-case
+          (lifoo-eval blk)
+        (lifoo-throw (c)
+          (lifoo-push (value c))
+          (lifoo-eval hnd))))))
+  
 (define-lifoo-init (:hash)
   ;; Pops $src and pushes new hash table
   (define-lisp-word :hash ()

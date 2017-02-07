@@ -40,7 +40,8 @@
     nil sym nil sym neq? assert)
 
   (lifoo-asseq t
-    ((0.0001 sleep)@ 10 times)@ time 0.0001 <)
+    ((0.0001 sleep) @ 10 times) @ time
+    0.0001 <)
 
   (lifoo-asseq '(1 2 +)
     "1 2 +" read)
@@ -52,7 +53,7 @@
     (1 2 +) eval)
 
   (lifoo-asseq 3
-    (1 2 +)@ eval))
+    (1 2 +) @ eval))
 
 (define-test (:lifoo :array)
   (lifoo-asseq 2
@@ -68,10 +69,10 @@
     nil array 1 push 2 push 3 push)
 
   (lifoo-asseq #(2 4 6)
-    #(1 2 3) (2 *)@ map)
+    #(1 2 3) (2 *) @ map)
 
   (lifoo-asseq 6
-    #(1 2 3) (+)@ reduce))
+    #(1 2 3) (+) @ reduce))
 
 (define-test (:lifoo :compare)
   (lifoo-asseq t
@@ -130,7 +131,7 @@
   (assert (eq
            :ok
            (handler-case (do-lifoo ()
-                           (1 2 =)@ assert)    
+                           (1 2 =) @ assert)    
              (lifoo-error () :ok))))
 
   (assert (eq
@@ -140,41 +141,48 @@
              (lifoo-error () :ok))))
 
   (lifoo-asseq '(t t t)
-    (t t t) (assert)@ map))
+    (t t t) (assert) @ map))
 
 (define-test (:lifoo :flow)
   (lifoo-asseq :true
-    :false :true (1 1 =)@ cond)
+    :false :true (1 1 =) @ cond)
     
   (lifoo-asseq :ok
-    :ok (2 1 <)@ when)
+    :ok (2 1 <) @ when)
     
   (lifoo-asseq :ok
-    :ok (1 2 =)@ unless)
+    :ok (1 2 =) @ unless)
     
   (lifoo-asseq 100
-    0 (inc dup 100 >)@ while)
+    0 (inc dup 100 >) @
+    while)
     
   (lifoo-asseq 100
-    0 (drop inc)@ 100 times)
+    0 (drop inc) @
+    100 times)
 
   (lifoo-asseq 42
     41
     begin 
-      (inc)@ defer 
+      (inc) @ defer 
       41 asseq
     end)
 
   (lifoo-asseq :always
-    (:frisbee throw
-     "skipped" print ln
-     (:always) always
-     (drop) catch)@ eval)
-    
+    (begin
+     (begin :frisbee throw
+            "skipped" print ln
+            end) @
+     (:always) @ always
+     end) @ 
+    (drop) @ catch)
+  
   (lifoo-asseq '(:caught . :frisbee)
-    :frisbee throw
-    "skipped" print ln
-    (:caught cons) catch))
+    (begin
+     :frisbee throw
+     "skipped" print ln
+     end) @
+    (:caught cons) @ catch))
 
 (define-test (:lifoo :hash)
   (lifoo-asseq 42
@@ -194,7 +202,7 @@
     ((:foo . 1) (:bar . 2)) hash list nil sort)
 
   (lifoo-asseq '((2 . 1) (1 . 2))
-    ((1 . 2) (2 . 1)) (rest)@ sort))
+    ((1 . 2) (2 . 1)) (rest) @ sort))
 
 (define-test (:lifoo :io)
   (assert (string= (format nil "hello lifoo!~%")
@@ -238,9 +246,9 @@
     ((1 . "def") (2 . "abc") (1 . "abc")) nil sort)
 
   (lifoo-asseq '(3 7 11)
-    (1 2 +)@ (3 4 +)@ (5 6 +)@
+    (1 2 +) @ (3 4 +) @ (5 6 +) @
     stack reverse
-    (eval)@ map))
+    (eval) @ map))
 
 (define-test (:lifoo :log)
   (lifoo-asseq '((:log (:any :message)))
@@ -294,21 +302,23 @@
 
 (define-test (:lifoo :string :io)
   (lifoo-asseq (format nil "abc~%def~%ghi~%")
-    ("abc" "def" "ghi") stream (pop)@ dump-lines
+    ("abc" "def" "ghi") stream
+    (pop) @ dump-lines
     stream-string)
   
   (lifoo-asseq '("abc" "def" "ghi")
-    begin
-      "abc~%def~%ghi~%" nil format string-stream
-      nil swap (push)@ slurp-lines
-    end reverse))
+    "abc~%def~%ghi~%" nil format
+    string-stream
+    nil swap
+    (push) @ slurp-lines
+    reverse))
 
 (define-test (:lifoo :string)
   (lifoo-asseq 3
     "abc" length)
 
   (lifoo-asseq "bcdbr"
-    "abacadabra" (#\a eq?)@ filter)
+    "abacadabra" (#\a eq?) @ filter)
     
   (lifoo-asseq "123ABC"
     (1 2 3 abc) string)
@@ -344,17 +354,22 @@
     
   (lifoo-asseq '(:done . 3)
     0 chan
-    (1 2 + send :done)@ 1 spawn swap 
+    (1 2 + send :done) @
+    1 spawn swap 
     recv swap drop swap 
     wait cons)
 
   (lifoo-asseq '(("def" . 2) ("abc" . 1))
     1 chan 
-    (begin :words var nil hash set swap 
-      (recv dup
-        (dup :words var swap get inc drop drop)@ 
-        swap when)@ while
-      drop list (rest) sort reverse end)@ 
+    (begin
+     :words var nil hash set swap 
+     (begin
+      recv dup
+      (begin
+       dup :words var swap get inc drop drop
+       end) @ 
+      swap when end) @ while
+      drop list (rest) sort reverse end) @ 
     1 spawn swap
     "abc" send
     "def" send
@@ -374,5 +389,5 @@
       :foo word source)
 
     (lifoo-asseq 42
-      (drop drop 42)@ :+ define
+      (drop drop 42) @ :+ define
       1 2 +)))
