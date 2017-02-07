@@ -1,10 +1,7 @@
 Lifoo
-* remove word args & define params
-** remove compile-args
 * rewrite reduce, filter as lisp words
 (1 2 3) (2 *) inline map
 - (2 4 6)
-* times & while?
 * add each word
 0 '(1 2 3) (swap inc swap) each drop
 - 3

@@ -137,31 +137,25 @@
     (setf (lifoo-env) nil)))
 
 (define-lifoo-init (:error)
-  ;; Pops $cnd and signals error if NIL
-  (define-macro-word :assert (in out)
-    (cons (cons in
-                `(let ((ok? (progn
-                              ,@(lifoo-compile (first (first out)))
-                              (lifoo-pop))))
-                   (unless ok?
-                     (lifoo-error "assert failed: ~a"
-                                  ',(first (first out))))))
-          (rest out)))
+  ;; Pops $test and signals error if NIL
+  (define-lisp-word :assert ()
+    (let* ((test (lifoo-pop))
+           (ok? (progn
+                  (lifoo-eval test)
+                  (lifoo-pop))))
+      (unless ok?
+        (lifoo-error "assert failed: ~a" test))))
 
   ;; Pops $expected and $actual,
   ;; and signals error they don't compare equal  
-  (define-macro-word :asseq (in out)
-    (cons (cons in
-                `(let ((expected (progn
-                                   ,@(lifoo-compile
-                                      (first (first out)))))
-                       (actual (progn
-                                 ,@(lifoo-compile
-                                    (first (second out))))))
-                   (unless (zerop (compare expected actual))
-                     (lifoo-error "assert failed: ~a /= ~a"
-                                  actual expected))))
-          (nthcdr 2 out))))
+  (define-lisp-word :asseq (:speed 1)
+    (let ((expected (lifoo-pop))
+          (actual (lifoo-pop)))
+      (lifoo-eval expected)
+      (lifoo-eval actual)
+      (unless (zerop (compare (lifoo-pop) (lifoo-pop)))
+        (lifoo-error "assert failed: ~a /= ~a"
+                     actual expected)))))
 
 (define-lifoo-init (:flow)
   ;; Pops $cnd, $true and $false;
@@ -400,30 +394,25 @@
         seq))))
 
   ;; Pops $pred and filters $1 by it
-  (define-macro-word :filter (in out)
-    (cons (cons in
-                `(setf (lifoo-peek)
-                       (remove-if (lambda (it)
-                                    (lifoo-push it)
-                                    ,@(lifoo-compile
-                                       (first (first out)))
-                                    (lifoo-pop))
-                                  (lifoo-peek))))
-          (rest out)))
+  (define-lisp-word :filter ()
+    (let ((pred (lifoo-pop)))
+      (setf (lifoo-peek)
+            (remove-if (lambda (it)
+                         (lifoo-push it)
+                         (lifoo-eval pred)
+                         (lifoo-pop))
+                       (lifoo-peek)))))
 
   ;; Pops $fn and replaces $1 with reduction by $fn
-  (define-macro-word :reduce (in out)
-    (cons
-     (cons in
-           `(setf (lifoo-peek)
-                  (reduce
-                   (lambda (x y)
-                     (lifoo-push x)
-                     (lifoo-push y)
-                     ,@(lifoo-compile (first (first out)))
-                     (lifoo-pop))
-                   (lifoo-peek))))
-     (rest out))))
+  (define-lisp-word :reduce ()
+    (let ((fn (lifoo-pop)))
+      (setf (lifoo-peek)
+            (reduce (lambda (x y)
+                      (lifoo-push x)
+                      (lifoo-push y)
+                      (lifoo-eval fn)
+                      (lifoo-pop))
+                    (lifoo-peek))))))
 
 (define-lifoo-init (:stack)
   ;; Pushes stack on stack
