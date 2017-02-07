@@ -3,7 +3,7 @@
            define-lifoo-struct
            define-lifoo-struct-fn define-lisp-word define-word
            do-lifoo do-lifoo-call
-           lifoo-call lifoo-compile lifoo-compile-args
+           lifoo-call lifoo-compile
            lifoo-compile-fn lifoo-compile-form lifoo-compile-word
            lifoo-del lifoo-define lifoo-define-macro lifoo-dump-log
            lifoo-env lifoo-error lifoo-eval
@@ -51,8 +51,7 @@
      `(declare (optimize (speed ,spd)
                          (safety ,(- 3 spd))))))
 
-(defmacro define-lisp-word (id ((&rest args) &key exec speed)
-                            &body body)
+(defmacro define-lisp-word (id (&key exec speed) &body body)
   "Defines new word with NAME in EXEC from Lisp forms in BODY"
   `(lifoo-define ,id
                  (make-lifoo-word
@@ -60,16 +59,14 @@
                   :source ',body
                   :fn (lambda ()
                         ,(lifoo-optimize :speed speed)
-                        ,@body)
-                  :args ',args)
+                        ,@body))
                  :exec (or ,exec *lifoo*)))
 
-(defmacro define-word (name ((&rest args) &key exec) &body body)
+(defmacro define-word (name (&key exec) &body body)
   "Defines new word with NAME in EXEC from BODY"
   `(lifoo-define ',name
                  (make-lifoo-word :id ,(keyword! name)
-                                  :source ',body
-                                  :args ',args)
+                                  :source ',body)
                  :exec (or ,exec *lifoo*)))
 
 (defmacro define-binary-words ((&key exec speed) &rest forms)
@@ -78,7 +75,7 @@
     `(progn
        ,@(mapcar (lambda (op)
                    `(define-lisp-word ,(keyword! op)
-                        (nil :exec ,exec :speed ,speed)
+                        (:exec ,exec :speed ,speed)
                       (let ((,_lhs (lifoo-pop))
                             (,_rhs (lifoo-pop)))
                         (lifoo-push (,op ,_lhs ,_rhs)))))
@@ -137,7 +134,7 @@
     `(let ((,_fn (symbol-function ,lisp))
            (,_sfn (and ,set? (fdefinition (list 'setf ,lisp)))))
        
-       (define-lisp-word ,lifoo (nil)
+       (define-lisp-word ,lifoo ()
          (lifoo-push
           (apply ,_fn ,args)
           :set (when ,set?
@@ -146,7 +143,7 @@
                    (funcall ,_sfn val (lifoo-peek)))))))))
 
 (defstruct (lifoo-word (:conc-name))
-  id macro? trace? source fn args)
+  id macro? trace? source fn)
 
 (defstruct (lifoo-cell (:conc-name lifoo-))
   val set del)
@@ -201,14 +198,6 @@
            ,(lifoo-optimize :speed speed)
            ,@(lifoo-compile expr :exec exec))))
 
-(defun lifoo-compile-args (word in)
-  (let ((i 0))
-    (dolist (compile? (args word))
-      (when compile?
-        (let ((compiled (lifoo-compile-fn (first (elt in i)))))
-          (rplacd (elt in i) `(lifoo-push ',compiled))))
-      (incf i))))
-
 (defun lifoo-expand (in out)
   "Expands IN into OUT and returns new token stream"
   (let ((word (lifoo-word in)))
@@ -220,7 +209,6 @@
                                ,(rest (first exp))))
                (rest exp)))
             (progn
-              (when (args word) (lifoo-compile-args word out))
               (cons (cons in `(lifoo-call ',in)) out)))
         (cons (cons in `(lifoo-call ',in))
               out))))

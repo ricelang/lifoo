@@ -37,26 +37,18 @@
     "lifoo" symbol)
   
   (lifoo-asseq t
-    ((0.0001 sleep) 10 times) time 0.0001 <)
+    ((0.0001 sleep) inline 10 times) time 0.0001 <)
     
   (lifoo-asseq 3
     (1 2 +) eval)
 
   (lifoo-asseq 3
-    (1 2 +) inline eval)
-
-  (lifoo-asseq '(3 7 11)
-    (1 2 +) inline
-    (3 4 +) inline
-    (5 6 +) inline
-    stack reverse
-    (eval) map)
-  )
+    (1 2 +) inline eval))
 
 (define-test (:lifoo :array)
   (lifoo-asseq 2
-      #(1 2 3) 1 nth)
-
+    #(1 2 3) 1 nth)
+  
   (lifoo-asseq #(1 4 3)
     #(1 2 3) 1 nth 4 set drop)
 
@@ -67,7 +59,7 @@
     nil array 1 push 2 push 3 push)
 
   (lifoo-asseq #(2 4 6)
-    #(1 2 3) (2 *) map)
+    #(1 2 3) (2 *) inline map)
 
   (lifoo-asseq 6
     #(1 2 3) (+) reduce))
@@ -132,7 +124,7 @@
              (lifoo-error () :ok))))
 
   (lifoo-asseq '(nil nil nil)
-    (t t t) (assert) map))
+    (t t t) (assert) inline map))
 
 (define-test (:lifoo :flow)
   (lifoo-asseq :true
@@ -145,10 +137,10 @@
     :ok (1 2 =) unless)
     
   (lifoo-asseq 100
-    0 (inc dup 100 >) while)
+    0 (inc dup 100 >) inline while)
     
   (lifoo-asseq 100
-    0 (drop inc) 100 times)
+    0 (drop inc) inline 100 times)
 
   (lifoo-asseq :always
     (:frisbee throw
@@ -195,9 +187,13 @@
     
   (lifoo-asseq '(1 2 3)
     nil 1 push 2 push 3 push reverse)
-    
+
   (lifoo-asseq '(3 7 11)
-    ((1 2 +) (3 4 +) (5 6 +)) (eval) map))
+    (1 2 +) inline
+    (3 4 +) inline
+    (5 6 +) inline
+    stack reverse
+    (eval) map))
 
 (define-test (:lifoo :log)
   (lifoo-asseq '((:log (:any :message)))
@@ -224,7 +220,7 @@
 
   (lifoo-asseq 42
     (define-lifoo-init (:foo :bar)
-      (define-word :baz (nil) 39 +))
+      (define-word :baz () 39 +))
     lisp eval
     (:foo :bar) init
     3 baz))
@@ -285,7 +281,7 @@
     1 chan 42 send recv)
     
   (lifoo-asseq '(:done . 3)
-    0 chan (1 2 + send :done) 1 spawn swap 
+    0 chan (1 2 + send :done) inline 1 spawn swap 
     recv swap drop swap 
     wait cons))
 
