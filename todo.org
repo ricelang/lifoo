@@ -1,11 +1,5 @@
 Lifoo
 * add read/write/compile tests
-* add define-macro word
-> (pop 10 *) :my-pop define-macro
-> '(1 2 3) my-pop
-- 10
-> :my-pop source
-(pop 10 *)
 * add local-time support
 ** now / today for current time
 ** date / time constructing
