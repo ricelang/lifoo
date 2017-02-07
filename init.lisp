@@ -289,7 +289,7 @@
     (let ((lst (map 'list #'identity (lifoo-pop))))
       (lifoo-push lst)))
 
-  ;; Pops $list and pushes rest
+  ;; Pushes rest of $1
   (define-lisp-word :rest ()
     (let ((lst (lifoo-peek)))
       (lifoo-push (rest lst)
@@ -298,7 +298,7 @@
                          (setf (rest lst) val)
                          (lifoo-push lst)))))
 
-  ;; Pops $list and pushes first element
+  ;; Pushes first element of $1
   (define-lisp-word :first ()
     (let ((lst (lifoo-peek)))
       (lifoo-push (first lst)
