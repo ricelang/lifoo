@@ -83,8 +83,8 @@
   (define-lisp-word :eval ()
     (lifoo-eval (lifoo-pop)))
 
-  ;; Replaces $expr with function that evaluates
-  (define-macro-word :inline (in out)
+  ;; Replaces $expr with function that evaluates it
+  (define-macro-word :@ (in out)
     (cons (cons in
                 `(lifoo-push (lambda ()
                                (lifoo-optimize)

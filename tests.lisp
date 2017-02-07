@@ -40,7 +40,7 @@
     nil sym nil sym neq? assert)
 
   (lifoo-asseq t
-    ((0.0001 sleep) inline 10 times) time 0.0001 <)
+    ((0.0001 sleep)@ 10 times) time 0.0001 <)
 
   (lifoo-asseq '(1 2 +)
     "1 2 +" read)
@@ -52,7 +52,7 @@
     (1 2 +) eval)
 
   (lifoo-asseq 3
-    (1 2 +) inline eval))
+    (1 2 +)@ eval))
 
 (define-test (:lifoo :array)
   (lifoo-asseq 2
@@ -68,7 +68,7 @@
     nil array 1 push 2 push 3 push)
 
   (lifoo-asseq #(2 4 6)
-    #(1 2 3) (2 *) inline map)
+    #(1 2 3) (2 *)@ map)
 
   (lifoo-asseq 6
     #(1 2 3) (+) reduce))
@@ -140,23 +140,23 @@
              (lifoo-error () :ok))))
 
   (lifoo-asseq '(t t t)
-    (t t t) (assert) inline map))
+    (t t t) (assert)@ map))
 
 (define-test (:lifoo :flow)
   (lifoo-asseq :true
-    :false :true (1 1 =) inline cond)
+    :false :true (1 1 =)@ cond)
     
   (lifoo-asseq :ok
-    :ok (2 1 <) inline when)
+    :ok (2 1 <)@ when)
     
   (lifoo-asseq :ok
     :ok (1 2 =) unless)
     
   (lifoo-asseq 100
-    0 (inc dup 100 >) inline while)
+    0 (inc dup 100 >)@ while)
     
   (lifoo-asseq 100
-    0 (drop inc) inline 100 times)
+    0 (drop inc)@ 100 times)
 
   (lifoo-asseq 42
     41
@@ -169,7 +169,7 @@
     (:frisbee throw
      "skipped" print ln
      (:always) always
-     (drop) catch) inline eval)
+     (drop) catch)@ eval)
     
   (lifoo-asseq '(:caught . :frisbee)
     :frisbee throw
@@ -232,9 +232,7 @@
     ((1 . "def") (2 . "abc") (1 . "abc")) sort)
 
   (lifoo-asseq '(3 7 11)
-    (1 2 +) inline
-    (3 4 +) inline
-    (5 6 +) inline
+    (1 2 +)@ (3 4 +)@ (5 6 +)@
     stack reverse
     (eval) map))
 
@@ -340,7 +338,7 @@
     
   (lifoo-asseq '(:done . 3)
     0 chan
-    (1 2 + send :done) inline 1 spawn swap 
+    (1 2 + send :done)@ 1 spawn swap 
     recv swap drop swap 
     wait cons)
 
@@ -348,9 +346,9 @@
     1 chan 
     (begin :words var hash set swap 
       (recv dup
-        (dup :words var swap get inc drop drop) inline 
-        swap when) inline while
-    drop list sort end) inline 
+        (dup :words var swap get inc drop drop)@ 
+        swap when)@ while
+    drop list sort end)@ 
     1 spawn swap
     "abc" send
     "def" send
