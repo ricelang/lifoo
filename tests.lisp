@@ -269,6 +269,10 @@
     stack))
 
 (define-test (:lifoo :string :io)
+  (lifoo-asseq (format nil "abc~%def~%ghi~%")
+    ("abc" "def" "ghi") stream (pop) dump-lines
+    stream-string)
+  
   (lifoo-asseq '("abc" "def" "ghi")
     begin
       "abc~%def~%ghi~%" nil format

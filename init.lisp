@@ -229,14 +229,11 @@
 
   ;; Pops $body and loops until $body pushes nil 
   (define-lisp-word :while ()
-    (progn
-      (let ((body (lifoo-pop)))
-        (do-while ((progn
-                     (lifoo-eval body)
-                     (lifoo-peek)))
-          (lifoo-pop)))
-        (lifoo-pop)))
-
+    (let ((body (lifoo-pop)) more?)
+      (do-while ((progn
+                   (lifoo-eval body)
+                   (setf more? (lifoo-pop)))))))
+  
   ;; Pops $fn and defers it until environment is closed
   (define-lisp-word :defer ()
     (let ((fn (lifoo-pop)))
@@ -394,7 +391,7 @@
                  ((arrayp seq)
                   (vector-pop seq))
                  (t
-                  (pop seq)))))
+                  (pop (lifoo-peek))))))
       (lifoo-push it)))
 
   ;; Pops $it and pushes it on $1
@@ -502,9 +499,30 @@
       (lifoo-push (apply #'format nil fmt args)))))
 
 (define-lifoo-init (:string :io)
-  ;; Pops $string and pushes stream
+  ;; Pushes new output stream
+  (define-lisp-word :stream ()
+    (lifoo-push (make-string-output-stream)))
+
+  ;; Pushes new output stream
+  (define-lisp-word :stream-string ()
+    (lifoo-push (get-output-stream-string (lifoo-peek))))
+
+  ;; Pops $string and pushes input stream
   (define-lisp-word :string-stream ()
     (lifoo-push (make-string-input-stream (lifoo-pop))))
+
+  ;; Pops $fn and $out,
+  ;; calls $fn for new lines until nil;
+  ;; and writes to $out separated by newlines
+  (define-lisp-word :dump-lines ()
+    (let ((fn (lifoo-pop))
+          (out (lifoo-pop))
+          (line))
+      (do-while ((setf line (progn
+                              (lifoo-eval fn)
+                              (lifoo-pop))))
+        (write-line line out))
+      (lifoo-push out)))
 
   ;; Pops $fn and $in,
   ;; calls $fn for each line;
