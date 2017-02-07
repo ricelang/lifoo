@@ -148,7 +148,7 @@
 (define-lifoo-init (:env)
   ;; Pushes current environment on stack
   (define-lisp-word :env ()
-    (lifoo-push (lifoo-env)))
+    (lifoo-push (copy-list (index-first (lifoo-env)))))
 
   ;; Pops $var and returns value
   (define-lisp-word :var ()
@@ -167,7 +167,7 @@
 
   ;; Clears current environment
   (define-lisp-word :clear ()
-    (setf (lifoo-env) nil)))
+    (index-clear (lifoo-env))))
 
 (define-lifoo-init (:error)
   ;; Pops $test and signals error if NIL

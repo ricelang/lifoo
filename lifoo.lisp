@@ -150,7 +150,7 @@
 
 (defstruct (lifoo-exec (:conc-name)
                        (:constructor make-lifoo))
-  envs logs
+  (envs (list (index nil))) logs
   (backup-key (gensym)) (defer-key (gensym)) (stream-key (gensym))
   (stack (make-array 3 :adjustable t :fill-pointer 0))
   (words (index nil)))
@@ -421,7 +421,7 @@
 
 (defun lifoo-begin (&key (env t) (exec *lifoo*))
   "Opens ENV or new environment if T in EXEC"
-  (push (if (eq t env) (copy-list (lifoo-env)) env)
+  (push (if (eq t env) (index-copy (lifoo-env)) env)
         (envs exec)))
 
 (defun lifoo-end (&key (exec *lifoo*) (throw? t))
@@ -443,13 +443,14 @@
       (when env
         (error "setf nil environment"))))
 
-(defun lifoo-var (var)
+(defun lifoo-var (var &key (exec *lifoo*))
   "Returns value of VAR in EXEC"
-  (rest (assoc var (lifoo-env) :test #'eq))) 
+  (index-find (lifoo-env :exec exec) var)) 
 
-(defun (setf lifoo-var) (val var)
+(defun (setf lifoo-var) (val var &key (exec *lifoo*))
   "Sets value of VAR in EXEC to VAL"
-  (push (cons var val) (lifoo-env))
+  (index-remove (lifoo-env :exec exec) var)
+  (index-add (lifoo-env :exec exec) val :key var)
   val)
 
 (defun lifoo-repl (&key (exec (lifoo-init t :exec (make-lifoo)))
