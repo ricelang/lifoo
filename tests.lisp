@@ -211,7 +211,7 @@
       (:list) init 2 1 cons))
 
   (lifoo-asseq 3
-    (1 2 +) compile compile-lisp eval) 
+    (1 2 +) compile link eval) 
   
   (lifoo-asseq 43
     42

@@ -306,7 +306,7 @@
                         (lifoo-compile code)))))
 
   ;; Pops $expr and pushes function that evaluates as Lisp
-  (define-lisp-word :compile-lisp ()
+  (define-lisp-word :link ()
     (let ((expr (lifoo-pop)))
       (lifoo-push (eval `(lambda ()
                            (lifoo-optimize)
