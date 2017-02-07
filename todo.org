@@ -2,13 +2,6 @@ Lifoo
 * add each word
 0 '(1 2 3) (swap inc swap) each drop
 - 3
-* add crypt / encrypt / decrypt based on cl4l
-:msg var "secret message" set
-:key var "secret key" set
-:seed var crypt-seed set
-:seed var :key var crypt :msg var encrypt
-:seed var :key var crypt swap decrypt
-
 * add read/write tests
 ** lispy forth
 * add local-time support
