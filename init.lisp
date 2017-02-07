@@ -506,8 +506,9 @@
   (define-lisp-word :string-stream ()
     (lifoo-push (make-string-input-stream (lifoo-pop))))
 
-  ;; Pops $in and $fn,
-  ;; and calls $fn for each line in $stream
+  ;; Pops $fn and $in,
+  ;; calls $fn for each line;
+  ;; and puts $in back on stack
   (define-lisp-word :slurp-lines ()
     (let ((fn (lifoo-pop))
           (in (lifoo-pop))

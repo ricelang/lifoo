@@ -1,5 +1,4 @@
 Lifoo
-
 * add net package
 ** add fetch word based on drakma
 (let ((stream (drakma:http-request "https://api.github.com/orgs/edicl/public_members"
@@ -14,9 +13,3 @@ Lifoo
 
 (define-lifoo-init (:foo :bar)
  (define-word :baz (nil) 39 +)) lisp eval
-
-begin
-  ("abc" #\newline "def" #\newline "ghi")
-  string-stream (close) defer
-  nil swap (push) slurp-lines
-end
