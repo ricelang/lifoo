@@ -158,42 +158,36 @@
                      actual expected)))))
 
 (define-lifoo-init (:flow)
-  ;; Pops $cnd, $true and $false;
-  ;; and pushes $true if $cnd, otherwise $false
-  (define-macro-word :cond (in out)
-    (cons (cons in
-                `(progn
-                   ,@(lifoo-compile (first (first out)))
-                   (if (lifoo-pop)
-                       (progn ,@(lifoo-compile
-                                 (first (second out))))
-                       (progn ,@(lifoo-compile
-                                 (first (third out)))))))
-          (nthcdr 3 out)))
+  ;; Pops $test, $true and $false;
+  ;; and pushes $true if $test, otherwise $false
+  (define-lisp-word :cond ()
+    (let ((test (lifoo-pop))
+          (true (lifoo-pop))
+          (false (lifoo-pop)))
+      (lifoo-eval test)
+      (if (lifoo-pop)
+          (lifoo-eval true)
+          (lifoo-eval false))))
   
-  ;; Pops $cnd and $res;
-  ;; and pushes $res if $cnd, otherwise NIL
-  (define-macro-word :when (in out)
-    (cons (cons in
-                `(progn
-                   ,@(lifoo-compile (first (first out)))
-                   (if (lifoo-pop)
-                       (progn
-                         ,@(lifoo-compile (first (second out))))
-                       (lifoo-push nil))))
-          (nthcdr 2 out)))
+  ;; Pops $test and $res;
+  ;; and pushes $res if $test, otherwise NIL
+  (define-lisp-word :when ()
+    (let ((test (lifoo-pop))
+          (res (lifoo-pop)))
+      (lifoo-eval test)
+      (if (lifoo-pop)
+          (lifoo-eval res)
+          (lifoo-push nil))))
 
-  ;; Pops $cnd and $res;
-  ;; and pushes $res unless $cnd, otherwise NIL
-  (define-macro-word :unless (in out)
-    (cons (cons in
-                `(progn
-                   ,@(lifoo-compile (first (first out)))
-                   (if (lifoo-pop)
-                       (lifoo-push nil)
-                       (progn
-                         ,@(lifoo-compile (first (second out)))))))
-          (nthcdr 2 out)))
+  ;; Pops $test and $res;
+  ;; and pushes $res unless $test, otherwise NIL
+  (define-lisp-word :unless ()
+    (let ((test (lifoo-pop))
+          (res (lifoo-pop)))
+      (lifoo-eval test)
+      (if (lifoo-pop)
+          (lifoo-push nil)
+          (lifoo-eval res))))
 
   ;; Pops $reps and $body;
   ;; and repeats $body $reps times,

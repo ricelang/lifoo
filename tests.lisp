@@ -128,10 +128,10 @@
 
 (define-test (:lifoo :flow)
   (lifoo-asseq :true
-    :false :true (1 1 =) cond)
+    :false :true (1 1 =) inline cond)
     
   (lifoo-asseq :ok
-    :ok (2 1 <) when)
+    :ok (2 1 <) inline when)
     
   (lifoo-asseq :ok
     :ok (1 2 =) unless)
