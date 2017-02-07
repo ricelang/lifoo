@@ -462,7 +462,13 @@
                       (lifoo-push y)
                       (lifoo-eval fn)
                       (lifoo-pop))
-                    (lifoo-peek))))))
+                    (lifoo-peek)))))
+
+  ;; Pops $seq and pushes sorted
+  (define-lisp-word :sort (:speed 1)
+    (lifoo-push (sort (copy-list (lifoo-pop))
+                      (lambda (x y)
+                        (< (compare x y) 0))))))
 
 (define-lifoo-init (:stack)
   ;; Pushes stack on stack

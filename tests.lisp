@@ -218,6 +218,12 @@
   (lifoo-asseq '(1 2 3)
     nil 1 push 2 push 3 push reverse)
 
+  (lifoo-asseq '(1 2 3 4 5 6 7 8 9)
+      (6 8 4 2 5 7 3 1 9) sort)
+
+  (lifoo-asseq '((1 . "abc") (1 . "def") (2 . "abc"))
+    ((1 . "def") (2 . "abc") (1 . "abc")) sort)
+
   (lifoo-asseq '(3 7 11)
     (1 2 +) inline
     (3 4 +) inline

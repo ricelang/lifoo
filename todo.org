@@ -1,8 +1,5 @@
-* add put word
-** implement as get set
 * add support for hash tables in list
-* add sort word
-** use arg as key and compare as predicate
+** convert to assoc list
 hash 
 :abc 1 put 
 :def 2 put  
