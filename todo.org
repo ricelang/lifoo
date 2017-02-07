@@ -2,8 +2,6 @@ Lifoo
 * add each word
 0 '(1 2 3) (swap inc swap) each drop
 - 3
-* add read/write tests
-** lispy forth
 * add local-time support
 ** now / today for current time
 ** date / time constructing

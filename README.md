@@ -30,15 +30,27 @@ Lifoo> (1 2 +) eval
 
 3
 
+Lifoo> "1 2 +" read
+
+(1 2 +)
+
+Lifoo> (1 2 +) write
+
+"1 2 +"
+
+Lifoo> (1 2 +) write read eval
+
+3
+
 Lifoo> (1 2 +) compile
 
 (PROGN (LIFOO-PUSH 1) (LIFOO-PUSH 2) (LIFOO-CALL '+))
 
-Lifoo> (1 2 +) inline
+Lifoo> (1 2 +) compile link
 
-#<FUNCTION {1003F99E8B}>
+#<FUNCTION {1005F27E5B}>
 
-Lifoo> (1 2 +) inline eval
+Lifoo> (1 2 +) compile link eval
 
 3
 
@@ -49,7 +61,7 @@ CL-USER>
 ```
 
 ### inline lisp
-Besides an extensive API for extending Lifoo from Lisp, the language also allows calling Lisp inline.
+Besides an extensive API for extending Lifoo from Lisp, the language also allows calling Lisp inline from the ```meta``` package.
 
 
 ```
@@ -57,8 +69,8 @@ Lifoo> (+ (lifoo:lifoo-pop) (lifoo:lifoo-pop)) lisp
 
 #<FUNCTION {100649999B}>
 
-Lifoo> 1 2 (lifoo:lifoo-push (+ (lifoo:lifoo-pop) 
-                                (lifoo:lifoo-pop)))
+Lifoo> 1 2 
+       (lifoo:lifoo-push (+ (lifoo:lifoo-pop) (lifoo:lifoo-pop)))
        lisp eval
 
 3

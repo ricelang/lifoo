@@ -38,7 +38,13 @@
   
   (lifoo-asseq t
     ((0.0001 sleep) inline 10 times) time 0.0001 <)
-    
+
+  (lifoo-asseq '(1 2 +)
+    "1 2 +" read)
+
+  (lifoo-asseq "1 2 +"
+    (1 2 +) write)
+  
   (lifoo-asseq 3
     (1 2 +) eval)
 
@@ -232,6 +238,11 @@
     (lifoo-push (1+ (lifoo-pop)))
     lisp eval)
 
+  (lifoo-asseq 3
+    1 2 
+    (lifoo:lifoo-push (+ (lifoo:lifoo-pop) (lifoo:lifoo-pop)))
+    lisp eval)
+  
   (lifoo-asseq 42
     (define-lifoo-init (:foo :bar)
       (define-word :baz () 39 +))
