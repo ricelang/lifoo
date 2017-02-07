@@ -386,21 +386,20 @@
 
   ;; Pops $fn and $seq,
   ;; and pushes result of mapping $fn over $seq
-  (define-macro-word :map (in out)
-    (cons (cons in
-                `(let ((seq (lifoo-pop)))
-                   (lifoo-push
-                    (map
-                     (cond
-                       ((stringp seq) 'string)
-                       ((vectorp seq) 'vector)
-                       (t 'list))
-                     (lambda (it)
-                       (lifoo-push it)
-                       ,@(lifoo-compile (first (first out)))
-                       (lifoo-pop))
-                     seq))))
-          (rest out)))
+  (define-lisp-word :map (nil :speed 1)
+    (let ((fn (lifoo-pop))
+          (seq (lifoo-pop)))
+      (lifoo-push
+       (map
+        (cond
+          ((stringp seq) 'string)
+            ((vectorp seq) 'vector)
+            (t 'list))
+        (lambda (it)
+          (lifoo-push it)
+          (lifoo-eval fn)
+          (lifoo-pop))
+        seq))))
 
   ;; Pops $pred and filters $1 by it
   (define-macro-word :filter (in out)
