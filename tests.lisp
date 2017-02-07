@@ -268,6 +268,14 @@
     3 4 restore
     stack))
 
+(define-test (:lifoo :string :io)
+  (lifoo-asseq '("abc" "def" "ghi")
+    begin
+      ("abc" #\newline "def" #\newline "ghi") string
+      string-stream (close) defer
+      nil swap (push) slurp-lines
+    end reverse))
+
 (define-test (:lifoo :string)
   (lifoo-asseq 3
     "abc" length)

@@ -267,6 +267,14 @@
                    (lifoo-eval ',(first (first out)))))))))
 
 (define-lifoo-init (:io)
+  ;; Pops $path and pushes open file
+  (define-lisp-word :open ()
+    (lifoo-push (open (lifoo-pop))))
+
+  ;; Pops $stream and closes it
+  (define-lisp-word :close ()
+    (close (lifoo-pop)))
+
   ;; Pops $val and prints it
   (define-lisp-word :print ()
     (princ (lifoo-pop)))
@@ -492,6 +500,22 @@
     (let ((args (lifoo-pop))
           (fmt (lifoo-pop)))
       (lifoo-push (apply #'format nil fmt args)))))
+
+(define-lifoo-init (:string :io)
+  ;; Pops $string and pushes stream
+  (define-lisp-word :string-stream ()
+    (lifoo-push (make-string-input-stream (lifoo-pop))))
+
+  ;; Pops $in and $fn,
+  ;; and calls $fn for each line in $stream
+  (define-lisp-word :slurp-lines ()
+    (let ((fn (lifoo-pop))
+          (in (lifoo-pop))
+          (line))
+      (do-while ((setf line (read-line in nil)))
+        (lifoo-push line)
+        (lifoo-eval fn))
+      (lifoo-push in))))
 
 (define-lifoo-init (:thread)
   ;; Yields processor and re-schedules thread
