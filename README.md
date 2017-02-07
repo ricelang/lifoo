@@ -49,7 +49,7 @@ CL-USER>
 ```
 
 ### inline lisp
-Besides an extensive API for extending Lifoo from Lisp, the language also allows calling Lisp inline,
+Besides an extensive API for extending Lifoo from Lisp, the language also allows calling Lisp inline.
 
 
 ```
@@ -84,6 +84,28 @@ Lifoo> (:bar 42) make-foo
        foo-bar
 
 43
+```
+
+### deferred actions
+The ```flow``` package provides support for deferred actions that are executed on scope exit. 
+
+```
+Lifoo> begin 
+         ("deferred" print ln) defer 
+         "hello" print ln
+       end
+
+hello
+deferred
+NIL
+
+Lifoo> 41
+       begin 
+         (inc) defer 
+         41 asseq
+       end
+       
+42
 ```
 
 ### encryption

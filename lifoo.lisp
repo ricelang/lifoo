@@ -150,7 +150,7 @@
 
 (defstruct (lifoo-exec (:conc-name)
                        (:constructor make-lifoo))
-  envs logs (backup-key (gensym))
+  envs logs (backup-key (gensym)) (defer-key (gensym))
   (stack (make-array 3 :adjustable t :fill-pointer 0))
   (words (make-hash-table :test 'eq)))
 
@@ -417,6 +417,8 @@
 
 (defun lifoo-end (&key (exec *lifoo*))
   "Closes current environment in EXEC"
+  (dolist (fn (lifoo-var (defer-key exec)))
+    (lifoo-eval fn :exec exec))
   (pop (envs exec)))
 
 (defun lifoo-env (&key (exec *lifoo*))

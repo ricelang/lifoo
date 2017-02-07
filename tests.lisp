@@ -130,7 +130,7 @@
                            1 2 asseq)    
              (lifoo-error () :ok))))
 
-  (lifoo-asseq '(nil nil nil)
+  (lifoo-asseq '(t t t)
     (t t t) (assert) inline map))
 
 (define-test (:lifoo :flow)
@@ -148,6 +148,13 @@
     
   (lifoo-asseq 100
     0 (drop inc) inline 100 times)
+
+  (lifoo-asseq 42
+    41
+    begin 
+      (inc) defer 
+      41 asseq
+    end)
 
   (lifoo-asseq :always
     (:frisbee throw

@@ -165,7 +165,7 @@
 (define-lifoo-init (:error)
   ;; Pops $test and signals error if NIL
   (define-lisp-word :assert ()
-    (let* ((test (lifoo-pop))
+    (let* ((test (lifoo-peek))
            (ok? (progn
                   (lifoo-eval test)
                   (lifoo-pop))))
@@ -176,7 +176,7 @@
   ;; and signals error they don't compare equal  
   (define-lisp-word :asseq (:speed 1)
     (let ((expected (lifoo-pop))
-          (actual (lifoo-pop)))
+          (actual (lifoo-peek)))
       (lifoo-eval expected)
       (lifoo-eval actual)
       (unless (zerop (compare (lifoo-pop) (lifoo-pop)))
@@ -234,6 +234,11 @@
                      (lifoo-peek)))
           (lifoo-pop)))
         (lifoo-pop)))
+
+  ;; Pops $fn and defers it until environment is closed
+  (define-lisp-word :defer ()
+    (let ((fn (lifoo-pop)))
+      (push fn (lifoo-var (defer-key exec)))))
 
   ;; Pops $value and throws it 
   (define-lisp-word :throw ()
