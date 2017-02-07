@@ -5,13 +5,19 @@
 Welcome to Lifoo, a Forthy, Lispy language fused with Common Lisp. Lifoo is still very much under construction; besides [tests](https://github.com/codr4life/lifoo/blob/master/tests.lisp), inline documentation in the [implementation](https://github.com/codr4life/lifoo/blob/master/lifoo.lisp), and [built-in words](https://github.com/codr4life/lifoo/blob/master/init.lisp); the language is documented in a series of [blog](https://github.com/codr4life/vicsydev/blob/master/lispy_forth.md) [posts](https://github.com/codr4life/vicsydev/blob/master/consing_forth.md) [here](https://github.com/codr4life/vicsydev).
 
 ```
-Lifoo> :msg var "secret message" set
+CL-USER> (lifoo:lifoo-repl)
+Welcome to Lifoo,
+press enter on empty line to evaluate,
+exit ends session
+
+Lifoo> :seed var crypt-seed set
        :key var "secret key" set
-       :seed var crypt-seed set
-       :seed var :key var crypt :msg var encrypt
+       :seed var :key var crypt "secret message" encrypt
        :seed var :key var crypt swap decrypt
 
 "secret message"
+
+Lifoo> 
 ```
 
 ### tests
