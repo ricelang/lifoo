@@ -18,6 +18,19 @@ list (first) sort
 "ghi" send
 swap wait
 
+* add stash/apply to push / pop between stack and stash
+** use instead of var in put
+
+* switch to index for storing words
+** create with nil key
+** add args to word again
+*** store least specific type that is accepted or nil if any
+** unique? t
+** add words with id & args
+** search for id when finding
+*** run first type match
+** add *lifoo-word-idx* defparam
+** assign incf to word.idx
 * add net package
 ** add fetch word based on drakma
 (let ((stream (drakma:http-request "https://api.github.com/orgs/edicl/public_members"

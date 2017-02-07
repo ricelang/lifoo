@@ -178,7 +178,10 @@
 
 (define-test (:lifoo :hash)
   (lifoo-asseq 42
-    hash :abc get 42 set drop :abc get))
+    hash :abc get 42 set drop :abc get)
+
+  (lifoo-asseq 42
+    hash "abc" 42 put drop "abc" get))
 
 (define-test (:lifoo :io)
   (assert (string= (format nil "hello lifoo!~%")

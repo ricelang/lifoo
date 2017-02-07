@@ -276,7 +276,10 @@
           (tbl (lifoo-peek)))
       (lifoo-push-expr (gethash key tbl)
                        :del (lambda ()
-                              (remhash key tbl))))))
+                              (remhash key tbl)))))
+
+  (define-word :put ()
+    :tmp var swap set drop get :tmp var set))
 
 (define-lifoo-init (:io)
   ;; Pops $path and pushes open file
