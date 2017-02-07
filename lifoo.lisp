@@ -24,6 +24,7 @@
 (in-package lifoo)
 
 (defparameter *lifoo-speed* 3)
+(defparameter *lifoo-word-idx* 0)
 
 (defvar *lifoo* nil)
 (defvar *lifoo-init* (index nil))
@@ -146,7 +147,9 @@
                    (funcall ,_sfn val (lifoo-peek)))))))))
 
 (defstruct (lifoo-word (:conc-name))
-  id macro? trace? source fn)
+  id args (idx (incf *lifoo-word-idx*))
+  macro? trace?
+  source fn)
 
 (defstruct (lifoo-cell (:conc-name lifoo-))
   val set del)
@@ -295,22 +298,27 @@
   (do-lifoo-call (word :exec exec)
     (funcall (lifoo-compile-word word))))
 
+(defun lifoo-word-key (word)
+  (list (id word) (args word) (- (idx word))))
+
 (defun lifoo-define (id word &key (exec *lifoo*))
   "Defines ID as WORD in EXEC"
   (lifoo-undefine id :exec exec)
-  (index-add (words exec) word :key (keyword! id)))
+  (index-add (words exec) word :key (lifoo-word-key word)))
 
 (defun lifoo-undefine (word &key (exec *lifoo*))
-  "Undefines word for WORD in EXEC"
-  (index-remove (words exec) (if (lifoo-word-p word)
-                                 (id word)
-                                 (keyword! word))))
+  "Undefines WORD in EXEC"
+  (when-let (exists? (lifoo-word word))
+    (index-remove (words exec) (lifoo-word-key exists?))))
 
 (defun lifoo-word (word &key (exec *lifoo*))
   "Returns WORD from EXEC, or NIL if missing"
   (if (lifoo-word-p word)
       word
-      (index-find (words exec) (keyword! word))))
+      (let ((found (first (index-first (words exec)
+                                       :key (list (keyword! word))))))
+        (when (and found (eq (id (rest found)) (keyword! word)))
+          (rest found)))))
 
 (defun lifoo-push-cell (cell &key (exec *lifoo*))
   "Pushes CELL onto EXEC stack"  
