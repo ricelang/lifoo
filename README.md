@@ -22,6 +22,10 @@ Lifoo> 1 2 +
 
 3
 
+Lifoo> (1 2 +)
+
+(1 2 +)
+
 Lifoo> (1 2 +) eval
 
 3
