@@ -1,10 +1,4 @@
 Lifoo
-* add dump-lines like slurp lines
-** add stream-string to get string from stream
-("abc" "def" "ghi") stream (pop) dump-lines
-stream-string
-- "abc~%def~%ghi~%"
-
 * add hash-tables
 ** create with equal
 ** add hash-table word
