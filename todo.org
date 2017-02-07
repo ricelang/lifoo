@@ -1,29 +1,22 @@
-* add hash-tables
-** create with equal
-** add hash-table word
-** add get word
-*** add set/del support
-** add put word
-*** implement as get set
-** add support for hash tables in list
-** add sort word
-*** use arg as key and compare as predicate
-hash-table 
+* add put word
+** implement as get set
+* add support for hash tables in list
+* add sort word
+** use arg as key and compare as predicate
+hash 
 :abc 1 put 
 :def 2 put  
 :ghi 3 put
 list (first) sort
 - '((1 . :abc) (2 . :def) (3 . :ghi))
 
-0 chan (:words var hash-table set 
+0 chan (:words var hash set 
         (recv dup :words var swap get inc drop) while
-        list (first) sort) spawn
-swap
+        list (first) sort) spawn swap
 "abc" send
 "def" send
 "ghi" send
-swap
-join-thread
+swap wait
 
 * add net package
 ** add fetch word based on drakma

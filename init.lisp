@@ -264,6 +264,20 @@
                    (lifoo-push (value c))
                    (lifoo-eval ',(first (first out)))))))))
 
+(define-lifoo-init (:hash)
+  ;; Pushes new hash table
+  (define-lisp-word :hash ()
+    (lifoo-push (make-hash-table :test 'equal)))
+  
+  ;; Pops $key and $tbl,
+  ;; and pushes value at $key in $tbl
+  (define-lisp-word :get ()
+    (let ((key (lifoo-pop))
+          (tbl (lifoo-peek)))
+      (lifoo-push-expr (gethash key tbl)
+                       :del (lambda ()
+                              (remhash key tbl))))))
+
 (define-lifoo-init (:io)
   ;; Pops $path and pushes open file
   (define-lisp-word :open ()
@@ -375,13 +389,15 @@
   
   ;; Pushes length of $1
   (define-lisp-word :length (:speed 1)
-    (let ((val (lifoo-peek)))
+    (let ((seq (lifoo-peek)))
       (lifoo-push
        (cond
-         ((chan? val)
-          (chan-length val))
+         ((chan? seq)
+          (chan-length seq))
+         ((hash-table-p seq)
+          (hash-table-count seq))
          (t
-          (length val))))))
+          (length seq))))))
   
   ;; Pops item from seq in $1 and pushes it
   (define-lisp-word :pop ()
@@ -596,7 +612,7 @@
   (define-lisp-word :source ()
     (let ((word (lifoo-word (lifoo-pop))))
       (lifoo-push (source word))))
-
+  
   ;; Pops $id and $body,
   ;; and defines word
   (define-lisp-word :define ()

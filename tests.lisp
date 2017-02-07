@@ -176,6 +176,10 @@
     "skipped" print ln
     (:caught cons) catch))
 
+(define-test (:lifoo :hash)
+  (lifoo-asseq 42
+    hash :abc get 42 set drop :abc get))
+
 (define-test (:lifoo :io)
   (assert (string= (format nil "hello lifoo!~%")
                    (with-output-to-string (out)
