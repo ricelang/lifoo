@@ -30,11 +30,11 @@ Lifoo> (1 2 +) compile
 
 (PROGN (LIFOO-PUSH 1) (LIFOO-PUSH 2) (LIFOO-CALL '+))
 
-Lifoo> (1 2 +) compile link
+Lifoo> (1 2 +) inline
 
 #<FUNCTION {1003F99E8B}>
 
-Lifoo> (1 2 +) compile link eval
+Lifoo> (1 2 +) inline eval
 
 3
 
