@@ -18,6 +18,26 @@ Lifoo> "hello Lifoo!" print ln
 hello Lifoo!
 NIL
 
+Lifoo> 1 2 +
+
+3
+
+Lifoo> (1 2 +) eval
+
+3
+
+Lifoo> (1 2 +) compile
+
+(PROGN (LIFOO-PUSH 1) (LIFOO-PUSH 2) (LIFOO-CALL '+))
+
+Lifoo> (1 2 +) compile link
+
+#<FUNCTION {1003F99E8B}>
+
+Lifoo> (1 2 +) compile link eval
+
+3
+
 Lifoo> exit
 
 NIL
