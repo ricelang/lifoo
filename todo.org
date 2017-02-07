@@ -1,5 +1,5 @@
 Lifoo
-* add read/write/compile tests
+* add read/write tests
 * add local-time support
 ** now / today for current time
 ** date / time constructing

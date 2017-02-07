@@ -40,7 +40,10 @@
     ((0.0001 sleep) 10 times) time 0.0001 <)
     
   (lifoo-asseq 3
-    (1 2 +) eval))
+    (1 2 +) eval)
+
+  (lifoo-asseq 3
+    (1 2 +) inline eval))
 
 (define-test (:lifoo :array)
   (lifoo-asseq 2
@@ -143,7 +146,7 @@
     (:frisbee throw
      "skipped" print ln
      (:always) always
-     (drop) catch) eval)
+     (drop) catch) inline eval)
     
   (lifoo-asseq '(:caught . :frisbee)
     :frisbee throw
@@ -203,6 +206,9 @@
     (lifoo-asseq '(1 . 2)
       (:list) init 2 1 cons))
 
+  (lifoo-asseq 3
+    (1 2 +) compile compile-lisp eval) 
+  
   (lifoo-asseq 43
     42
     (lifoo-push (1+ (lifoo-pop)))

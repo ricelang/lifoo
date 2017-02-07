@@ -74,7 +74,16 @@
 
   ;; Pops $expr and pushes result of evaluating
   (define-lisp-word :eval (nil)
-    (lifoo-eval (lifoo-pop))))
+    (lifoo-eval (lifoo-pop)))
+
+  ;; Replaces $expr with function that evaluates
+  (define-macro-word :inline (in out)
+    (cons (cons in
+                `(lifoo-push (lambda ()
+                               (lifoo-optimize)
+                               ,@(lifoo-compile
+                                  (first (first out))))))
+          (rest out))))
 
 (define-lifoo-init (:array)
   ;; Pops $items and pushes new array
@@ -309,13 +318,21 @@
     (let ((code (lifoo-pop)))
       (lifoo-push (cons 'progn
                         (lifoo-compile code)))))
-  
+
   ;; Pops $expr and pushes function that evaluates as Lisp
-  (define-lisp-word :lisp (nil)
+  (define-lisp-word :compile-lisp (nil)
     (let ((expr (lifoo-pop)))
       (lifoo-push (eval `(lambda ()
                            (lifoo-optimize)
-                           ,expr))))))
+                           ,expr)))))
+  
+  ;; Replaces $expr with function that evaluates as Lisp
+  (define-macro-word :lisp (in out)
+    (cons (cons in
+                `(lifoo-push (lambda ()
+                               (lifoo-optimize)
+                               ,(first (first out)))))
+          (rest out))))
 
 (define-lifoo-init (:sequence)
   ;; Pops $idx and pushes item from seq
