@@ -1,18 +1,5 @@
 (cl4l-test:run-suite '(:lifoo) :reps 3)
 
-* add net package
-** add fetch word based on drakma
-(let ((stream (drakma:http-request "https://api.github.com/orgs/edicl/public_members"
-                                      :want-stream t)))
-    (setf (flexi-streams:flexi-stream-external-format stream) :utf-8)
-
-* add each word
-0 '(1 2 3) (swap inc swap) each drop
-
-
-* add stash/apply to push / pop between stack and stash
-** use instead of var in put
-
 * switch to index for storing words
 ** create with nil key
 ** add args to word again
@@ -26,6 +13,9 @@
 * add each word
 0 '(1 2 3) (swap inc swap) each drop
 - 3
+* add stash/apply to push / pop between stack and stash
+** use instead of var in put
+
 * add local-time support
 ** now / today for current time
 ** date / time constructing
