@@ -40,7 +40,7 @@
     nil sym nil sym neq? assert)
 
   (lifoo-asseq t
-    ((0.0001 sleep)@ 10 times) time 0.0001 <)
+    ((0.0001 sleep)@ 10 times)@ time 0.0001 <)
 
   (lifoo-asseq '(1 2 +)
     "1 2 +" read)
@@ -71,7 +71,7 @@
     #(1 2 3) (2 *)@ map)
 
   (lifoo-asseq 6
-    #(1 2 3) (+) reduce))
+    #(1 2 3) (+)@ reduce))
 
 (define-test (:lifoo :compare)
   (lifoo-asseq t
@@ -130,7 +130,7 @@
   (assert (eq
            :ok
            (handler-case (do-lifoo ()
-                           (1 2 =) assert)    
+                           (1 2 =)@ assert)    
              (lifoo-error () :ok))))
 
   (assert (eq
@@ -150,7 +150,7 @@
     :ok (2 1 <)@ when)
     
   (lifoo-asseq :ok
-    :ok (1 2 =) unless)
+    :ok (1 2 =)@ unless)
     
   (lifoo-asseq 100
     0 (inc dup 100 >)@ while)
@@ -161,7 +161,7 @@
   (lifoo-asseq 42
     41
     begin 
-      (inc) defer 
+      (inc)@ defer 
       41 asseq
     end)
 
@@ -188,10 +188,13 @@
     :abc 1 put drop
     :def 2 put drop 
     :ghi 3 put drop
-    list sort)
+    list nil sort)
 
   (lifoo-asseq '((:bar . 2) (:foo . 1))
-    ((:foo . 1) (:bar . 2)) hash list sort))
+    ((:foo . 1) (:bar . 2)) hash list nil sort)
+
+  (lifoo-asseq '((2 . 1) (1 . 2))
+    ((1 . 2) (2 . 1)) (rest)@ sort))
 
 (define-test (:lifoo :io)
   (assert (string= (format nil "hello lifoo!~%")
@@ -229,15 +232,15 @@
     nil 1 push 2 push 3 push reverse)
 
   (lifoo-asseq '(1 2 3 4 5 6 7 8 9)
-      (6 8 4 2 5 7 3 1 9) sort)
+      (6 8 4 2 5 7 3 1 9) nil sort)
 
   (lifoo-asseq '((1 . "abc") (1 . "def") (2 . "abc"))
-    ((1 . "def") (2 . "abc") (1 . "abc")) sort)
+    ((1 . "def") (2 . "abc") (1 . "abc")) nil sort)
 
   (lifoo-asseq '(3 7 11)
     (1 2 +)@ (3 4 +)@ (5 6 +)@
     stack reverse
-    (eval) map))
+    (eval)@ map))
 
 (define-test (:lifoo :log)
   (lifoo-asseq '((:log (:any :message)))
@@ -291,13 +294,13 @@
 
 (define-test (:lifoo :string :io)
   (lifoo-asseq (format nil "abc~%def~%ghi~%")
-    ("abc" "def" "ghi") stream (pop) dump-lines
+    ("abc" "def" "ghi") stream (pop)@ dump-lines
     stream-string)
   
   (lifoo-asseq '("abc" "def" "ghi")
     begin
       "abc~%def~%ghi~%" nil format string-stream
-      nil swap (push) slurp-lines
+      nil swap (push)@ slurp-lines
     end reverse))
 
 (define-test (:lifoo :string)
@@ -305,7 +308,7 @@
     "abc" length)
 
   (lifoo-asseq "bcdbr"
-    "abacadabra" (#\a eq?) filter)
+    "abacadabra" (#\a eq?)@ filter)
     
   (lifoo-asseq "123ABC"
     (1 2 3 abc) string)
@@ -345,17 +348,17 @@
     recv swap drop swap 
     wait cons)
 
-  (lifoo-asseq '(("abc" . 2) ("def" . 1))
+  (lifoo-asseq '(("def" . 2) ("abc" . 1))
     1 chan 
     (begin :words var nil hash set swap 
       (recv dup
         (dup :words var swap get inc drop drop)@ 
         swap when)@ while
-    drop list sort end)@ 
+      drop list (rest) sort reverse end)@ 
     1 spawn swap
     "abc" send
     "def" send
-    "abc" send
+    "def" send
     nil send
     drop wait))
 
@@ -364,12 +367,12 @@
     1 2 "+" word eval)
 
   (with-lifoo ()
-    (lifoo-init '(:meta :stack :word))
+    (lifoo-init '(:abc :meta :stack :word))
     
     (lifoo-asseq '(+ 1 2)
       (+ 1 2) :foo define
       :foo word source)
 
     (lifoo-asseq 42
-      (drop drop 42) :+ define
+      (drop drop 42)@ :+ define
       1 2 +)))

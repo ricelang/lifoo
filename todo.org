@@ -1,8 +1,5 @@
 (cl4l-test:run-suite '(:lifoo) :reps 3)
 
-* add arg to hash-table like list
-** add support for assoc list
-
 * add net package
 ** add fetch word based on drakma
 (let ((stream (drakma:http-request "https://api.github.com/orgs/edicl/public_members"

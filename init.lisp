@@ -485,11 +485,19 @@
                       (lifoo-pop))
                     (lifoo-peek)))))
 
-  ;; Pops $seq and pushes sorted
+  ;; Pops $key and $seq,
+  ;; and pushes sorted copy
   (define-lisp-word :sort (:speed 1)
-    (lifoo-push (sort (copy-list (lifoo-pop))
-                      (lambda (x y)
-                        (< (compare x y) 0))))))
+    (let ((key (lifoo-pop))
+          (seq (lifoo-pop)))
+      (lifoo-push (sort (copy-list seq)
+                        (lambda (x y)
+                          (< (compare x y) 0))
+                        :key (when key
+                               (lambda (x)
+                                 (lifoo-push x)
+                                 (lifoo-eval key)
+                                 (lifoo-pop))))))))
 
 (define-lifoo-init (:stack)
   ;; Pushes stack on stack
@@ -649,7 +657,13 @@
   (define-lisp-word :define ()
     (let* ((id (keyword! (lifoo-pop)))
            (body (lifoo-pop))
-           (word (make-lifoo-word :id id :source body)))
+           (word (make-lifoo-word
+                  :id id
+                  :source (if (functionp body)
+                              (function-lambda-expression body)
+                              body)
+                  :fn (when (functionp body)
+                        body))))
       (lifoo-define id word)))
 
   ;; Pops $id and undefines word
