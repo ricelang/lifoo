@@ -2,11 +2,7 @@
 
 * add args to word again
 ** store least specific type that is accepted or nil if any
-** add words with id & args
-** search for id when finding
-*** run first type match
-** add *lifoo-word-idx* defparam
-** assign incf to word.idx
+** return first type match from lifoo-word
 * add each word
 0 '(1 2 3) (swap inc swap) each drop
 - 3
