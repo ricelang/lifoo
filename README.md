@@ -54,17 +54,6 @@ Lifoo> (1 2 +) compile link eval
 
 3
 
-Lifoo> exit
-
-NIL
-CL-USER> 
-```
-
-### inline lisp
-Besides an extensive API for extending Lifoo from Lisp, the language also allows calling Lisp inline from the ```meta``` package.
-
-
-```
 Lifoo> (+ (lifoo:lifoo-pop) (lifoo:lifoo-pop)) lisp
 
 #<FUNCTION {100649999B}>
@@ -74,8 +63,12 @@ Lifoo> 1 2
        lisp eval
 
 3
-```
 
+Lifoo> exit
+
+NIL
+CL-USER> 
+```
 
 ### structs
 Lifoo provides a simple but effective interface to defstruct. Outside of Lifoo the struct is anonymous to not clash with existing Lisp definitions. Words are automatically generated for ```make-foo```, ```foo-p``` and fields with setters when the ```struct``` word is evaluated.
