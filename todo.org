@@ -3,7 +3,24 @@ Lifoo
 ** add stream-string to get string from stream
 ("abc" "def" "ghi") stream (pop) dump-lines
 stream-string
-"abc~%def~%ghi~%"
+- "abc~%def~%ghi~%"
+
+* add hash-tables
+** create with equal
+** add hash-table word
+** add get word
+*** add set/del support
+** add put word
+*** implement as get set
+** add support for hash tables in list
+** add sort word
+*** use arg as key and compare as predicate
+hash-table 
+:abc 1 put 
+:def 2 put  
+:ghi 3 put
+list (first) sort
+- '((1 . :abc) (2 . :def) (3 . :ghi))
 
 * add net package
 ** add fetch word based on drakma
