@@ -34,8 +34,11 @@
     #(1 2 3) clone pop drop drop)
   
   (lifoo-asseq :lifoo
-    "lifoo" symbol)
-  
+    "lifoo" sym)
+
+  (do-lifoo ()
+    nil sym nil sym neq? assert)
+
   (lifoo-asseq t
     ((0.0001 sleep) inline 10 times) time 0.0001 <)
 

@@ -12,9 +12,11 @@
   (define-lisp-word :clone ()
     (lifoo-push (clone (lifoo-peek))))
 
-  ;; Pops $val and pushes its symbolic representation
-  (define-lisp-word :symbol ()
-    (lifoo-push (keyword! (lifoo-pop))))
+  ;; Pops $val and pushes its symbolic representation,
+  ;; or a newly generated symbol if NIL
+  (define-lisp-word :sym ()
+    (let ((arg (lifoo-pop)))
+      (lifoo-push (keyword! (or arg (gensym))))))
 
   ;; Increases $1
   (define-lisp-word :inc (:speed 1)
