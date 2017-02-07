@@ -4,12 +4,30 @@
 ### welcome
 Welcome to Lifoo, a Forthy, Lispy language fused with Common Lisp. Lifoo is still very much under construction; besides [tests](https://github.com/codr4life/lifoo/blob/master/tests.lisp), inline documentation in the [implementation](https://github.com/codr4life/lifoo/blob/master/lifoo.lisp), and [built-in words](https://github.com/codr4life/lifoo/blob/master/init.lisp); the language is documented in a series of [blog](https://github.com/codr4life/vicsydev/blob/master/lispy_forth.md) [posts](https://github.com/codr4life/vicsydev/blob/master/consing_forth.md) [here](https://github.com/codr4life/vicsydev).
 
+### repl
+A basic REPL is provided for playing around with code in real time.
+
 ```
 CL-USER> (lifoo:lifoo-repl)
 Welcome to Lifoo,
 press enter on empty line to evaluate,
 exit ends session
 
+Lifoo> "hello Lifoo!" print ln
+
+hello Lifoo!
+NIL
+
+Lifoo> exit
+
+NIL
+CL-USER> 
+```
+
+### encryption
+The ```crypt``` package is based on AES in CTR mode with SHA256 hashed keys, and requires identical seed and message sequence for decryption.
+
+```
 Lifoo> :seed var crypt-seed set
        :key var "secret key" set
        :seed var :key var crypt "secret message" encrypt
@@ -19,6 +37,20 @@ Lifoo> :seed var crypt-seed set
 
 Lifoo> 
 ```
+
+### multi-threading
+All Lifoo code runs in a ```lifoo-exec``` object, the result of accessing a ```lifoo-exec``` from multiple threads at the same time is undefined. Spawning new threads clones the current exec and [channels](http://vicsydev.blogspot.de/2017/01/channels-in-common-lisp.html) are used for communication.
+
+```
+Lifoo> 0 chan 
+       (1 2 + send :done) 1 spawn swap 
+       recv swap drop swap 
+       wait cons
+
+(:DONE . 3)
+```
+
+
 
 ### tests
 Lifoo comes with a modest but grow set of tests in ```tests.lisp```, evaluating ```(cl4l-test:run-suite '(:lifoo) :reps 3)``` repeats all tests 3 x 30 times.

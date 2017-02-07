@@ -288,7 +288,8 @@
     1 chan 42 send recv)
     
   (lifoo-asseq '(:done . 3)
-    0 chan (1 2 + send :done) inline 1 spawn swap 
+    0 chan
+    (1 2 + send :done) inline 1 spawn swap 
     recv swap drop swap 
     wait cons))
 
