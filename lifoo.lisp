@@ -26,14 +26,17 @@
 (defparameter *lifoo-speed* 3)
 
 (defvar *lifoo* nil)
-(defvar *lifoo-init* (make-hash-table :test 'equal))
+(defvar *lifoo-init* (index nil))
 
 (defmacro define-lifoo-init (tags &body body)
   "Defines init for TAGS around BODY"
-  `(setf (gethash ',tags *lifoo-init*)
-         (lambda (exec)
-           (with-lifoo (:exec exec)
-             ,@body))))
+  `(progn
+     (index-remove *lifoo-init* ',tags)
+     (index-add *lifoo-init*  
+                (lambda (exec)
+                  (with-lifoo (:exec exec)
+                    ,@body))
+                :key ',tags)))
 
 (defmacro define-macro-word (id (in out &key exec)
                              &body body)
@@ -171,7 +174,7 @@
 (defun lifoo-init (tags &key (exec *lifoo*))
   "Runs all inits matching tags in EXEC"
   (let ((cnt 0))
-    (do-hash-table (ts fn *lifoo-init*)
+    (do-index (ts fn *lifoo-init*)
       (when (or (eq t tags)
                 (null (set-difference ts tags)))
         (funcall fn exec)
@@ -295,7 +298,7 @@
 (defun lifoo-define (id word &key (exec *lifoo*))
   "Defines ID as WORD in EXEC"
   (lifoo-undefine id :exec exec)
-  (index-add (words exec) word :key id))
+  (index-add (words exec) word :key (keyword! id)))
 
 (defun lifoo-undefine (word &key (exec *lifoo*))
   "Undefines word for WORD in EXEC"

@@ -1,10 +1,7 @@
 (cl4l-test:run-suite '(:lifoo) :reps 3)
 
-* switch to index for storing words
-** create with nil key
-** add args to word again
-*** store least specific type that is accepted or nil if any
-** unique? t
+* add args to word again
+** store least specific type that is accepted or nil if any
 ** add words with id & args
 ** search for id when finding
 *** run first type match
