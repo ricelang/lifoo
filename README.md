@@ -24,8 +24,29 @@ NIL
 CL-USER> 
 ```
 
+### structs
+Lifoo provides a simple but effective interface to defstruct. Outside of Lifoo the struct is anonymous to not clash with existing Lisp definitions. Words are automatically generated for ```make-foo```, ```foo-p``` and fields with setters when the ```struct``` word is evaluated.
+
+```
+Lifoo> ((bar -1) baz) :foo struct
+       nil make-foo foo?
+
+T
+
+Lifoo> (:bar 42) make-foo
+       foo-bar
+
+42
+
+Lifoo> (:bar 42) make-foo
+       foo-bar 43 set
+       foo-bar
+
+43
+```
+
 ### encryption
-The ```crypt``` package is based on AES in CTR mode with SHA256 hashed keys, and requires identical seed and message sequence for ```encrypt``` and ```decrypt```.
+The ```crypt``` package is based on AES in CTR mode with SHA256-hashed keys, and requires identical seed and message sequence for ```encrypt``` and ```decrypt```.
 
 ```
 Lifoo> :seed var crypt-seed set
