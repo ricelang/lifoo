@@ -269,9 +269,20 @@
                    (lifoo-eval ',(first (first out)))))))))
 
 (define-lifoo-init (:hash)
-  ;; Pushes new hash table
+  ;; Pops $src and pushes new hash table
   (define-lisp-word :hash ()
-    (lifoo-push (make-hash-table :test 'equal)))
+    (let ((src (lifoo-pop))
+          (res (make-hash-table :test 'equal)))
+      (cond
+        ((null src))
+        ((hash-table-p src)
+         (do-hash-table (k v src)
+           (setf (gethash k res) v)))
+        ((listp src)
+         (dolist (it src)
+           (setf (gethash (first it) res) (rest it))))
+        (t (error "hash not supported: ~a" src)))
+      (lifoo-push res)))
   
   ;; Pops $key and $tbl,
   ;; and pushes value at $key in $tbl
@@ -303,16 +314,16 @@
 (define-lifoo-init (:list)
   (define-binary-words () cons)
 
-  ;; Pushes stack as list and clears stack
+  ;; Pops $src and pushes new list
   (define-lisp-word :list ()
-    (let ((arg (lifoo-pop)))
+    (let ((src (lifoo-pop)))
       (cond
-        ((hash-table-p arg)
+        ((hash-table-p src)
          (let ((res))
-           (do-hash-table (k v arg)
+           (do-hash-table (k v src)
              (push (cons k v) res))
            (lifoo-push res)))
-        (t (lifoo-push (map 'list #'identity arg))))))
+        (t (lifoo-push (map 'list #'identity src))))))
 
   ;; Pushes rest of $1
   (define-lisp-word :rest ()
