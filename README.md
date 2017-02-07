@@ -91,8 +91,10 @@ Lifoo> (:bar 42) make-foo
 43
 ```
 
-### deferred actions
-The ```flow``` package provides support for deferred actions that are executed on scope exit. 
+### flow
+
+#### deferred actions
+Actions registered with ```defer``` runs on scope exit.
 
 ```
 Lifoo> begin 
@@ -111,6 +113,29 @@ Lifoo> 41
        end
        
 42
+```
+
+#### always
+Code passed to ```always``` runs even if values are thrown from preceding expressions in the same scope. 
+
+```
+Lifoo> :frisbee throw
+       "skipped" print ln
+       (:always) always
+       (drop) catch
+
+:ALWAYS
+```
+
+#### throw & catch
+Code passed to ```catch``` runs when values are thrown from preceding expressions in the same scope. Thrown values are pushed on the stack before calling handlers.
+
+```
+Lifoo> :up throw
+       "skipped" print ln
+       (:caught cons) catch
+
+(:CAUGHT . :UP)
 ```
 
 ### encryption
@@ -142,7 +167,7 @@ Lifoo> 0 chan
 
 
 ### tests
-Lifoo comes with a modest but grow set of tests in ```tests.lisp```, evaluating ```(cl4l-test:run-suite '(:lifoo) :reps 3)``` repeats all tests 3 x 30 times.
+Lifoo comes with a suite of tests in ```tests.lisp```, evaluating ```(cl4l-test:run-suite '(:lifoo) :reps 3)``` repeats all tests 3 x 30 times.
 
 ```
 (cl4l-test:run-suite '(:lifoo) :reps 3)
