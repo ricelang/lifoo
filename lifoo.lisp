@@ -19,7 +19,7 @@
            with-lifoo
            *lifoo* *lifoo-init* *lifoo-speed*)
   (:use bordeaux-threads cl cl4l-chan cl4l-clone cl4l-compare
-        cl4l-test cl4l-utils))
+        cl4l-crypt cl4l-test cl4l-utils))
 
 (in-package lifoo)
 
@@ -182,8 +182,10 @@
 (defun lifoo-read (&key (in *standard-input*))
   "Reads Lifoo code from IN until end of file"
   (let ((eof? (gensym)) (more?) (expr))
-    (do-while ((not (eq (setf more? (read in nil eof?)) eof?)))
-      (push more? expr))
+    (handler-case
+     (do-while ((not (eq (setf more? (read in nil eof?)) eof?)))
+       (push more? expr))
+     (end-of-file ()))
     (nreverse expr)))
 
 (defun lifoo-write (expr &key (out *standard-output*))

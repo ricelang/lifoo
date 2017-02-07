@@ -80,6 +80,13 @@
   (lifoo-asseq nil
     "def" "abc" gt?))
 
+(define-test (:lifoo :crypt)
+  (lifoo-asseq "secret message"
+    :msg var "secret message" set
+    :key var "secret key" set
+    :seed var crypt-seed set
+    :seed var :key var crypt :msg var encrypt
+    :seed var :key var crypt swap decrypt))
 
 (define-test (:lifoo :env)
   (lifoo-asseq 42

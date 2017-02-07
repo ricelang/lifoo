@@ -112,6 +112,32 @@
   (define-word :lte? () cmp 1 <)
   (define-word :gte? () cmp -1 >))
 
+(define-lifoo-init (:crypt)
+  ;; Pushes new crypt seed
+  (define-lisp-word :crypt-seed ()
+    (lifoo-push (make-iv :aes)))
+
+  ;; Pops $key and $seed,
+  ;; and pushes new crypt
+  (define-lisp-word :crypt ()
+    (let ((key (lifoo-pop))
+          (seed (lifoo-pop)))
+      (lifoo-push (make-crypt key seed))))
+
+  ;; Pops $msg and $crypt,
+  ;; and pushes encrypted message
+  (define-lisp-word :encrypt ()
+    (let ((msg (lifoo-pop))
+          (crypt (lifoo-pop)))
+      (lifoo-push (encrypt crypt msg))))
+
+  ;; Pops $msg and $crypt,
+  ;; and pushes decrypted message
+  (define-lisp-word :decrypt ()
+    (let ((msg (lifoo-pop))
+          (crypt (lifoo-pop)))
+      (lifoo-push (decrypt crypt msg)))))
+
 (define-lifoo-init (:env)
   ;; Pushes current environment on stack
   (define-lisp-word :env ()
