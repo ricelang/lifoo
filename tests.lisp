@@ -271,7 +271,7 @@
 (define-test (:lifoo :string :io)
   (lifoo-asseq '("abc" "def" "ghi")
     begin
-      ("abc" #\newline "def" #\newline "ghi") string
+      "abc~%def~%ghi~%" nil format
       string-stream (close) defer
       nil swap (push) slurp-lines
     end reverse))
