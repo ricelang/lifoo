@@ -1,4 +1,9 @@
 Lifoo
+* add net package
+** add fetch word based on drakma
+(let ((stream (drakma:http-request "https://api.github.com/orgs/edicl/public_members"
+                                      :want-stream t)))
+    (setf (flexi-streams:flexi-stream-external-format stream) :utf-8)
 * add each word
 0 '(1 2 3) (swap inc swap) each drop
 - 3
