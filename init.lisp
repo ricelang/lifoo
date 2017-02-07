@@ -20,7 +20,11 @@
 
   ;; Increases $1
   (define-lisp-word :inc (:speed 1)
-    (incf (lifoo-peek)))
+    (let* ((cell (lifoo-peek-cell))
+           (next (if (lifoo-val cell) (1+ (lifoo-val cell)) 1)))
+      (when (lifoo-set cell)
+        (funcall (lifoo-set cell) next))
+      (setf (lifoo-val cell) next)))
 
   ;; Decreases $1
   (define-lisp-word :dec (:speed 1)
@@ -301,8 +305,14 @@
 
   ;; Pushes stack as list and clears stack
   (define-lisp-word :list ()
-    (let ((lst (map 'list #'identity (lifoo-pop))))
-      (lifoo-push lst)))
+    (let ((arg (lifoo-pop)))
+      (cond
+        ((hash-table-p arg)
+         (let ((res))
+           (do-hash-table (k v arg)
+             (push (cons k v) res))
+           (lifoo-push res)))
+        (t (lifoo-push (map 'list #'identity arg))))))
 
   ;; Pushes rest of $1
   (define-lisp-word :rest ()
@@ -585,7 +595,8 @@
                               (stack *lifoo*)))
                   :words (clone (words *lifoo*))))
            (thread (make-thread (lambda ()
-                                  (lifoo-eval expr :exec exec)))))
+                                  (lifoo-eval expr :exec exec)
+                                  (lifoo-pop :exec exec)))))
       (lifoo-push thread)))
 
   ;; Pops $secs and sleeps that many seconds

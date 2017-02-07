@@ -181,7 +181,14 @@
     hash :abc get 42 set drop :abc get)
 
   (lifoo-asseq 42
-    hash "abc" 42 put drop "abc" get))
+    hash "abc" 42 put drop "abc" get)
+
+  (lifoo-asseq '((:abc . 1) (:def . 2) (:ghi . 3))
+    hash 
+    :abc 1 put drop
+    :def 2 put drop 
+    :ghi 3 put drop
+    list sort))
 
 (define-test (:lifoo :io)
   (assert (string= (format nil "hello lifoo!~%")
@@ -335,7 +342,21 @@
     0 chan
     (1 2 + send :done) inline 1 spawn swap 
     recv swap drop swap 
-    wait cons))
+    wait cons)
+
+  (lifoo-asseq '(("abc" . 2) ("def" . 1))
+    1 chan 
+    (begin :words var hash set swap 
+      (recv dup
+        (dup :words var swap get inc drop drop) inline 
+        swap when) inline while
+    drop list sort end) inline 
+    1 spawn swap
+    "abc" send
+    "def" send
+    "abc" send
+    nil send
+    drop wait))
 
 (define-test (:lifoo :word)
   (lifoo-asseq 3

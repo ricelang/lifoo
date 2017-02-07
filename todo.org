@@ -1,19 +1,7 @@
-* add support for hash tables in list
-** convert to assoc list
-hash 
-:abc 1 put 
-:def 2 put  
-:ghi 3 put
-list (first) sort
-- '((1 . :abc) (2 . :def) (3 . :ghi))
+(cl4l-test:run-suite '(:lifoo) :reps 3)
 
-0 chan (:words var hash set 
-        (recv dup :words var swap get inc drop) while
-        list (first) sort) spawn swap
-"abc" send
-"def" send
-"ghi" send
-swap wait
+* add arg to hash-table like list
+** add support for assoc list
 
 * add stash/apply to push / pop between stack and stash
 ** use instead of var in put
