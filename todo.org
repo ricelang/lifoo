@@ -3,6 +3,8 @@
 * add args to word again
 ** store least specific type that is accepted or nil if any
 ** return first type match from lifoo-word
+** replace conds with type specific words
+** increase optimizations
 * add each word
 0 '(1 2 3) (swap inc swap) each drop
 - 3
