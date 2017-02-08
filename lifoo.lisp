@@ -5,7 +5,7 @@
            do-lifoo do-lifoo-call
            lifoo-call lifoo-compile
            lifoo-compile-fn lifoo-compile-form lifoo-compile-word
-           lifoo-del lifoo-define lifoo-define-macro lifoo-dump-log
+           lifoo-del lifoo-define lifoo-dump-log
            lifoo-env lifoo-error lifoo-eval
            lifoo-init lifoo-log
            lifoo-optimize
@@ -42,12 +42,11 @@
 (defmacro define-macro-word (id (in out &key exec)
                              &body body)
   "Defines new macro word NAME in EXEC from Lisp forms in BODY"
-  `(lifoo-define ,id (make-lifoo-word
-                      :id ,id
-                      :macro? t
-                      :source ',body
-                      :fn (lambda (,in ,out)
-                            ,@body))
+  `(lifoo-define (make-lifoo-word ,id
+                                  :macro? t
+                                  :source ',body
+                                  :fn (lambda (,in ,out)
+                                        ,@body))
                  :exec (or ,exec *lifoo*)))
 
 (defmacro lifoo-optimize (&key speed)
@@ -57,20 +56,18 @@
 
 (defmacro define-lisp-word (id (args &key exec speed) &body body)
   "Defines new word with NAME in EXEC from Lisp forms in BODY"
-  `(lifoo-define ,id
-                 (make-lifoo-word
-                  :id ,id
-                  :args ',args
-                  :source ',body
-                  :fn (lambda ()
-                        ,(lifoo-optimize :speed speed)
-                        ,@body))
-                 :exec (or ,exec *lifoo*)))
+  `(lifoo-define
+    (make-lifoo-word ,id
+                     :args ',args
+                     :source ',body
+                     :fn (lambda ()
+                           ,(lifoo-optimize :speed speed)
+                           ,@body))
+    :exec (or ,exec *lifoo*)))
 
-(defmacro define-word (name (args &key exec) &body body)
-  "Defines new word with NAME in EXEC from BODY"
-  `(lifoo-define ',name
-                 (make-lifoo-word :id ,(keyword! name)
+(defmacro define-word (id (args &key exec) &body body)
+  "Defines new word with ID in EXEC from BODY"
+  `(lifoo-define (make-lifoo-word ,id
                                   :args ',args
                                   :source ',body)
                  :exec (or ,exec *lifoo*)))
@@ -148,10 +145,10 @@
                    (lifoo-pop)
                    (funcall ,_sfn val (lifoo-peek)))))))))
 
-(defstruct (lifoo-word (:conc-name))
-  id args (idx (incf *lifoo-word-idx*)) key
-  macro? trace?
-  source fn)
+(defstruct (lifoo-word (:conc-name)
+                       (:constructor make-word))
+  id args idx key source fn
+  macro? trace?)
 
 (defstruct (lifoo-cell (:conc-name lifoo-))
   val set del)
@@ -175,6 +172,15 @@
 (defun lifoo-throw (val)
   "Throws VAL"
   (signal 'lifoo-throw :value val))
+
+(defun make-lifoo-word (id &key args macro? trace? source fn)
+  (let ((idx (incf *lifoo-word-idx*)))
+    (make-word :id (keyword! id)
+               :idx idx
+                       :args args
+               :key (list id args (- idx))
+               :source source :fn fn
+               :macro? macro? :trace? trace?)))
 
 (defun lifoo-init (tags &key (exec *lifoo*))
   "Runs all inits matching tags in EXEC"
@@ -305,9 +311,9 @@
       (setf (key word)
             (list (id word) (args word) (- (idx word))))))
 
-(defun lifoo-define (id word &key (exec *lifoo*))
+(defun lifoo-define (word &key (exec *lifoo*))
   "Defines ID as WORD in EXEC"
-  (lifoo-undefine id :exec exec)
+  (lifoo-undefine word :exec exec)
   (index-add (words exec) word :key (lifoo-word-key word)))
 
 (defun lifoo-undefine (word &key (exec *lifoo*))
