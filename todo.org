@@ -1,5 +1,9 @@
 (cl4l-test:run-suite '(:lifoo) :reps 3)
 
+* write function to compile list of types
+** compiled fn for checking
+** use subtypep & type-of
+
 * add words word to search words by name
 ** add lifoo-words to return matches
 
