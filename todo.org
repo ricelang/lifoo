@@ -22,6 +22,7 @@
 * add each word
 0 '(1 2 3) (swap inc swap) each drop
 - 3
+
 * add stash/apply to push / pop between stack and stash
 ** use instead of var in put
 

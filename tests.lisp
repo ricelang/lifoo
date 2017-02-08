@@ -271,18 +271,18 @@
   
   (lifoo-asseq 43
     42
-    (lifoo-push (1+ (lifoo-pop))) $
+    (lifoo-push (1+ (lifoo-pop))) lisp
     eval)
 
   (lifoo-asseq 3
     1 2 
     (lifoo:lifoo-push (+ (lifoo:lifoo-pop)
-                         (lifoo:lifoo-pop))) $
+                         (lifoo:lifoo-pop))) lisp
     eval)
   
   (lifoo-asseq 42
     (define-lifoo-init (:foo :bar)
-      (define-word :baz ((number)) 39 +)) $
+      (define-word :baz ((number)) 39 +)) lisp
     eval
     (:foo :bar) init
     3 baz))

@@ -395,7 +395,7 @@
                            ,expr)))))
   
   ;; Replaces $expr with function that evaluates as Lisp
-  (define-macro-word :$ (in out)
+  (define-macro-word :lisp (in out)
     (cons (cons in
                 `(lifoo-push (lambda ()
                                (lifoo-optimize)
