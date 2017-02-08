@@ -55,31 +55,33 @@
      `(declare (optimize (speed ,spd)
                          (safety ,(- 3 spd))))))
 
-(defmacro define-lisp-word (id (&key exec speed) &body body)
+(defmacro define-lisp-word (id (args &key exec speed) &body body)
   "Defines new word with NAME in EXEC from Lisp forms in BODY"
   `(lifoo-define ,id
                  (make-lifoo-word
                   :id ,id
+                  :args ',args
                   :source ',body
                   :fn (lambda ()
                         ,(lifoo-optimize :speed speed)
                         ,@body))
                  :exec (or ,exec *lifoo*)))
 
-(defmacro define-word (name (&key exec) &body body)
+(defmacro define-word (name (args &key exec) &body body)
   "Defines new word with NAME in EXEC from BODY"
   `(lifoo-define ',name
                  (make-lifoo-word :id ,(keyword! name)
+                                  :args ',args
                                   :source ',body)
                  :exec (or ,exec *lifoo*)))
 
-(defmacro define-binary-words ((&key exec speed) &rest forms)
+(defmacro define-binary-words ((args &key exec speed) &rest forms)
   "Defines new words in EXEC for FORMS"
   (with-symbols (_lhs _rhs)
     `(progn
        ,@(mapcar (lambda (op)
                    `(define-lisp-word ,(keyword! op)
-                        (:exec ,exec :speed ,speed)
+                        (,args :exec ,exec :speed ,speed)
                       (let ((,_lhs (lifoo-pop))
                             (,_rhs (lifoo-pop)))
                         (lifoo-push (,op ,_lhs ,_rhs)))))
@@ -138,7 +140,7 @@
     `(let ((,_fn (symbol-function ,lisp))
            (,_sfn (and ,set? (fdefinition (list 'setf ,lisp)))))
        
-       (define-lisp-word ,lifoo ()
+       (define-lisp-word ,lifoo (nil)
          (lifoo-push
           (apply ,_fn ,args)
           :set (when ,set?
