@@ -140,7 +140,7 @@
     `(let ((,_fn (symbol-function ,lisp))
            (,_sfn (and ,set? (fdefinition (list 'setf ,lisp)))))
        
-       (define-lisp-word ,lifoo (nil)
+       (define-lisp-word ,lifoo (t)
          (lifoo-push
           (apply ,_fn ,args)
           :set (when ,set?

@@ -6,21 +6,21 @@
 
   ;; Pops $val and pushes T if NIL,
   ;; otherwise NIL
-  (define-lisp-word :nil? (nil)
+  (define-lisp-word :nil? (t)
     (lifoo-push (null (lifoo-pop))))
 
   ;; Pushes clone of $1
-  (define-lisp-word :clone (nil)
+  (define-lisp-word :clone (t)
     (lifoo-push (clone (lifoo-peek))))
 
   ;; Pops $val and pushes its symbolic representation,
   ;; or a newly generated symbol if NIL
-  (define-lisp-word :sym (nil)
+  (define-lisp-word :sym (t)
     (let ((arg (lifoo-pop)))
       (lifoo-push (keyword! (or arg (gensym))))))
 
   ;; Increases $1
-  (define-lisp-word :inc (nil :speed 1)
+  (define-lisp-word :inc (t :speed 1)
     (let* ((cell (lifoo-peek-cell))
            (next (if (lifoo-val cell) (1+ (lifoo-val cell)) 1)))
       (when (lifoo-set cell)
@@ -28,7 +28,7 @@
       (setf (lifoo-val cell) next)))
 
   ;; Decreases $1
-  (define-lisp-word :dec (nil :speed 1)
+  (define-lisp-word :dec (t :speed 1)
     (let* ((cell (lifoo-peek-cell))
            (next (if (lifoo-val cell) (1- (lifoo-val cell)) -1)))
       (when (lifoo-set cell)
@@ -36,7 +36,7 @@
       (setf (lifoo-val cell) next)))
 
   ;; Pops $val and sets value of $1 to $val
-  (define-lisp-word :set (nil :speed 1)
+  (define-lisp-word :set (t :speed 1)
     (let* ((val (lifoo-pop))
            (cell (lifoo-peek-cell))
            (set (lifoo-set cell)))
@@ -46,7 +46,7 @@
       (setf (lifoo-peek) val)))
 
   ;; Pushes and deletes value of $1
-  (define-lisp-word :del (nil :speed 1)
+  (define-lisp-word :del (t :speed 1)
     (let* ((cell (lifoo-peek-cell))
            (val (lifoo-val cell))
            (del (lifoo-del cell)))
@@ -58,7 +58,7 @@
   ;; Pops $expr,
   ;; measures the time it takes to run;
   ;; and pushes cpu and real
-  (define-lisp-word :time (nil :speed 1)
+  (define-lisp-word :time (t :speed 1)
     (let* ((fn (lifoo-pop))
            (real (get-internal-real-time))
            (cpu (get-internal-run-time)))
@@ -68,7 +68,7 @@
   
   ;; Pops $fields and $name,
   ;; and defines struct
-  (define-lisp-word :struct (nil)
+  (define-lisp-word :struct (t)
     (let ((name (lifoo-pop))
           (fields (lifoo-pop)))
       (define-lifoo-struct name fields)))
@@ -79,13 +79,13 @@
       (lifoo-push (lifoo-read :in in))))
   
   ;; Pops $expr and pushes string representation
-  (define-lisp-word :write (nil)
+  (define-lisp-word :write (t)
     (lifoo-push
      (with-output-to-string (out)
        (lifoo-write (lifoo-pop) :out out))))
 
   ;; Pops $expr and pushes result of evaluating
-  (define-lisp-word :eval (nil)
+  (define-lisp-word :eval (t)
     (lifoo-eval (lifoo-pop)))
 
   ;; Replaces $expr with function that evaluates it
@@ -99,7 +99,7 @@
 
 (define-lifoo-init (:array)
   ;; Pops $items and pushes new array
-  (define-lisp-word :array (nil :speed 1)
+  (define-lisp-word :array (t :speed 1)
     (let* ((items (lifoo-pop))
            (len (length items)))
       (lifoo-push (make-array len
@@ -110,73 +110,73 @@
 (define-lifoo-init (:compare)
   ;; Pops $lhs and $rhs,
   ;; and pushes result of comparing $lhs to $rhs
-  (define-lisp-word :cmp (nil)
+  (define-lisp-word :cmp (t)
     (let ((lhs (lifoo-pop))
           (rhs (lifoo-pop)))
       (lifoo-push (compare lhs rhs))))
 
   ;; Pops $rhs and $lhs,
   ;; and pushes T if they compare equal
-  (define-word :eq? (nil) cmp 0 =)
-  (define-word :neq? (nil) cmp 0 /=)
-  (define-word :lt? (nil) cmp -1 =)
-  (define-word :gt? (nil) cmp 1 =)
-  (define-word :lte? (nil) cmp 1 <)
-  (define-word :gte? (nil) cmp -1 >))
+  (define-word :eq? (t) cmp 0 =)
+  (define-word :neq? (t) cmp 0 /=)
+  (define-word :lt? (t) cmp -1 =)
+  (define-word :gt? (t) cmp 1 =)
+  (define-word :lte? (t) cmp 1 <)
+  (define-word :gte? (t) cmp -1 >))
 
 (define-lifoo-init (:crypt)
   ;; Pushes new crypt seed
-  (define-lisp-word :crypt-seed (nil)
+  (define-lisp-word :crypt-seed (t)
     (lifoo-push (make-iv :aes)))
 
   ;; Pops $key and $seed,
   ;; and pushes new crypt
-  (define-lisp-word :crypt (nil)
+  (define-lisp-word :crypt (t)
     (let ((key (lifoo-pop))
           (seed (lifoo-pop)))
       (lifoo-push (make-crypt key seed))))
 
   ;; Pops $msg and $crypt,
   ;; and pushes encrypted message
-  (define-lisp-word :encrypt ((string nil))
+  (define-lisp-word :encrypt ((string))
     (let ((msg (lifoo-pop))
           (crypt (lifoo-pop)))
       (lifoo-push (encrypt crypt msg))))
 
   ;; Pops $msg and $crypt,
   ;; and pushes decrypted message
-  (define-lisp-word :decrypt ((string nil))
+  (define-lisp-word :decrypt ((string))
     (let ((msg (lifoo-pop))
           (crypt (lifoo-pop)))
       (lifoo-push (decrypt crypt msg)))))
 
 (define-lifoo-init (:env)
   ;; Pushes current environment on stack
-  (define-lisp-word :env (nil)
+  (define-lisp-word :env (t)
     (lifoo-push (copy-list (index-first (lifoo-env)))))
 
   ;; Pops $var and returns value
-  (define-lisp-word :var (nil)
+  (define-lisp-word :var (t)
     (lifoo-eval (lifoo-pop))
     (let ((var (lifoo-pop)))
       (lifoo-push-expr (lifoo-var var)
                        :del (setf (lifoo-var var) nil))))
 
   ;; Opens new environment
-  (define-lisp-word :begin (nil)
+  (define-lisp-word :begin (t)
     (lifoo-begin))
 
   ;; Closes current environment
-  (define-lisp-word :end (nil)
+  (define-lisp-word :end (t)
     (lifoo-end))
 
   ;; Clears current environment
-  (define-lisp-word :clear (nil)
+  (define-lisp-word :clear (t)
     (index-clear (lifoo-env))))
 
 (define-lifoo-init (:error)
   ;; Pops $test and signals error if NIL
-  (define-lisp-word :assert (nil)
+  (define-lisp-word :assert (t)
     (let* ((test (lifoo-peek))
            (ok? (progn
                   (lifoo-eval test)
@@ -186,7 +186,7 @@
 
   ;; Pops $expected and $actual,
   ;; and signals error they don't compare equal  
-  (define-lisp-word :asseq (nil :speed 1)
+  (define-lisp-word :asseq (t :speed 1)
     (let ((expected (lifoo-pop))
           (actual (lifoo-peek)))
       (lifoo-eval expected)
@@ -198,7 +198,7 @@
 (define-lifoo-init (:flow)
   ;; Pops $test, $true and $false;
   ;; and pushes $true if $test, otherwise $false
-  (define-lisp-word :cond (nil)
+  (define-lisp-word :cond (t)
     (let ((test (lifoo-pop))
           (true (lifoo-pop))
           (false (lifoo-pop)))
@@ -209,7 +209,7 @@
   
   ;; Pops $test and $res;
   ;; and pushes $res if $test, otherwise NIL
-  (define-lisp-word :when (nil)
+  (define-lisp-word :when (t)
     (let ((test (lifoo-pop))
           (res (lifoo-pop)))
       (lifoo-eval test)
@@ -219,7 +219,7 @@
 
   ;; Pops $test and $res;
   ;; and pushes $res unless $test, otherwise NIL
-  (define-lisp-word :unless (nil)
+  (define-lisp-word :unless (t)
     (let ((test (lifoo-pop))
           (res (lifoo-pop)))
       (lifoo-eval test)
@@ -230,7 +230,7 @@
   ;; Pops $reps and $body;
   ;; and repeats $body $reps times,
   ;; pushing indexes before evaluating body
-  (define-lisp-word :times (nil :speed 1)
+  (define-lisp-word :times (t :speed 1)
     (let ((reps (lifoo-pop))
           (body (lifoo-pop)))
         (dotimes (i reps)
@@ -238,25 +238,25 @@
           (lifoo-eval body))))
 
   ;; Pops $body and loops until $body pushes nil 
-  (define-lisp-word :while (nil)
+  (define-lisp-word :while (t)
     (let ((body (lifoo-pop)) more?)
       (do-while ((progn
                    (lifoo-eval body)
                    (setf more? (lifoo-pop)))))))
   
   ;; Pops $fn and defers it until environment is closed
-  (define-lisp-word :defer (nil)
+  (define-lisp-word :defer (t)
     (let ((fn (lifoo-pop)))
       (push fn (lifoo-var (defer-key exec)))))
 
   ;; Pops $value and throws it 
-  (define-lisp-word :throw (nil)
+  (define-lisp-word :throw (t)
     (lifoo-throw (lifoo-pop)))
 
   ;; Pops $res and $block,
   ;; evaluates $block while guaranteeing that $res runs
   ;; even in the case of errors.
-  (define-lisp-word :always (nil)
+  (define-lisp-word :always (t)
     (let ((res (lifoo-pop))
           (blk (lifoo-pop)))
       (unwind-protect
@@ -266,7 +266,7 @@
   ;; Pops $hnd and $block,
   ;; evaluates $block with $hnd registered as handler
   ;; for LIFOO-THROW.
-  (define-lisp-word :catch (nil)
+  (define-lisp-word :catch (t)
     (let ((hnd (lifoo-pop))
           (blk (lifoo-pop)))
       (handler-case
@@ -277,7 +277,7 @@
   
 (define-lifoo-init (:hash)
   ;; Pops $src and pushes new hash table
-  (define-lisp-word :hash (nil)
+  (define-lisp-word :hash (t)
     (let ((src (lifoo-pop))
           (res (make-hash-table :test 'equal)))
       (cond
@@ -293,14 +293,14 @@
   
   ;; Pops $key and $tbl,
   ;; and pushes value at $key in $tbl
-  (define-lisp-word :get (nil)
+  (define-lisp-word :get (t)
     (let ((key (lifoo-pop))
           (tbl (lifoo-peek)))
       (lifoo-push-expr (gethash key tbl)
                        :del (lambda ()
                               (remhash key tbl)))))
 
-  (define-word :put (nil)
+  (define-word :put (t)
     :tmp var swap set drop get :tmp var set))
 
 (define-lifoo-init (:io)
@@ -311,18 +311,18 @@
       (lifoo-push stm)))
 
   ;; Pops $val and prints it
-  (define-lisp-word :print (nil)
+  (define-lisp-word :print (t)
     (princ (lifoo-pop)))
 
   ;; Prints line ending
-  (define-lisp-word :ln (nil)
+  (define-lisp-word :ln (t)
     (terpri)))
 
 (define-lifoo-init (:list)
-  (define-binary-words (nil) cons)
+  (define-binary-words (t) cons)
 
   ;; Pops $src and pushes new list
-  (define-lisp-word :list (nil)
+  (define-lisp-word :list (t)
     (let ((src (lifoo-pop)))
       (cond
         ((hash-table-p src)
@@ -351,12 +351,12 @@
 
 (define-lifoo-init (:log)
   ;; Pops $word and enables tracing
-  (define-lisp-word :trace (nil)
+  (define-lisp-word :trace (t)
     (setf (trace? (lifoo-word (lifoo-pop))) t))
 
   ;; Pops $word and disabled tracing,
   ;; T disables all
-  (define-lisp-word :untrace (nil)
+  (define-lisp-word :untrace (t)
     (let ((expr (lifoo-pop)))
       (if (eq t expr)
           (do-hash-table (_ w (words *lifoo*))
@@ -364,15 +364,15 @@
           (setf (trace? (lifoo-word expr)) nil))))
 
   ;; Pops $msg and logs it
-  (define-lisp-word :log (nil)
+  (define-lisp-word :log (t)
     (lifoo-log (lifoo-pop)))
 
   ;; Dumps log on stack
-  (define-lisp-word :dump-log (nil)
+  (define-lisp-word :dump-log (t)
     (lifoo-push (lifoo-dump-log)))
 
   ;; Prints log
-  (define-lisp-word :print-log (nil)
+  (define-lisp-word :print-log (t)
     (lifoo-print-log (lifoo-dump-log))))
 
 (define-lifoo-init (:meta)
@@ -419,7 +419,7 @@
                            seq))))))
   
   ;; Pushes length of $1
-  (define-lisp-word :length (nil :speed 1)
+  (define-lisp-word :length (t :speed 1)
     (let ((seq (lifoo-peek)))
       (lifoo-push
        (cond
@@ -431,7 +431,7 @@
           (length seq))))))
   
   ;; Pops item from seq in $1 and pushes it
-  (define-lisp-word :pop (nil)
+  (define-lisp-word :pop (t)
     (let* ((seq (lifoo-peek))
            (it (cond
                  ((arrayp seq)
@@ -441,7 +441,7 @@
       (lifoo-push it)))
 
   ;; Pops $it and pushes it on $1
-  (define-lisp-word :push (nil)
+  (define-lisp-word :push (t)
     (let ((it (lifoo-pop))
           (seq (lifoo-peek)))
       (cond
@@ -456,7 +456,7 @@
 
   ;; Pops $fn and $seq,
   ;; and pushes result of mapping $fn over $seq
-  (define-lisp-word :map (nil :speed 1)
+  (define-lisp-word :map (t :speed 1)
     (let ((fn (lifoo-pop))
           (seq (lifoo-pop)))
       (lifoo-push
@@ -472,7 +472,7 @@
         seq))))
 
   ;; Pops $pred and filters $1 by it
-  (define-lisp-word :filter ((nil sequence))
+  (define-lisp-word :filter ((t sequence))
     (let ((pred (lifoo-pop)))
       (setf (lifoo-peek)
             (remove-if (lambda (it)
@@ -482,7 +482,7 @@
                        (lifoo-peek)))))
 
   ;; Pops $fn and replaces $1 with reduction by $fn
-  (define-lisp-word :reduce ((nil sequence))
+  (define-lisp-word :reduce ((t sequence))
     (let ((fn (lifoo-pop)))
       (setf (lifoo-peek)
             (reduce (lambda (x y)
@@ -494,7 +494,7 @@
 
   ;; Pops $key and $seq,
   ;; and pushes sorted copy
-  (define-lisp-word :sort ((nil sequence) :speed 1)
+  (define-lisp-word :sort ((t sequence) :speed 1)
     (let ((key (lifoo-pop))
           (seq (lifoo-pop)))
       (lifoo-push (sort (copy-list seq)
@@ -508,69 +508,69 @@
 
 (define-lifoo-init (:stack)
   ;; Pushes stack on stack
-  (define-lisp-word :stack (nil)
+  (define-lisp-word :stack (t)
     (lifoo-push (lifoo-stack)))
   
   ;; Pops stack
-  (define-lisp-word :drop (nil)
+  (define-lisp-word :drop (t)
     (lifoo-pop))
 
   ;; Swaps $1 and $2
-  (define-lisp-word :swap (nil)
+  (define-lisp-word :swap (t)
     (lifoo-swap))
   
   ;; Pushes $1 on stack
-  (define-lisp-word :dup (nil)
+  (define-lisp-word :dup (t)
     (lifoo-dup))
 
   ;; Resets stack
-  (define-lisp-word :reset (nil)
+  (define-lisp-word :reset (t)
     (lifoo-reset))
 
   ;; Pushes backup of stack to environment
-  (define-lisp-word :backup (nil)
+  (define-lisp-word :backup (t)
     (lifoo-backup))
 
   ;; Pops and restores backup from environment
-  (define-lisp-word :restore (nil)
+  (define-lisp-word :restore (t)
     (lifoo-restore)))
 
 (define-lifoo-init (:string)
   ;; Pops $val and pushes string representation
-  (define-lisp-word :string (nil)
+  (define-lisp-word :string (t)
     (let ((val (lifoo-pop)))
       (lifoo-push (if (listp val)
                       (apply #'string! val)
                       (string! val)))))
 
   ;; Pops $str and pushes uppercase
-  (define-lisp-word :upper (nil)
+  (define-lisp-word :upper (t)
     (lifoo-push (string-upcase (lifoo-pop))))
 
   ;; Pops $str and pushes lowercase
-  (define-lisp-word :lower (nil)
+  (define-lisp-word :lower (t)
     (lifoo-push (string-downcase (lifoo-pop))))
 
   ;; Pops $args and $fmt,
   ;; and pushes formatted output
-  (define-lisp-word :format (nil)
+  (define-lisp-word :format (t)
     (let ((args (lifoo-pop))
           (fmt (lifoo-pop)))
       (lifoo-push (apply #'format nil fmt args)))))
 
 (define-lifoo-init (:string :io)
   ;; Pushes new output stream
-  (define-lisp-word :stream (nil)
+  (define-lisp-word :stream (t)
     (let ((stm (make-string-output-stream)))
       (lifoo-stream stm)
       (lifoo-push stm)))
 
   ;; Pushes new output stream
-  (define-lisp-word :stream-string (nil)
+  (define-lisp-word :stream-string (t)
     (lifoo-push (get-output-stream-string (lifoo-peek))))
 
   ;; Pops $string and pushes input stream
-  (define-lisp-word :string-stream (nil)
+  (define-lisp-word :string-stream (t)
     (let ((stm (make-string-input-stream (lifoo-pop))))
       (lifoo-stream stm)
       (lifoo-push stm)))
@@ -579,7 +579,7 @@
   ;; calls $fn for new lines until nil;
   ;; writes to $out separated by newlines,
   ;; and pushes $out again
-  (define-lisp-word :dump-lines (nil)
+  (define-lisp-word :dump-lines (t)
     (let ((fn (lifoo-pop))
           (out (lifoo-pop))
           (line))
@@ -591,7 +591,7 @@
 
   ;; Pops $fn and $in,
   ;; and calls $fn for each line
-  (define-lisp-word :slurp-lines (nil)
+  (define-lisp-word :slurp-lines (t)
     (let ((fn (lifoo-pop))
           (in (lifoo-pop))
           (line))
@@ -601,17 +601,17 @@
 
 (define-lifoo-init (:thread)
   ;; Yields processor and re-schedules thread
-  (define-lisp-word :yield (nil)
+  (define-lisp-word :yield (t)
     (thread-yield))
 
   ;; Pops $secs and sleeps that many seconds
-  (define-lisp-word :sleep (nil :speed 1)
+  (define-lisp-word :sleep (t :speed 1)
     (sleep (lifoo-pop)))
 
   ;; Pops $expr;
   ;; evaluates it in new thread/exec,
   ;; and pushes thread
-  (define-lisp-word :spawn (nil :speed 1)
+  (define-lisp-word :spawn (t :speed 1)
     (let* ((num-args (lifoo-pop))
            (expr (lifoo-pop))
            (exec (make-lifoo
@@ -626,7 +626,7 @@
       (lifoo-push thread)))
 
   ;; Pops $secs and sleeps that many seconds
-  (define-lisp-word :wait (nil)
+  (define-lisp-word :wait (t)
     (lifoo-push (join-thread (lifoo-pop))))
 
   ;; Pops $buf-len and pushes new channel
@@ -634,34 +634,34 @@
     (lifoo-push (make-chan :max-length (lifoo-pop))))
 
   ;; Pops $msg and puts on channel in $1
-  (define-lisp-word :send (nil)
+  (define-lisp-word :send (t)
     (let ((msg (lifoo-pop)))
       (chan-put (lifoo-peek) msg)))
 
   ;; Gets and pushes message from channel in $1
-  (define-lisp-word :recv (nil)
+  (define-lisp-word :recv (t)
     (let ((msg (chan-get (lifoo-peek))))
       (lifoo-push msg))))
 
 (define-lifoo-init (:word)
   ;; Pops $id and pushes word
-  (define-lisp-word :word (nil)
+  (define-lisp-word :word (t)
     (let ((word (lifoo-word (lifoo-pop))))
       (lifoo-push word)))
 
   ;; Pops $word and pushes T if MACRO?
-    (define-lisp-word :macro? (nil)
+    (define-lisp-word :macro? (t)
     (let ((word (lifoo-word (lifoo-pop))))
       (lifoo-push (macro? word))))
 
   ;; Pops word and pushes source
-  (define-lisp-word :source (nil)
+  (define-lisp-word :source (t)
     (let ((word (lifoo-word (lifoo-pop))))
       (lifoo-push (source word))))
   
   ;; Pops $id and $body,
   ;; and defines word
-  (define-lisp-word :define (nil)
+  (define-lisp-word :define (t)
     (let* ((id (keyword! (lifoo-pop)))
            (body (lifoo-pop))
            (word (make-lifoo-word
@@ -674,6 +674,6 @@
       (lifoo-define id word)))
 
   ;; Pops $id and undefines word
-  (define-lisp-word :undefine (nil)
+  (define-lisp-word :undefine (t)
     (let ((id (keyword! (lifoo-pop))))
       (lifoo-undefine id))))

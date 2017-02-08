@@ -282,7 +282,7 @@
   
   (lifoo-asseq 42
     (define-lifoo-init (:foo :bar)
-      (define-word :baz (nil) 39 +)) $
+      (define-word :baz (t) 39 +)) $
     eval
     (:foo :bar) init
     3 baz))
