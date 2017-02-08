@@ -1,18 +1,23 @@
 (cl4l-test:run-suite '(:lifoo) :reps 3)
 
+* move type args out of arg list in defines
+
 * write function to compile list of types
 ** compiled fn for checking
 ** use subtypep & type-of
+
+* return first args type match from lifoo-word
+
+* replace conds with type specific words in init
+** increase optimizations
+
+* add types arg to :define word
 
 * add histogram word
 ** call with channel
 ** returns spawned thread
 ** sending null stops thread
 ** extract from test
-
-* return first args type match from lifoo-word
-** replace conds with type specific words
-** increase optimizations
 
 * add each word
 0 '(1 2 3) (swap inc swap) each drop
