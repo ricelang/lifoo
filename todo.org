@@ -1,10 +1,17 @@
 (cl4l-test:run-suite '(:lifoo) :reps 3)
 
+* add counter word
+** call with channel
+** returns spawned thread
+** sending null stops thread
+** extract from test
+
 * add histogram word
-** call with list of files and n workers
-** start one hash worker as nested definition
-** start n workers for files
-** return list histogram
+** call with in channel for data and n workers
+** stop when in channel sends nil
+** start counter
+** start n workers to split into words
+
 * add args to word again
 ** store least specific type that is accepted or nil if any
 ** return first type match from lifoo-word
