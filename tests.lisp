@@ -359,17 +359,17 @@
     recv swap drop swap 
     wait cons)
 
-  (lifoo-asseq '(("def" . 2) ("abc" . 1))
+  (lifoo-asseq '(("def" . -2) ("abc" . -1))
     1 chan 
     (begin
      :words var nil hash set swap 
      (begin
       recv dup
       (begin
-       dup :words var swap get inc drop drop
+       dup :words var swap get dec drop drop
        end) @ 
       swap when end) @ while
-      drop list (rest) sort reverse end) @ 
+      drop list (rest) sort end) @ 
     1 spawn swap
     "abc" send
     "def" send

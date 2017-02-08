@@ -28,7 +28,11 @@
 
   ;; Decreases $1
   (define-lisp-word :dec (:speed 1)
-    (decf (lifoo-peek)))
+    (let* ((cell (lifoo-peek-cell))
+           (next (if (lifoo-val cell) (1- (lifoo-val cell)) -1)))
+      (when (lifoo-set cell)
+        (funcall (lifoo-set cell) next))
+      (setf (lifoo-val cell) next)))
 
   ;; Pops $val and sets value of $1 to $val
   (define-lisp-word :set (:speed 1)
