@@ -149,7 +149,7 @@
                    (funcall ,_sfn val (lifoo-peek)))))))))
 
 (defstruct (lifoo-word (:conc-name))
-  id args (idx (incf *lifoo-word-idx*))
+  id args (idx (incf *lifoo-word-idx*)) key
   macro? trace?
   source fn)
 
@@ -301,7 +301,9 @@
     (funcall (lifoo-compile-word word))))
 
 (defun lifoo-word-key (word)
-  (list (id word) (args word) (- (idx word))))
+  (or (key word)
+      (setf (key word)
+            (list (id word) (args word) (- (idx word))))))
 
 (defun lifoo-define (id word &key (exec *lifoo*))
   "Defines ID as WORD in EXEC"

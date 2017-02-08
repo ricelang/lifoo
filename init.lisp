@@ -379,7 +379,7 @@
   ;; Pops $protos and initialises protocols
   (define-lisp-word :init ((list))
     (let ((protos (lifoo-pop)))
-      (lifoo-init (if (consp protos) protos (list protos)))))
+      (lifoo-init protos)))
 
   ;; Pops $code and pushes compiled code
   (define-lisp-word :compile ((list))

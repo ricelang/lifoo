@@ -259,11 +259,12 @@
     (lifoo-init '(:meta :stack))
 
     (lifoo-asseq "LIFOO"
-      :string init
+      (:string) init
       "lifoo" upper)
 
     (lifoo-asseq '(1 . 2)
-      (:list) init 2 1 cons))
+      (:list) init
+      2 1 cons))
 
   (lifoo-asseq 3
     (1 2 +) compile link eval) 
